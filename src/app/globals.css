@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+:root {
+  --background-top: #E0F2FE;
+  --background-center: #FFFFFF;
+  --background-bottom: #DCFCE7;
+  
+  --color-heading: #082F49;
+  --color-body: #334155;
+  --color-muted: #94A3B8;
+  
+  --color-primary: #06B6D4;
+  --color-primary-hover: #22D3EE;
+  
+  --color-secondary: #22C55E;
+  --color-secondary-hover: #4ADE80;
+}
+
+@theme inline {
+  --font-sans: var(--font-nunito), sans-serif;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  /* Mesh Gradient Background */
+  background: 
+    radial-gradient(at 0% 0%, var(--background-top) 0px, transparent 50%),
+    radial-gradient(at 100% 100%, var(--background-bottom) 0px, transparent 50%),
+    var(--background-center);
+  color: var(--color-body);
+  font-family: var(--font-nunito), sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: var(--color-heading);
+  font-weight: 700;
+}
+
+/* Glassmorphism rules applied via utility classes in components */
