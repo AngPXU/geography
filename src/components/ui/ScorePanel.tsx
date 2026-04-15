@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { FaTrophy, FaCheck, FaTimes, FaClock, FaRedo, FaUserTimes } from 'react-icons/fa';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -17,7 +17,11 @@ interface Props {
   roomId: string;
   currentUserId: string;
   isTeacher: boolean;
-  participantCount: number;
+  scores: ScoreEntry[];
+  totalQuestionsAsked: number;
+  onlineIds: Set<string>;
+  kickedIds: string[];
+  onRefresh: () => void | Promise<void>;
 }
 
 // ─── Medal helper ─────────────────────────────────────────────────────────────
@@ -31,50 +35,25 @@ function medal(rank: number) {
 
 // ─── ScorePanel ───────────────────────────────────────────────────────────────
 
-export function ScorePanel({ roomId, currentUserId, isTeacher, participantCount }: Props) {
-  const [scores, setScores] = useState<ScoreEntry[]>([]);
-  const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
-  const [totalQuestionsAsked, setTotalQuestionsAsked] = useState(0);
+export function ScorePanel({ roomId, currentUserId, isTeacher, scores: rawScores, totalQuestionsAsked, onlineIds, kickedIds, onRefresh }: Props) {
   const [resetting, setResetting] = useState(false);
   const [kickingId, setKickingId] = useState<string | null>(null);
-  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // ── Fetch scores (polling 4s) ──────────────────────────────────────────────
-  const fetchScores = useCallback(async () => {
-    try {
-      const r = await fetch(`/api/classroom/${roomId}/scores`);
-      if (!r.ok) return;
-      const d = await r.json() as {
-        scores: ScoreEntry[];
-        totalQuestionsAsked: number;
-        onlineIds: string[];
-      };
-      const sorted = [...d.scores].sort((a, b) =>
-        b.totalScore !== a.totalScore ? b.totalScore - a.totalScore : b.correctCount - a.correctCount,
-      );
-      setScores(sorted);
-      setTotalQuestionsAsked(d.totalQuestionsAsked);
-      setOnlineIds(new Set(d.onlineIds));
-    } catch { /* ignore */ }
-  }, [roomId]);
-
-  useEffect(() => {
-    fetchScores();
-    pollRef.current = setInterval(fetchScores, 4000);
-    return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [fetchScores]);
+  const scores = [...rawScores].sort((a, b) =>
+    b.totalScore !== a.totalScore ? b.totalScore - a.totalScore : b.correctCount - a.correctCount,
+  );
 
   // ── Reset scores (teacher only) ────────────────────────────────────────────
-  async function handleReset() {
+  const handleReset = useCallback(async () => {
     if (!confirm('Xoá toàn bộ điểm số hiện tại?')) return;
     setResetting(true);
     await fetch(`/api/classroom/${roomId}/scores`, { method: 'DELETE' });
-    await fetchScores();
+    onRefresh();
     setResetting(false);
-  }
+  }, [roomId, onRefresh]);
 
   // ── Kick student (teacher only) ──────────────────────────────────────────
-  async function handleKick(studentId: string, studentName: string) {
+  const handleKick = useCallback(async (studentId: string, studentName: string) => {
     if (!confirm(`Đá "${studentName}" ra khỏi phòng học?`)) return;
     setKickingId(studentId);
     await fetch(`/api/classroom/${roomId}/kick`, {
@@ -82,9 +61,9 @@ export function ScorePanel({ roomId, currentUserId, isTeacher, participantCount 
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ studentId }),
     });
-    await fetchScores();
+    onRefresh();
     setKickingId(null);
-  }
+  }, [roomId, onRefresh]);
 
   const notAnsweredBase = (entry: ScoreEntry) =>
     Math.max(0, totalQuestionsAsked - entry.correctCount - entry.wrongCount);

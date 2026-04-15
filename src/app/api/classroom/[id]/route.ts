@@ -30,7 +30,33 @@ export async function GET(_req: Request, { params }: Params) {
   const staleThreshold = new Date(Date.now() - 10 * 60 * 1000);
   const before = classroom.participants.length;
   classroom.participants = classroom.participants.filter((p) => p.lastSeen > staleThreshold);
-  if (classroom.participants.length !== before) await classroom.save();
+  const pruned = classroom.participants.length !== before;
+
+  // Lazy auto-start: if countdown has expired, start the quiz now
+  if (classroom.quizCountdown && classroom.pendingQuiz && !classroom.activeQuiz) {
+    const elapsed = (Date.now() - new Date(classroom.quizCountdown.startedAt).getTime()) / 1000;
+    if (elapsed >= classroom.quizCountdown.countdownSecs) {
+      classroom.activeQuiz = {
+        questions: classroom.pendingQuiz.questions,
+        currentIndex: 0,
+        currentQuestionStartedAt: new Date(),
+        isPaused: false,
+        pausedTimeRemaining: classroom.pendingQuiz.questionDuration,
+        currentAnswers: [],
+        isFinished: false,
+        questionDuration: classroom.pendingQuiz.questionDuration,
+      };
+      classroom.quizCountdown = undefined;
+      classroom.pendingQuiz = undefined;
+      classroom.markModified('quizCountdown');
+      classroom.markModified('pendingQuiz');
+      await classroom.save();
+    } else if (pruned) {
+      await classroom.save();
+    }
+  } else if (pruned) {
+    await classroom.save();
+  }
 
   return NextResponse.json({ classroom });
 }

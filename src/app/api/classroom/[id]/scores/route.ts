@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import connectDB from '@/utils/db';
+import User from '@/models/User';
 import Classroom from '@/models/Classroom';
 
 // ── GET /api/classroom/[id]/scores ─────────────────────────────────────────
@@ -33,20 +34,19 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   });
 }
 
-// ── PATCH /api/classroom/[id]/scores ──────────────────────────────────────
-// Teacher submits a batch of correct-answerer IDs in speed order.
-// Body: { correctAnswerers: [{ studentId, studentName }], wrongAnswerers: [{ studentId, studentName }] }
-// Points: fastest correct gets N pts, 2nd gets N-1, ..., where N = correctAnswerers.length
+// ── PATCH /api/classroom/[id]/scores (unused — kept for compatibility) ──────────
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
+  if (!session?.user?.name) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
 
   await connectDB();
+  const user = await User.findOne({ username: session.user.name });
+  if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+
   const { id } = await params;
   const classroom = await Classroom.findById(id);
   if (!classroom) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-
-  if (classroom.teacherId !== session.user.id) {
+  if (classroom.teacherId !== user._id.toString()) {
     return NextResponse.json({ error: 'Forbidden — teacher only' }, { status: 403 });
   }
 
@@ -90,14 +90,16 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 // Teacher resets all scores.
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
+  if (!session?.user?.name) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
 
   await connectDB();
+  const user = await User.findOne({ username: session.user.name });
+  if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
+
   const { id } = await params;
   const classroom = await Classroom.findById(id);
   if (!classroom) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-
-  if (classroom.teacherId !== session.user.id) {
+  if (classroom.teacherId !== user._id.toString()) {
     return NextResponse.json({ error: 'Forbidden — teacher only' }, { status: 403 });
   }
 

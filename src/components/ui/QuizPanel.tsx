@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { FaPause, FaPlay, FaForward, FaStop, FaCheck, FaTimes } from 'react-icons/fa';
+import { FaPause, FaPlay, FaStop, FaCheck, FaTimes } from 'react-icons/fa';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -27,6 +27,8 @@ interface Props {
   isTeacher: boolean;
   currentUserId: string;
   currentUserName: string;
+  participantCount?: number;
+  onForceClose?: () => void;
 }
 
 // ─── Option color config ──────────────────────────────────────────────────────
@@ -40,10 +42,12 @@ const OPT_STYLE: Record<string, { base: string; selected: string; correct: strin
 
 // ─── QuizPanel ────────────────────────────────────────────────────────────────
 
-export function QuizPanel({ activeQuiz, roomId, isTeacher, currentUserId }: Props) {
+export function QuizPanel({ activeQuiz, roomId, isTeacher, currentUserId, participantCount, onForceClose }: Props) {
   const [timeLeft, setTimeLeft] = useState(activeQuiz.questionDuration);
   const [myAnswer, setMyAnswer] = useState<string | null>(null);
   const [myAnswerForIndex, setMyAnswerForIndex] = useState(-1);
+  const [earnedPoints, setEarnedPoints] = useState<number | null>(null);
+  const [isCorrectAnswer, setIsCorrectAnswer] = useState<boolean | null>(null);
   const [inResultPhase, setInResultPhase] = useState(false);
   const [advancing, setAdvancing] = useState(false);
   const autoAdvancedRef = useRef(-1);
@@ -69,6 +73,8 @@ export function QuizPanel({ activeQuiz, roomId, isTeacher, currentUserId }: Prop
     if (myAnswerForIndex !== activeQuiz.currentIndex) {
       setMyAnswer(null);
       setMyAnswerForIndex(activeQuiz.currentIndex);
+      setEarnedPoints(null);
+      setIsCorrectAnswer(null);
       setInResultPhase(false);
       if (resultTimerRef.current) clearTimeout(resultTimerRef.current);
     }
@@ -100,11 +106,16 @@ export function QuizPanel({ activeQuiz, roomId, isTeacher, currentUserId }: Prop
     if (myAnswer || inResultPhase || timeLeft <= 0 || activeQuiz.isPaused) return;
     setMyAnswer(opt);
     setMyAnswerForIndex(activeQuiz.currentIndex);
-    await fetch(`/api/classroom/${roomId}/quiz/answer`, {
+    const res = await fetch(`/api/classroom/${roomId}/quiz/answer`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ answer: opt, questionIndex: activeQuiz.currentIndex }),
     });
+    if (res.ok) {
+      const data = await res.json() as { isCorrect: boolean; earnedPoints: number };
+      setIsCorrectAnswer(data.isCorrect);
+      setEarnedPoints(data.earnedPoints);
+    }
   }
 
   async function handleControl(action: 'pause' | 'resume' | 'next' | 'finish') {
@@ -125,8 +136,8 @@ export function QuizPanel({ activeQuiz, roomId, isTeacher, currentUserId }: Prop
   }
 
   async function handleDelete() {
-    if (!confirm('Kết thúc và xoá quiz?')) return;
     await fetch(`/api/classroom/${roomId}/quiz`, { method: 'DELETE' });
+    onForceClose?.();
   }
 
   // ── Derived ────────────────────────────────────────────────────────────────
@@ -213,66 +224,125 @@ export function QuizPanel({ activeQuiz, roomId, isTeacher, currentUserId }: Prop
             {q.question}
           </p>
 
-          {/* ── Options grid ─────────────────────────────────────────── */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {(['A', 'B', 'C', 'D'] as const).map((opt) => {
-              const style = OPT_STYLE[opt];
-              const isMyAnswer = myAnswer === opt;
-              const isCorrectOpt = q.correct === opt;
-              const showResult = showCorrect;
+          {isTeacher ? (
+            /* ── Teacher view: correct answer + student responses ─────── */
+            <div className="flex flex-col gap-3">
+              {/* Correct answer highlight */}
+              <div className="flex items-center gap-3 px-4 py-3 rounded-2xl"
+                   style={{ background: 'rgba(187,247,208,0.7)', border: '1px solid rgba(134,239,172,0.6)' }}>
+                <span className="w-8 h-8 rounded-xl bg-[#22C55E] flex items-center justify-center text-white font-extrabold text-sm flex-shrink-0">
+                  {q.correct}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[10px] font-bold text-[#16A34A] uppercase tracking-wide">Đáp án đúng</p>
+                  <p className="font-bold text-[#082F49] text-sm truncate">{q.options[q.correct]}</p>
+                </div>
+                <FaCheck size={13} className="text-[#16A34A] flex-shrink-0" />
+              </div>
 
-              let gradient = `bg-gradient-to-br ${style.base}`;
-              let extra = '';
+              {/* Answer count */}
+              <div className="flex items-center gap-2 text-xs text-[#94A3B8]">
+                <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
+                <span className="font-semibold">{answeredCount} / {participantCount ?? '?'} học sinh đã trả lời</span>
+                {showCorrect && <span className="ml-auto font-bold text-[#06B6D4]">→ Chuyển câu sau 3s...</span>}
+              </div>
 
-              if (showResult) {
-                if (isCorrectOpt) gradient = `bg-gradient-to-br ${style.correct}`;
-                else if (isMyAnswer && !isCorrectOpt) gradient = `bg-gradient-to-br from-red-500 to-red-700`;
-                else extra = style.wrong;
-              } else if (isMyAnswer) {
-                extra = style.selected;
-              }
-
-              const disabled = !!myAnswer || showCorrect || activeQuiz.isPaused || isTeacher;
-
-              return (
-                <button
-                  key={opt}
-                  onClick={() => !disabled && handleAnswer(opt)}
-                  disabled={disabled}
-                  className={`${gradient} ${extra} relative flex items-center gap-3 px-4 py-3.5 rounded-2xl text-white font-semibold text-sm text-left transition-all duration-300 shadow-md active:scale-95 disabled:cursor-default`}
-                >
-                  <span className="w-7 h-7 rounded-xl bg-white/20 flex items-center justify-center font-extrabold text-sm flex-shrink-0">
-                    {opt}
-                  </span>
-                  <span className="flex-1">{q.options[opt]}</span>
-                  {showResult && isCorrectOpt && <FaCheck size={14} className="flex-shrink-0" />}
-                  {showResult && isMyAnswer && !isCorrectOpt && <FaTimes size={14} className="flex-shrink-0" />}
-                  {isMyAnswer && !showResult && <span className="absolute top-1.5 right-2 text-[10px] font-bold bg-white/30 px-1.5 py-0.5 rounded-full">Đã chọn</span>}
-                </button>
-              );
-            })}
-          </div>
-
-          {/* Result feedback for student */}
-          {!isTeacher && showCorrect && (
-            <div className={`mt-4 p-3 rounded-2xl text-center text-sm font-bold ${
-              myAnswer === q.correct
-                ? 'bg-[#DCFCE7] text-[#16A34A]'
-                : myAnswer
-                ? 'bg-[#FEE2E2] text-[#DC2626]'
-                : 'bg-[#FEF9C3] text-[#CA8A04]'
-            }`}>
-              {myAnswer === q.correct ? '🎉 Chính xác!' : myAnswer ? `❌ Đáp án đúng là ${q.correct}` : `⏱ Hết giờ! Đáp án đúng là ${q.correct}`}
+              {/* Student response list */}
+              <div className="flex flex-col gap-1.5 overflow-y-auto" style={{ maxHeight: '200px' }}>
+                {activeQuiz.currentAnswers.length === 0 ? (
+                  <p className="text-center text-[#94A3B8] text-xs py-6">Chưa có học sinh nào trả lời</p>
+                ) : (
+                  activeQuiz.currentAnswers.map((ans, i) => {
+                    const isCorrectAns = ans.answer === q.correct;
+                    const optText = q.options[ans.answer as 'A' | 'B' | 'C' | 'D'];
+                    return (
+                      <div key={i} className={`flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs ${
+                        isCorrectAns ? 'bg-[#DCFCE7]' : 'bg-[#FEE2E2]'
+                      }`}>
+                        <span className={`w-6 h-6 rounded-lg flex items-center justify-center text-white font-extrabold flex-shrink-0 ${
+                          isCorrectAns ? 'bg-[#22C55E]' : 'bg-[#EF4444]'
+                        }`}>{ans.answer}</span>
+                        <span className="font-semibold text-[#082F49] flex-1 truncate">{ans.studentName}</span>
+                        <span className="text-[#475569] truncate max-w-[120px]">{optText}</span>
+                        {isCorrectAns
+                          ? <FaCheck size={10} className="text-[#16A34A] flex-shrink-0" />
+                          : <FaTimes size={10} className="text-[#EF4444] flex-shrink-0" />}
+                      </div>
+                    );
+                  })
+                )}
+              </div>
             </div>
-          )}
+          ) : (
+            /* ── Student view: ABCD buttons ──────────────────────────── */
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {(['A', 'B', 'C', 'D'] as const).map((opt) => {
+                  const style = OPT_STYLE[opt];
+                  const isMyAnswer = myAnswer === opt;
+                  const isCorrectOpt = q.correct === opt;
+                  const showResult = showCorrect;
 
-          {/* Teacher: answer count */}
-          {isTeacher && (
-            <div className="mt-4 flex items-center justify-center gap-2 text-xs text-[#94A3B8]">
-              <span className="w-2 h-2 rounded-full bg-[#22C55E] animate-pulse" />
-              <span>{answeredCount} / ? học sinh đã trả lời</span>
-              {showCorrect && <span className="ml-2 font-bold text-[#06B6D4]">→ Chuyển câu sau 3s...</span>}
-            </div>
+                  let gradient = `bg-gradient-to-br ${style.base}`;
+                  let extra = '';
+
+                  if (showResult) {
+                    if (isCorrectOpt) gradient = `bg-gradient-to-br ${style.correct}`;
+                    else if (isMyAnswer && !isCorrectOpt) gradient = `bg-gradient-to-br from-red-500 to-red-700`;
+                    else extra = style.wrong;
+                  } else if (isMyAnswer) {
+                    extra = style.selected;
+                  }
+
+                  const disabled = !!myAnswer || showCorrect || activeQuiz.isPaused;
+
+                  return (
+                    <button
+                      key={opt}
+                      onClick={() => !disabled && handleAnswer(opt)}
+                      disabled={disabled}
+                      className={`${gradient} ${extra} relative flex items-center gap-3 px-4 py-3.5 rounded-2xl text-white font-semibold text-sm text-left transition-all duration-300 shadow-md active:scale-95 disabled:cursor-default`}
+                    >
+                      <span className="w-7 h-7 rounded-xl bg-white/20 flex items-center justify-center font-extrabold text-sm flex-shrink-0">
+                        {opt}
+                      </span>
+                      <span className="flex-1">{q.options[opt]}</span>
+                      {showResult && isCorrectOpt && <FaCheck size={14} className="flex-shrink-0" />}
+                      {showResult && isMyAnswer && !isCorrectOpt && <FaTimes size={14} className="flex-shrink-0" />}
+                      {isMyAnswer && !showResult && <span className="absolute top-1.5 right-2 text-[10px] font-bold bg-white/30 px-1.5 py-0.5 rounded-full">Đã chọn</span>}
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Result feedback for student */}
+              {showCorrect && (
+                <div className={`mt-4 p-3 rounded-2xl text-center text-sm font-bold ${
+                  myAnswer === q.correct
+                    ? 'bg-[#DCFCE7] text-[#16A34A]'
+                    : myAnswer
+                    ? 'bg-[#FEE2E2] text-[#DC2626]'
+                    : 'bg-[#FEF9C3] text-[#CA8A04]'
+                }`}>
+                  {myAnswer === q.correct
+                    ? `🎉 Chính xác! ${earnedPoints !== null ? `+${earnedPoints} điểm` : ''}`
+                    : myAnswer
+                    ? `❌ Đáp án đúng là ${q.correct}: ${q.options[q.correct]}`
+                    : `⏱ Hết giờ! Đáp án đúng là ${q.correct}: ${q.options[q.correct]}`}
+                </div>
+              )}
+
+              {/* Points badge shown immediately after answering (before result phase) */}
+              {!showCorrect && myAnswer && isCorrectAnswer !== null && (
+                <div className={`mt-3 flex items-center justify-center gap-2 px-4 py-2 rounded-2xl text-sm font-bold ${
+                  isCorrectAnswer ? 'bg-[#DCFCE7] text-[#16A34A]' : 'bg-[#FEE2E2] text-[#DC2626]'
+                }`}>
+                  {isCorrectAnswer
+                    ? <><span>✅ Đúng rồi!</span><span className="ml-1 px-2 py-0.5 rounded-xl bg-[#22C55E] text-white text-xs">+{earnedPoints} điểm</span></>
+                    : <span>❌ Sai rồi, cố lên lần sau!</span>}
+                </div>
+              )}
+            </>
           )}
         </div>
 
@@ -290,14 +360,6 @@ export function QuizPanel({ activeQuiz, roomId, isTeacher, currentUserId }: Prop
                   : 'bg-amber-50 text-amber-600 border border-amber-200 hover:bg-amber-100'
               }`}>
               {activeQuiz.isPaused ? <><FaPlay size={10} /> Tiếp tục</> : <><FaPause size={10} /> Tạm dừng</>}
-            </button>
-
-            {/* Next / Finish */}
-            <button
-              onClick={handleNext}
-              disabled={advancing}
-              className="flex items-center gap-1.5 px-5 py-2 rounded-2xl text-xs font-bold bg-[#06B6D4] text-white hover:bg-[#22D3EE] transition-all duration-200 shadow-md disabled:opacity-50">
-              {isLast ? <><FaStop size={10} /> Kết thúc</> : <><FaForward size={10} /> Câu tiếp</>}
             </button>
 
             {/* End quiz */}

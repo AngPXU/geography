@@ -21,6 +21,8 @@ interface ClassroomSummary {
   participants: { studentId: string }[];
   passwordHash?: string;
   createdAt: string;
+  onlineCount: number;
+  teacherOnline: boolean;
 }
 
 interface FullClassroom extends ClassroomSummary {
@@ -237,6 +239,7 @@ export function ClassroomClient({ user }: ClassroomClientProps) {
   if (activeRoom && profile) {
     return (
       <ClassroomRoom
+        key={activeRoom._id}
         classroom={activeRoom}
         currentUserId={profile._id}
         currentUserName={profile.fullName || profile.username}
@@ -351,6 +354,23 @@ export function ClassroomClient({ user }: ClassroomClientProps) {
                           {c.passwordHash ? 'Có mật khẩu' : 'Mở'}
                         </span>
                       </div>
+                      {/* Online status */}
+                      <div className="flex items-center gap-3 text-xs">
+                        <span className={`flex items-center gap-1.5 font-semibold ${
+                          c.teacherOnline ? 'text-[#22C55E]' : 'text-[#94A3B8]'
+                        }`}>
+                          <span className={`w-2 h-2 rounded-full ${
+                            c.teacherOnline ? 'bg-[#22C55E] animate-pulse' : 'bg-[#CBD5E1]'
+                          }`} />
+                          Giáo viên {c.teacherOnline ? 'đang online' : 'offline'}
+                        </span>
+                        <span className={`flex items-center gap-1.5 font-semibold ${
+                          c.onlineCount > 0 ? 'text-[#06B6D4]' : 'text-[#94A3B8]'
+                        }`}>
+                          <FaUsers size={10} />
+                          {c.onlineCount} học sinh đang trong lớp
+                        </span>
+                      </div>
 
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-2">
@@ -437,6 +457,21 @@ export function ClassroomClient({ user }: ClassroomClientProps) {
                       <div className="flex-1 min-w-0">
                         <p className="font-bold text-[#082F49] truncate">{c.name}</p>
                         <p className="text-xs text-[#94A3B8]">{c.teacherName} · {c.subject || 'Địa lý'}</p>
+                        <div className="flex items-center gap-3 mt-1.5">
+                          <span className={`flex items-center gap-1 text-[10px] font-semibold ${
+                            c.teacherOnline ? 'text-[#22C55E]' : 'text-[#94A3B8]'
+                          }`}>
+                            <span className={`w-1.5 h-1.5 rounded-full ${
+                              c.teacherOnline ? 'bg-[#22C55E] animate-pulse' : 'bg-[#CBD5E1]'
+                            }`} />
+                            GV {c.teacherOnline ? 'online' : 'offline'}
+                          </span>
+                          {c.onlineCount > 0 && (
+                            <span className="flex items-center gap-1 text-[10px] font-semibold text-[#06B6D4]">
+                              <FaUsers size={8} /> {c.onlineCount} đang trong lớp
+                            </span>
+                          )}
+                        </div>
                       </div>
                       <FaArrowRight size={13} className="text-[#06B6D4] flex-shrink-0" />
                     </div>

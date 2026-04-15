@@ -1,50 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import connectDB from '@/utils/db';
+import User from '@/models/User';
 import Classroom from '@/models/Classroom';
 
 type Params = { params: Promise<{ id: string }> };
 
-// ── Helper: apply scoring for current question ────────────────────────────────
+// ── Helper: resolve teacher userId ────────────────────────────────────────────
+async function resolveTeacher(sessionName: string | null | undefined, classroom: InstanceType<typeof Classroom>) {
+  if (!sessionName) return null;
+  const user = await User.findOne({ username: sessionName });
+  if (!user || classroom.teacherId !== user._id.toString()) return null;
+  return user;
+}
+
+// ── Helper: advance question accounting ──────────────────────────────────────
+// Scores are applied at answer time; here we just track questions asked.
 function applyQuestionScore(classroom: InstanceType<typeof Classroom>) {
-  const quiz = classroom.activeQuiz;
-  if (!quiz || quiz.isFinished) return;
-
-  const correct = quiz.questions[quiz.currentIndex]?.correct;
-  if (!correct) return;
-
-  const correctAnswerers = quiz.currentAnswers
-    .filter((a: { answer: string }) => a.answer === correct)
-    .sort((a: { answeredAt: Date }, b: { answeredAt: Date }) =>
-      new Date(a.answeredAt).getTime() - new Date(b.answeredAt).getTime(),
-    );
-
-  const wrongAnswerers = quiz.currentAnswers.filter(
-    (a: { answer: string }) => a.answer !== correct,
-  );
-
-  const N = correctAnswerers.length;
-
-  correctAnswerers.forEach((a: { studentId: string; studentName: string }, idx: number) => {
-    const pts = N - idx;
-    const existing = classroom.scores.find((s: { studentId: string }) => s.studentId === a.studentId);
-    if (existing) {
-      existing.totalScore += pts;
-      existing.correctCount += 1;
-    } else {
-      classroom.scores.push({ studentId: a.studentId, studentName: a.studentName, totalScore: pts, correctCount: 1, wrongCount: 0 });
-    }
-  });
-
-  wrongAnswerers.forEach((a: { studentId: string; studentName: string }) => {
-    const existing = classroom.scores.find((s: { studentId: string }) => s.studentId === a.studentId);
-    if (existing) {
-      existing.wrongCount += 1;
-    } else {
-      classroom.scores.push({ studentId: a.studentId, studentName: a.studentName, totalScore: 0, correctCount: 0, wrongCount: 1 });
-    }
-  });
-
   classroom.totalQuestionsAsked += 1;
 }
 
@@ -52,15 +24,14 @@ function applyQuestionScore(classroom: InstanceType<typeof Classroom>) {
 // Body: { questions: IQuizQuestion[], questionDuration?: number }
 export async function POST(req: NextRequest, { params }: Params) {
   const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
+  if (!session?.user?.name) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
 
   await connectDB();
   const { id } = await params;
   const classroom = await Classroom.findById(id);
   if (!classroom) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (classroom.teacherId !== session.user.id) {
-    return NextResponse.json({ error: 'Forbidden — teacher only' }, { status: 403 });
-  }
+  const teacher = await resolveTeacher(session.user.name, classroom);
+  if (!teacher) return NextResponse.json({ error: 'Forbidden — teacher only' }, { status: 403 });
 
   const { questions, questionDuration = 10 } = await req.json();
   if (!Array.isArray(questions) || questions.length === 0) {
@@ -86,15 +57,14 @@ export async function POST(req: NextRequest, { params }: Params) {
 // Body: { action: 'pause' | 'resume' | 'next' | 'finish' }
 export async function PATCH(req: NextRequest, { params }: Params) {
   const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
+  if (!session?.user?.name) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
 
   await connectDB();
   const { id } = await params;
   const classroom = await Classroom.findById(id);
   if (!classroom) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (classroom.teacherId !== session.user.id) {
-    return NextResponse.json({ error: 'Forbidden — teacher only' }, { status: 403 });
-  }
+  const teacher = await resolveTeacher(session.user.name, classroom);
+  if (!teacher) return NextResponse.json({ error: 'Forbidden — teacher only' }, { status: 403 });
 
   const quiz = classroom.activeQuiz;
   if (!quiz) return NextResponse.json({ error: 'No active quiz' }, { status: 400 });
@@ -139,18 +109,24 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 // ── DELETE: end and clear quiz ────────────────────────────────────────────────
 export async function DELETE(_req: NextRequest, { params }: Params) {
   const session = await auth();
-  if (!session?.user?.id) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
+  if (!session?.user?.name) return NextResponse.json({ error: 'Unauthenticated' }, { status: 401 });
 
   await connectDB();
   const { id } = await params;
   const classroom = await Classroom.findById(id);
   if (!classroom) return NextResponse.json({ error: 'Not found' }, { status: 404 });
-  if (classroom.teacherId !== session.user.id) {
+
+  const user = await User.findOne({ username: session.user.name });
+  if (!user || classroom.teacherId !== user._id.toString()) {
     return NextResponse.json({ error: 'Forbidden — teacher only' }, { status: 403 });
   }
 
   classroom.activeQuiz = undefined;
+  classroom.quizCountdown = undefined;
+  classroom.pendingQuiz = undefined;
   classroom.markModified('activeQuiz');
+  classroom.markModified('quizCountdown');
+  classroom.markModified('pendingQuiz');
   await classroom.save();
   return NextResponse.json({ ok: true });
 }

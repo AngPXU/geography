@@ -35,7 +35,18 @@ export async function GET() {
     }).sort({ updatedAt: -1 });
   }
 
-  return NextResponse.json({ classrooms });
+  return NextResponse.json({
+    classrooms: classrooms.map((c) => {
+      const onlineThreshold = new Date(Date.now() - 2 * 60 * 1000); // 2 min window
+      const onlineCount = c.participants.filter(
+        (p: { lastSeen: Date }) => new Date(p.lastSeen) > onlineThreshold,
+      ).length;
+      const teacherOnline = c.teacherLastSeen
+        ? new Date(c.teacherLastSeen) > onlineThreshold
+        : false;
+      return { ...c.toObject(), onlineCount, teacherOnline };
+    }),
+  });
 }
 
 // ── POST: create a classroom (teacher only) ───────────────────────────────────

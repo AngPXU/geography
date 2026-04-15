@@ -20,14 +20,17 @@ export async function POST(_req: Request, { params }: Params) {
   if (!classroom) return NextResponse.json({ error: 'Not found' }, { status: 404 });
 
   const userId = user._id.toString();
+  const isTeacher = classroom.teacherId === userId;
 
-  // Prune stale (> 10 min)
-  const staleThreshold = new Date(Date.now() - 10 * 60 * 1000);
+  // Prune stale (> 2 min) — shorter window so list view reflects reality faster
+  const staleThreshold = new Date(Date.now() - 2 * 60 * 1000);
   classroom.participants = classroom.participants.filter((p) => p.lastSeen > staleThreshold);
 
-  const participant = classroom.participants.find((p) => p.studentId === userId);
-  if (participant) {
-    participant.lastSeen = new Date();
+  if (isTeacher) {
+    classroom.teacherLastSeen = new Date();
+  } else {
+    const participant = classroom.participants.find((p) => p.studentId === userId);
+    if (participant) participant.lastSeen = new Date();
   }
 
   await classroom.save();

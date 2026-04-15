@@ -7,6 +7,8 @@ import { BookExplorer } from "@/components/ui/BookExplorer";
 import { GeoQuestions } from "@/components/ui/GeoQuestions";
 import { GeoFunFacts } from "@/components/ui/GeoFunFacts";
 import { Footer } from "@/layouts/Footer";
+import dbConnect from "@/utils/db";
+import User from "@/models/User";
 
 export default async function HomePage() {
   const session = await auth();
@@ -14,6 +16,10 @@ export default async function HomePage() {
   if (!session?.user) {
     redirect('/login');
   }
+
+  await dbConnect();
+  const dbUser = await User.findOne({ username: session.user.name }).lean() as { role?: number } | null;
+  const userRole: number = dbUser?.role ?? 3;
 
   return (
     <div className="bg-gradient-to-b from-[#E0F2FE] via-[#FFFFFF] to-[#DCFCE7] relative overflow-x-hidden font-sans">
@@ -59,24 +65,7 @@ export default async function HomePage() {
         {/* Right Column: 3D Earth Globe */}
         <div className="flex-1 w-full relative z-10 flex items-center justify-center pointer-events-auto">
           <div className="absolute inset-0 bg-gradient-to-tr from-cyan-200/20 to-transparent rounded-full blur-3xl scale-75"></div>
-          <EarthGlobe />
-          
-          {/* Floating Action Cards just like the design */}
-          <div className="hidden md:flex absolute top-[10%] left-[0%] bg-white/75 backdrop-blur-md border border-white rounded-[24px] p-3 shadow-[0_10px_30px_rgba(14,165,233,0.08)] items-center gap-3 animate-bounce" style={{animationDuration: '4s'}}>
-            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-500 text-xl">🗺️</div>
-            <div className="pr-2">
-              <p className="font-bold text-[#082F49] text-sm leading-tight">Bản đồ</p>
-              <p className="text-[10px] text-[#94A3B8]">Kỹ năng Atlat</p>
-            </div>
-          </div>
-          
-          <div className="hidden md:flex absolute bottom-[15%] right-[0%] bg-white/75 backdrop-blur-md border border-white rounded-[24px] p-3 shadow-[0_10px_30px_rgba(14,165,233,0.08)] items-center gap-3 animate-[bounce_5s_ease-in-out_infinite]" style={{animationDelay: '1s'}}>
-            <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center text-orange-500 text-xl">⚔️</div>
-            <div className="pr-2">
-              <p className="font-bold text-[#082F49] text-sm leading-tight">Đánh Boss</p>
-              <p className="text-[10px] text-[#94A3B8]">Học qua Game RPG</p>
-            </div>
-          </div>
+          <EarthGlobe userRole={userRole} />
         </div>
 
       </main>

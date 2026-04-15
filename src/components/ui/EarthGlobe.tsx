@@ -1,190 +1,265 @@
 'use client';
 
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import dynamic from 'next/dynamic';
+import { CountryEditor } from './CountryEditor';
 
 // Import thư viện động để tránh lỗi SSR trong Next.js do thư viện dùng WebGL trực tiếp
 const Globe = dynamic(() => import('react-globe.gl'), { ssr: false });
 
-export function EarthGlobe() {
+export interface CountryData {
+  _id: string;
+  name: string;
+  capital: string;
+  population: string;
+  description: string;
+  color: string;
+  lat: number;
+  lng: number;
+  images: string[];
+  flag?: string;
+  area?: string;
+  language?: string;
+  currency?: string;
+  continent?: string;
+  funFact?: string;
+}
+
+interface Props {
+  userRole?: number;
+}
+
+// ── Image Slideshow ────────────────────────────────────────────────────────────
+function ImageSlideshow({ images }: { images: string[] }) {
+  const [idx, setIdx] = useState(0);
+  if (!images || images.length === 0) return null;
+
+  const prev = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIdx((i) => (i === 0 ? images.length - 1 : i - 1));
+  };
+  const next = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIdx((i) => (i === images.length - 1 ? 0 : i + 1));
+  };
+
+  return (
+    <div className="relative w-full h-36 rounded-2xl overflow-hidden group">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={images[idx]} alt={`slide-${idx}`} className="w-full h-full object-cover transition-all duration-500" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent pointer-events-none" />
+      {images.length > 1 && (
+        <>
+          <button onClick={prev} className="absolute left-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm text-[#082F49] font-bold flex items-center justify-center hover:bg-white transition-all opacity-0 group-hover:opacity-100 text-base leading-none">‹</button>
+          <button onClick={next} className="absolute right-2 top-1/2 -translate-y-1/2 w-7 h-7 rounded-full bg-white/80 backdrop-blur-sm text-[#082F49] font-bold flex items-center justify-center hover:bg-white transition-all opacity-0 group-hover:opacity-100 text-base leading-none">›</button>
+          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1">
+            {images.map((_, i) => (
+              <button key={i} onClick={(e) => { e.stopPropagation(); setIdx(i); }}
+                className={`w-1.5 h-1.5 rounded-full transition-all ${i === idx ? 'bg-white scale-125' : 'bg-white/50'}`} />
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── Stat Cell ─────────────────────────────────────────────────────────────────
+function StatCell({ label, value, icon }: { label: string; value: string; icon: string }) {
+  return (
+    <div className="rounded-2xl p-2.5 flex items-start gap-2" style={{ background: 'rgba(248,250,252,0.8)' }}>
+      <span className="text-sm mt-0.5 flex-shrink-0">{icon}</span>
+      <div className="min-w-0">
+        <p className="text-[9px] text-[#94A3B8] font-semibold uppercase tracking-wide">{label}</p>
+        <p className="text-[11px] font-bold text-[#082F49] leading-tight">{value}</p>
+      </div>
+    </div>
+  );
+}
+
+// ── Country Info Panel ─────────────────────────────────────────────────────────
+function CountryInfoPanel({ country, onClose }: { country: CountryData; onClose: () => void }) {
+  return (
+    <div
+      className="fixed z-50 inset-x-3 bottom-3 md:inset-auto md:right-5 md:top-1/2 md:-translate-y-1/2 md:w-80 max-h-[85vh] overflow-y-auto rounded-3xl cursor-auto"
+      style={{
+        background: 'rgba(255,255,255,0.90)',
+        backdropFilter: 'blur(24px)',
+        border: '1px solid rgba(255,255,255,1)',
+        boxShadow: '0 20px 60px rgba(14,165,233,0.20)',
+      }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Header color strip */}
+      <div
+        className="relative h-14 rounded-t-3xl flex items-center px-5 gap-3 flex-shrink-0"
+        style={{ background: `linear-gradient(135deg, ${country.color}ee, ${country.color}99)` }}
+      >
+        <span className="text-3xl drop-shadow">{country.flag ?? '🌍'}</span>
+        <div>
+          <p className="font-extrabold text-white text-base leading-tight drop-shadow">{country.name}</p>
+          {country.continent && <p className="text-white/80 text-[10px] font-semibold">{country.continent}</p>}
+        </div>
+        <button
+          onClick={(e) => { e.stopPropagation(); onClose(); }}
+          className="absolute top-3 right-3 w-7 h-7 rounded-full bg-white/25 text-white hover:bg-white/40 flex items-center justify-center transition-all font-bold text-xs"
+        >✕</button>
+      </div>
+
+      <div className="p-4 flex flex-col gap-3">
+        {/* Slideshow */}
+        <ImageSlideshow images={country.images} />
+
+        {/* Stats grid */}
+        <div className="grid grid-cols-2 gap-2">
+          <StatCell label="Thủ đô" value={country.capital} icon="🏛️" />
+          <StatCell label="Dân số" value={country.population} icon="👥" />
+          {country.area && <StatCell label="Diện tích" value={country.area} icon="📐" />}
+          {country.language && <StatCell label="Ngôn ngữ" value={country.language} icon="🗣️" />}
+          {country.currency && <StatCell label="Tiền tệ" value={country.currency} icon="💰" />}
+        </div>
+
+        {/* Description */}
+        <div className="rounded-2xl p-3" style={{ background: 'rgba(224,242,254,0.6)', border: '1px solid rgba(186,230,253,0.5)' }}>
+          <p className="text-[#334155] text-xs leading-relaxed">{country.description}</p>
+        </div>
+
+        {/* Fun fact */}
+        {country.funFact && (
+          <div className="rounded-2xl p-3 flex gap-2" style={{ background: 'rgba(220,252,231,0.6)', border: '1px solid rgba(187,247,208,0.5)' }}>
+            <span className="text-base flex-shrink-0">💡</span>
+            <p className="text-[#166534] text-xs leading-relaxed font-medium">{country.funFact}</p>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Main Globe Component ───────────────────────────────────────────────────────
+export function EarthGlobe({ userRole }: Props) {
   const [mounted, setMounted] = useState(false);
-  const [selectedLocation, setSelectedLocation] = useState<any>(null);
+  const [countries, setCountries] = useState<CountryData[]>([]);
+  const [selected, setSelected] = useState<CountryData | null>(null);
+  const [showEditor, setShowEditor] = useState(false);
   const globeRef = useRef<any>(null);
 
-  useEffect(() => {
-    setMounted(true);
+  useEffect(() => { setMounted(true); }, []);
+
+  const fetchCountries = useCallback(async () => {
+    try {
+      const res = await fetch('/api/countries');
+      if (!res.ok) return;
+      const data = await res.json();
+      setCountries(data.countries ?? []);
+    } catch { /* ignore */ }
   }, []);
+
+  useEffect(() => { fetchCountries(); }, [fetchCountries]);
 
   useEffect(() => {
     if (mounted && globeRef.current) {
       const controls = globeRef.current.controls();
       controls.autoRotate = true;
-      controls.autoRotateSpeed = 0.4; // Quay chậm lại xíu
+      controls.autoRotateSpeed = 0.4;
       controls.enableZoom = false;
-      globeRef.current.pointOfView({ altitude: 1.5 }); // Phóng to trái đất lên
+      globeRef.current.pointOfView({ altitude: 1.5 });
     }
   }, [mounted]);
 
-  // Nếu User bấm vào marker, xoay quả địa cầu tĩnh lại ngay vị trí đó
-  const handleLocationClick = (loc: any) => {
-    setSelectedLocation(loc);
+  const handleLocationClick = (loc: CountryData) => {
+    setSelected(loc);
     if (globeRef.current) {
-      // Phóng to một chút khi chọn quốc gia
       globeRef.current.pointOfView({ lat: loc.lat, lng: loc.lng, altitude: 1.0 }, 1000);
-      globeRef.current.controls().autoRotate = false; // Dừng lại để xem cho dễ
+      globeRef.current.controls().autoRotate = false;
     }
   };
 
   const handleClosePanel = () => {
-    setSelectedLocation(null);
+    setSelected(null);
     if (globeRef.current) {
-      globeRef.current.controls().autoRotate = true; // Xoay tiếp
-      globeRef.current.pointOfView({ altitude: 1.5 }, 1000); // Trả về độ zoom ban đầu
+      globeRef.current.controls().autoRotate = true;
+      globeRef.current.pointOfView({ altitude: 1.5 }, 1000);
     }
   };
 
   if (!mounted) {
     return (
-      <div className="w-full max-w-[600px] aspect-square relative mx-auto flex items-center justify-center">
-        <div className="w-32 h-32 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin"></div>
+      <div className="w-full max-w-[600px] aspect-square mx-auto flex items-center justify-center">
+        <div className="w-32 h-32 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin" />
       </div>
     );
   }
 
-  // Dữ liệu các đánh dấu (Markers) trên bản đồ với thông tin chi tiết
-  const gData = [
-    {
-    lat: 21.0285, lng: 105.8542, size: 0.1, color: '#ec4899',
-    name: 'Việt Nam', cap: 'Hà Nội', pop: '100 Triệu',
-    desc: 'Quốc gia hình chữ S với 3260km bờ biển tuyệt đẹp, nền ẩm thực đường phố nức tiếng thế giới và bề dày lịch sử ngàn năm văn hiến.'
-  },
-    {
-    lat: 38.8951, lng: -77.0364, size: 0.1, color: '#3b82f6',
-    name: 'Hoa Kỳ', cap: 'Washington, D.C.', pop: '335 Triệu',
-    desc: 'Cường quốc có nền kinh tế lớn nhất thế giới, nổi bật với sự đa dạng văn hóa và các cảnh quan thiên nhiên hùng vĩ trải dài từ bờ Đông sang bờ Tây.'
-  },
-  {
-    lat: 39.9042, lng: 116.4074, size: 0.1, color: '#ef4444',
-    name: 'Trung Quốc', cap: 'Bắc Kinh', pop: '1.4 Tỷ',
-    desc: 'Đất nước tỷ dân với nền văn minh rực rỡ lâu đời, sở hữu Vạn Lý Trường Thành kỳ vĩ và sự phát triển công nghệ vượt bậc.'
-  },
-  {
-    lat: -15.7938, lng: -47.8827, size: 0.1, color: '#10b981',
-    name: 'Brazil', cap: 'Brasília', pop: '215 Triệu',
-    desc: 'Quê hương của vũ điệu Samba sôi động, những huyền thoại bóng đá và là nơi ôm trọn phần lớn rừng rậm nhiệt đới Amazon - lá phổi xanh của Trái Đất.'
-  },
-  {
-    lat: -35.2809, lng: 149.1300, size: 0.1, color: '#f59e0b',
-    name: 'Australia', cap: 'Canberra', pop: '26 Triệu',
-    desc: 'Đảo quốc khổng lồ nằm giữa đại dương, nổi tiếng với những chú Kangaroo độc đáo, Nhà hát Con Sò và rạn san hô Great Barrier tuyệt mỹ.'
-  },
-  {
-    lat: 30.0444, lng: 31.2357, size: 0.1, color: '#eab308',
-    name: 'Ai Cập', cap: 'Cairo', pop: '111 Triệu',
-    desc: 'Vùng đất huyền bí của các vị Pharaoh, gắn liền với dòng sông Nile vĩ đại và những Kim tự tháp ngàn năm tuổi đứng sừng sững giữa sa mạc.'
-  },
-  {
-    lat: 28.6139, lng: 77.2090, size: 0.1, color: '#f97316',
-    name: 'Ấn Độ', cap: 'New Delhi', pop: '1.4 Tỷ',
-    desc: 'Quốc gia đông dân nhất nhì thế giới với nền văn hóa đa dạng, rực rỡ sắc màu, lăng Taj Mahal huyền thoại và dòng sông Hằng linh thiêng.'
-  },
-  {
-    lat: 51.5072, lng: -0.1276, size: 0.1, color: '#6366f1',
-    name: 'Vương quốc Anh', cap: 'London', pop: '67 Triệu',
-    desc: 'Xứ sở sương mù với bề dày lịch sử, nơi khởi nguồn của cuộc Cách mạng Công nghiệp và nổi tiếng với tháp đồng hồ Big Ben.'
-  },
-  {
-    lat: 55.7558, lng: 37.6173, size: 0.1, color: '#8b5cf6',
-    name: 'Liên bang Nga', cap: 'Moscow', pop: '143 Triệu',
-    desc: 'Quốc gia có diện tích lớn nhất thế giới, trải dài trên cả hai châu lục Á - Âu với thiên nhiên vô cùng phong phú và những mùa đông trắng tuyết.'
-  },
-  {
-    lat: 45.4215, lng: -75.6972, size: 0.1, color: '#14b8a6',
-    name: 'Canada', cap: 'Ottawa', pop: '39 Triệu',
-    desc: 'Đất nước của những chiếc lá phong đỏ, vô số hồ nước ngọt trong xanh và những đỉnh núi phủ tuyết trắng thuộc dãy Rocky hùng vĩ.'
-  },
-  {
-    lat: -25.7479, lng: 28.2293, size: 0.1, color: '#d946ef',
-    name: 'Nam Phi', cap: 'Pretoria', pop: '60 Triệu',
-    desc: 'Quốc gia nằm ở cực nam châu Phi, được mệnh danh là "Đất nước Cầu vồng" với hệ sinh thái hoang dã hoành tráng và mũi Hảo Vọng lịch sử.'
-  }
-  ];
-
   return (
-    <div className="w-full max-w-[600px] aspect-square relative mx-auto flex items-center justify-center pointer-events-auto globe-container cursor-grab active:cursor-grabbing">
+    <>
+      <div className="w-full max-w-[600px] aspect-square relative mx-auto flex items-center justify-center pointer-events-auto globe-container cursor-grab active:cursor-grabbing">
 
-      {/* UI Info Panel - Hiển thị khi có selectedLocation */}
-      {selectedLocation && (
-        <div className="absolute top-[15%] md:-right-[10%] w-[260px] bg-white/85 backdrop-blur-xl border border-white shadow-[0_20px_50px_rgba(8,47,73,0.15)] rounded-[24px] p-5 z-50 transition-all duration-300 animate-in fade-in zoom-in-95 cursor-auto">
+        {/* Edit button — role=1 only */}
+        {userRole === 1 && (
           <button
-            onClick={(e) => { e.stopPropagation(); handleClosePanel(); }}
-            className="absolute top-4 right-4 w-6 h-6 rounded-full bg-slate-100 text-slate-400 hover:text-red-500 hover:bg-slate-200 flex items-center justify-center transition-colors font-bold text-xs"
+            onClick={(e) => { e.stopPropagation(); setShowEditor(true); }}
+            className="absolute top-3 right-3 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-[11px] font-bold text-white transition-all duration-300 hover:scale-105"
+            style={{
+              background: 'rgba(6,182,212,0.85)',
+              backdropFilter: 'blur(8px)',
+              border: '1px solid rgba(255,255,255,0.4)',
+              boxShadow: '0 4px 16px rgba(6,182,212,0.3)',
+            }}
           >
-            ✕
+            ✏️ Chỉnh sửa
           </button>
+        )}
 
-          <div className="flex items-center gap-3 mb-4">
-            <div className="w-4 h-4 rounded-full shadow-inner" style={{ backgroundColor: selectedLocation.color }}></div>
-            <h3 className="font-extrabold text-[#082F49] text-xl tracking-tight leading-none">{selectedLocation.name}</h3>
-          </div>
+        <Globe
+          ref={globeRef}
+          width={600}
+          height={600}
+          globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+          bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
+          backgroundImageUrl=""
+          backgroundColor="rgba(0,0,0,0)"
+          showAtmosphere={true}
+          atmosphereColor="#E0F2FE"
+          atmosphereAltitude={0.2}
+          labelsData={countries}
+          labelLat={(d: any) => d.lat}
+          labelLng={(d: any) => d.lng}
+          labelDotRadius={0.7}
+          labelColor={(d: any) => d.color}
+          labelText={() => ''}
+          onLabelClick={(d: any) => handleLocationClick(d)}
+          ringsData={countries}
+          ringLat={(d: any) => d.lat}
+          ringLng={(d: any) => d.lng}
+          ringColor={(d: any) => d.color}
+          ringMaxRadius={3}
+          ringPropagationSpeed={2}
+          ringRepeatPeriod={800}
+          // @ts-expect-error — onRingClick present at runtime, missing in typings
+          onRingClick={(d: any) => handleLocationClick(d)}
+        />
 
-          <div className="space-y-2 text-sm">
-            <p className="flex justify-between border-b border-slate-100 pb-1">
-              <span className="text-[#94A3B8] font-semibold">Thủ đô:</span>
-              <span className="text-[#082F49] font-bold">{selectedLocation.cap}</span>
-            </p>
-            <p className="flex justify-between border-b border-slate-100 pb-1">
-              <span className="text-[#94A3B8] font-semibold">Dân số:</span>
-              <span className="text-[#082F49] font-bold">{selectedLocation.pop}</span>
-            </p>
-            <div className="mt-3 bg-blue-50/50 p-3 rounded-[12px] border border-blue-100/50">
-              <p className="text-[#334155] text-xs leading-relaxed font-medium">
-                {selectedLocation.desc}
-              </p>
-            </div>
-          </div>
-        </div>
+        <style>{`
+          .globe-container canvas {
+            outline: none;
+            filter: drop-shadow(0 20px 40px rgba(14,165,233,0.15));
+          }
+        `}</style>
+      </div>
+
+      {/* Rich info panel */}
+      {selected && (
+        <CountryInfoPanel country={selected} onClose={handleClosePanel} />
       )}
 
-      <Globe
-        ref={globeRef}
-        width={600}
-        height={600}
-        globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
-        bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
-        backgroundImageUrl="" // Nền trong suốt
-        backgroundColor="rgba(0,0,0,0)" // Nền trong suốt
-        showAtmosphere={true}
-        atmosphereColor="#E0F2FE"
-        atmosphereAltitude={0.2}
-
-        globeMaterial={mounted ? undefined : {}}
-
-        // Sử dụng Native WebGL Tags thay cho HTML Elements để các dấu chấm dính chặt lên mặt đất không bị lag/nhảy
-        labelsData={gData}
-        labelLat={(d: any) => d.lat}
-        labelLng={(d: any) => d.lng}
-        labelDotRadius={0.7} // Kích cỡ dấu chấm giữa
-        labelColor={(d: any) => d.color}
-        labelText={() => ''}
-        onLabelClick={handleLocationClick}
-
-        ringsData={gData}
-        ringLat={(d: any) => d.lat}
-        ringLng={(d: any) => d.lng}
-        ringColor={(d: any) => d.color}
-        ringMaxRadius={3} // Độ phóng to của sóng radar
-        ringPropagationSpeed={2} // Tốc độ sóng
-        ringRepeatPeriod={800} // Khoảng cách giữa các đợt sóng radar
-        // @ts-expect-error - onRingClick có trong runtime nhưng thiếu trong typing
-        onRingClick={handleLocationClick}
-      />
-      <style>{`
-        .globe-container canvas {
-          outline: none;
-          filter: drop-shadow(0 20px 40px rgba(14,165,233,0.15));
-        }
-      `}</style>
-    </div>
+      {/* Country editor modal — admin only */}
+      {showEditor && (
+        <CountryEditor
+          onClose={() => setShowEditor(false)}
+          onSaved={fetchCountries}
+        />
+      )}
+    </>
   );
 }

@@ -286,7 +286,7 @@ export function ChatPanel({ roomId, currentUserId, currentUserName, isTeacher }:
           value={text}
           onChange={(e) => setText(e.target.value)}
           onKeyDown={handleKey}
-          placeholder="Nhắn tin... (Enter để gửi)"
+          placeholder="Nhắn tin..."
           className="flex-1 resize-none px-3 py-2.5 rounded-2xl text-sm text-[#082F49] placeholder-[#94A3B8]
                      bg-white border border-[#BAE6FD] shadow-[0_2px_8px_rgba(14,165,233,0.08)]
                      focus:outline-none focus:border-[#06B6D4] focus:shadow-[0_0_0_3px_rgba(6,182,212,0.12)]

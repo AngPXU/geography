@@ -114,8 +114,8 @@ export function QuizCreator({ onClose, onSaved, initialQuestions, initialDuratio
     );
   }, [questions]);
 
-  // ── Start quiz ───────────────────────────────────────────────────────────
-  async function handleStart() {
+  // ── Save ─────────────────────────────────────────────────────────────────
+  function handleSave() {
     let finalQuestions: QuizQuestion[];
     if (tab === 'json') {
       try {
@@ -126,15 +126,7 @@ export function QuizCreator({ onClose, onSaved, initialQuestions, initialDuratio
       if (!manualValid()) return;
       finalQuestions = questions;
     }
-
-    setStarting(true);
-    const res = await fetch(`/api/classroom/${roomId}/quiz`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ questions: finalQuestions, questionDuration }),
-    });
-    setStarting(false);
-    if (res.ok) onStarted();
+    onSaved(finalQuestions, questionDuration);
   }
 
   const canSave = tab === 'json' ? (!jsonError && jsonText.trim().length > 2) : manualValid();

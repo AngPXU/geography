@@ -41,13 +41,27 @@ export async function POST(req: Request) {
     existing.lastSeen = new Date();
     existing.studentName = user.fullName || user.username;
     existing.studentAvatar = user.avatar;
+    existing.studentClass = user.className;
+    existing.studentSchool = user.school;
   } else {
+    // Auto-assign the first available seat
+    const occupied = new Set(
+      classroom.participants.map((p) => `${p.seatRow},${p.seatCol}`),
+    );
+    let autoRow = -1, autoCol = -1;
+    outer: for (let r = 0; r < classroom.rows; r++) {
+      for (let c = 0; c < classroom.cols; c++) {
+        if (!occupied.has(`${r},${c}`)) { autoRow = r; autoCol = c; break outer; }
+      }
+    }
     classroom.participants.push({
       studentId: userId,
       studentName: user.fullName || user.username,
       studentAvatar: user.avatar,
-      seatRow: -1,
-      seatCol: -1,
+      studentClass: user.className,
+      studentSchool: user.school,
+      seatRow: autoRow,
+      seatCol: autoCol,
       lastSeen: new Date(),
     });
   }

@@ -30,16 +30,30 @@ export async function POST(req: Request, { params }: Params) {
     return NextResponse.json({ error: 'Vị trí không hợp lệ' }, { status: 400 });
   }
 
-  // Check if seat is taken by someone else
-  const seatTaken = classroom.participants.some(
-    (p) => p.studentId !== userId && p.seatRow === row && p.seatCol === col,
+  // Atomic update: only succeeds if no OTHER participant currently occupies (row, col).
+  // This prevents the race condition where two students click the same seat simultaneously.
+  const result = await Classroom.updateOne(
+    {
+      _id: id,
+      'participants.studentId': userId,           // match participant to update via $ operator
+      participants: {
+        $not: {
+          $elemMatch: { studentId: { $ne: userId }, seatRow: row, seatCol: col },
+        },
+      },
+    },
+    {
+      $set: {
+        'participants.$.seatRow': row,
+        'participants.$.seatCol': col,
+        'participants.$.lastSeen': new Date(),
+      },
+    },
   );
-  if (seatTaken) return NextResponse.json({ error: 'Chỗ này đã có người ngồi' }, { status: 409 });
 
-  participant.seatRow = row;
-  participant.seatCol = col;
-  participant.lastSeen = new Date();
-  await classroom.save();
+  if (result.modifiedCount === 0) {
+    return NextResponse.json({ error: 'Chỗ này đã có người ngồi' }, { status: 409 });
+  }
 
   return NextResponse.json({ message: 'Đã chuyển chỗ ngồi' });
 }

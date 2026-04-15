@@ -4,6 +4,8 @@ export interface IParticipant {
   studentId: string;
   studentName: string;
   studentAvatar?: string;
+  studentClass?: string;
+  studentSchool?: string;
   seatRow: number; // -1 = no seat yet
   seatCol: number;
   lastSeen: Date;
@@ -42,6 +44,18 @@ export interface IActiveQuiz {
   questionDuration: number;
 }
 
+export interface IQuizCountdown {
+  startedAt: Date;
+  countdownSecs: number;
+  questionCount: number;
+  questionDuration: number;
+}
+
+export interface IPendingQuiz {
+  questions: IQuizQuestion[];
+  questionDuration: number;
+}
+
 export interface IClassroom extends Document {
   name: string;
   code: string; // 6-char unique join code
@@ -60,6 +74,10 @@ export interface IClassroom extends Document {
   totalQuestionsAsked: number;
   kickedIds: string[];
   activeQuiz?: IActiveQuiz;
+  quizCountdown?: IQuizCountdown;
+  pendingQuiz?: IPendingQuiz;
+  draftQuiz?: IPendingQuiz; // teacher's saved-but-not-started questions
+  teacherLastSeen?: Date;   // for online presence detection
   createdAt: Date;
   updatedAt: Date;
 }
@@ -69,6 +87,8 @@ const ParticipantSchema = new Schema<IParticipant>(
     studentId:     { type: String, required: true },
     studentName:   { type: String, required: true },
     studentAvatar: { type: String },
+    studentClass:  { type: String },
+    studentSchool: { type: String },
     seatRow:       { type: Number, default: -1 },
     seatCol:       { type: Number, default: -1 },
     lastSeen:      { type: Date, default: Date.now },
@@ -126,6 +146,24 @@ const ActiveQuizSchema = new Schema<IActiveQuiz>(
   { _id: false },
 );
 
+const QuizCountdownSchema = new Schema<IQuizCountdown>(
+  {
+    startedAt:       { type: Date, required: true },
+    countdownSecs:   { type: Number, default: 10 },
+    questionCount:   { type: Number, required: true },
+    questionDuration:{ type: Number, default: 10 },
+  },
+  { _id: false },
+);
+
+const PendingQuizSchema = new Schema(
+  {
+    questions:       { type: [QuizQuestionSchema], required: true },
+    questionDuration:{ type: Number, default: 10 },
+  },
+  { _id: false },
+);
+
 const ClassroomSchema = new Schema<IClassroom>(
   {
     name:          { type: String, required: true, trim: true, maxlength: 100 },
@@ -145,6 +183,10 @@ const ClassroomSchema = new Schema<IClassroom>(
     totalQuestionsAsked:  { type: Number, default: 0 },
     kickedIds:            { type: [String], default: [] },
     activeQuiz:           { type: ActiveQuizSchema, default: null },
+    quizCountdown:        { type: QuizCountdownSchema, default: null },
+    pendingQuiz:          { type: PendingQuizSchema, default: null },
+    draftQuiz:            { type: PendingQuizSchema, default: null },
+    teacherLastSeen:      { type: Date },
   },
   { timestamps: true },
 );
