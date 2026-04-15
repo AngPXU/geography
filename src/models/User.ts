@@ -6,6 +6,13 @@ export interface IUser extends Document {
   password?: string;
   avatar?: string;
   provider: 'credentials' | 'google' | 'facebook';
+  role: 1 | 2 | 3; // 1=admin, 2=teacher, 3=student
+  fullName?: string;
+  className?: string;
+  school?: string;
+  province?: { code: number; name: string };
+  ward?: { code: number; name: string };
+  address?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -21,13 +28,12 @@ const UserSchema: Schema<IUser> = new mongoose.Schema(
     email: {
       type: String,
       unique: true,
-      sparse: true, // Only enforces uniqueness if it exists
+      sparse: true,
       trim: true,
       lowercase: true,
     },
     password: {
       type: String,
-      // Not required for OAuth
     },
     avatar: {
       type: String,
@@ -37,6 +43,18 @@ const UserSchema: Schema<IUser> = new mongoose.Schema(
       enum: ['credentials', 'google', 'facebook'],
       default: 'credentials',
     },
+    role: {
+      type: Number,
+      enum: [1, 2, 3],
+      default: 3, // default: student
+      required: true,
+    },
+    fullName: { type: String, trim: true },
+    className: { type: String, trim: true },
+    school: { type: String, trim: true },
+    province: { code: { type: Number }, name: { type: String } },
+    ward:     { code: { type: Number }, name: { type: String } },
+    address:  { type: String, trim: true },
   },
   {
     timestamps: true,

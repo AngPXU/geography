@@ -1,0 +1,24 @@
+{
+  "mountains": [
+    { "id": "himalaya", "name": "Dãy Himalaya", "lat": 27.986065, "lng": 86.922623, "desc": "Mái nhà của thế giới, đỉnh Everest cao 8,848m.", "emoji": "🏔️" },
+    { "id": "andes", "name": "Dãy Andes", "lat": -32.6531, "lng": -70.0112, "desc": "Dãy núi dài nhất thế giới, chạy dọc Nam Mỹ dài khoảng 7,000km.", "emoji": "⛰️" },
+    { "id": "alps", "name": "Dãy Alps", "lat": 46.8876, "lng": 9.657, "desc": "Hệ thống đồi núi lớn nhất châu Âu.", "emoji": "🏔️" },
+    { "id": "rocky", "name": "Dãy Rocky", "lat": 43.4382, "lng": -110.8654, "desc": "Dãy núi dài và rộng lớn tại Bắc Mỹ.", "emoji": "⛰️" }
+  ],
+  "biomes": [
+    { "id": "sahara", "name": "Sa mạc Sahara", "lat": 23.4162, "lng": 25.6628, "desc": "Sa mạc nóng lớn nhất thế giới, xấp xỉ diện tích Hoa Kỳ.", "emoji": "🏜️", "color": "#f59e0b" },
+    { "id": "amazon", "name": "Rừng Amazon", "lat": -3.4653, "lng": -62.2159, "desc": "Lá phổi xanh của Trái Đất, lưu vực Nam Mỹ.", "emoji": "🌲", "color": "#10b981" },
+    { "id": "siberia", "name": "Đồng rêu Siberia", "lat": 61.0, "lng": 100.0, "desc": "Vùng đất rộng lớn lạnh giá phủ đầy băng tuyết và rừng taiga.", "emoji": "❄️", "color": "#9ca3af" },
+    { "id": "congo", "name": "Rừng Congo", "lat": -1.41, "lng": 23.08, "desc": "Rừng nhiệt đới lớn thứ hai thế giới.", "emoji": "🌳", "color": "#059669" }
+  ],
+  "population": [
+    { "id": "tokyo", "name": "Tokyo, Nhật Bản", "lat": 35.6762, "lng": 139.6503, "pop": 37400000, "desc": "Vùng đô thị đông dân nhất thế giới." },
+    { "id": "delhi", "name": "Delhi, Ấn Độ", "lat": 28.7041, "lng": 77.1025, "pop": 29399000, "desc": "Trung tâm chính trị khu vực với dân số tăng phi mã." },
+    { "id": "shanghai", "name": "Thượng Hải, TQ", "lat": 31.2304, "lng": 121.4737, "pop": 26320000, "desc": "Siêu cảng biển và trung tâm tài chính Đông Á." },
+    { "id": "saopaulo", "name": "São Paulo, Brazil", "lat": -23.5505, "lng": -46.6333, "pop": 21846000, "desc": "Thủ đô kinh tế của Nam Mỹ với mật độ dân số đặc." },
+    { "id": "dhaka", "name": "Dhaka, Bangladesh", "lat": 23.8103, "lng": 90.4125, "pop": 20283000, "desc": "Thành phố có độ nhộn nhịp cao kỷ lục." },
+    { "id": "hcmc", "name": "Hồ Chí Minh, VN", "lat": 10.8231, "lng": 106.6297, "pop": 9000000, "desc": "Đô thị sôi động nhất cực Nam Việt Nam." },
+    { "id": "newyork", "name": "New York, Mỹ", "lat": 40.7128, "lng": -74.006, "pop": 20140000, "desc": "Thủ đô tài chính sôi động của Mỹ." },
+    { "id": "lagos", "name": "Lagos, Nigeria", "lat": 6.5244, "lng": 3.3792, "pop": 19000000, "desc": "Vùng đô thị đang bùng nổ dân số khủng khiếp ở Tây Phi." }
+  ]
+}

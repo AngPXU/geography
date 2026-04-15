@@ -1,0 +1,12 @@
+{
+  "crons": [
+    {
+      "path": "/api/cron/geo-questions",
+      "schedule": "0 17 * * *"
+    },
+    {
+      "path": "/api/cron/geo-questions",
+      "schedule": "0 5 * * *"
+    }
+  ]
+}
