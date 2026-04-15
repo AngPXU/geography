@@ -19,7 +19,7 @@ export default async function ProfilePage() {
         <div className="absolute top-[30%] left-[60%] w-[25%] h-[25%] bg-cyan-300/10 rounded-full blur-[80px]" />
       </div>
 
-      <main className="max-w-3xl mx-auto px-4 md:px-8 pt-28 pb-16 relative z-10">
+      <main className="w-full pt-28 pb-16 relative z-10">
         <ProfileClient />
       </main>
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'geography-pwa-cache-v1';
+const CACHE_NAME = 'geography-pwa-cache-v2';
 const urlsToCache = [
   '/',
   '/login',
@@ -31,16 +31,23 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Lấy tài nguyên từ cache (nếu có) khi offline
 self.addEventListener('fetch', (event) => {
+  // Bỏ qua các request không phải GET
+  if (event.request.method !== 'GET') return;
+
   event.respondWith(
-    caches.match(event.request)
-      .then((response) => {
-        // Return cached version or fetch from network
-        return response || fetch(event.request).catch(() => {
-          // Fallback offline (Ví dụ: tuỳ chỉnh trang offline)
-          // Có thể return caches.match('/offline') nếu định cài offline page
+    fetch(event.request)
+      .then((networkResponse) => {
+        // Cập nhật lại cache với dữ liệu mới từ mạng
+        const responseClone = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => {
+          cache.put(event.request, responseClone);
         });
+        return networkResponse;
+      })
+      .catch(() => {
+        // Fallback về cache nếu offline (hoặc mạng lỗi)
+        return caches.match(event.request);
       })
   );
 });

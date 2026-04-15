@@ -247,7 +247,7 @@ export function QuizCreator({ onClose, onSaved, initialQuestions, initialDuratio
               <div className="p-3 rounded-2xl bg-[#F0F9FF] border border-[#BAE6FD] text-xs text-[#0369A1]">
                 <p className="font-bold mb-1">📋 Định dạng JSON (tương thích với AI)</p>
                 <p>Mỗi câu hỏi: <code className="bg-white px-1 rounded">question, options (A/B/C/D), correct</code></p>
-                <p className="mt-1 text-[#94A3B8]">Bạn có thể yêu cầu ChatGPT/Gemini tạo câu hỏi theo đúng định dạng này.</p>
+                <p className="mt-1 text-[#94A3B8]">Bạn có thể yêu cầu AI tạo câu hỏi theo đúng định dạng này.</p>
               </div>
               <textarea
                 value={jsonText}

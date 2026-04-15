@@ -474,173 +474,188 @@ export function ProfileClient() {
   // ── Render ─────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6 pb-12">
+    <div className="w-[90%] max-w-[1400px] mx-auto pt-6 pb-24 relative">
 
       {/* ── Toast notifications ─────────────────────────────────────────── */}
-      {success && (
-        <div
-          className="flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-semibold transition-all duration-300"
-          style={{
-            background: 'rgba(187,247,208,0.9)',
-            color: '#16A34A',
-            border: '1px solid rgba(134,239,172,0.5)',
-            boxShadow: '0 4px 16px rgba(34,197,94,0.1)',
-          }}
-        >
-          <FaCheckCircle size={16} />
-          {success}
-        </div>
-      )}
-      {error && (
-        <div
-          className="flex items-center gap-3 px-5 py-4 rounded-2xl text-sm font-semibold"
-          style={{
-            background: 'rgba(254,226,226,0.9)',
-            color: '#DC2626',
-            border: '1px solid rgba(252,165,165,0.5)',
-          }}
-        >
-          <FaTimes size={14} className="flex-shrink-0" />
-          {error}
-        </div>
-      )}
+      <div className="fixed top-24 left-1/2 -translate-x-1/2 z-[999] flex flex-col gap-3 pointer-events-none">
+        {success && (
+          <div
+            className="flex items-center gap-3 px-6 py-4 rounded-[20px] text-sm font-black transition-all duration-300 animate-in fade-in slide-in-from-top-4"
+            style={{
+              background: 'rgba(255,255,255,0.95)',
+              backdropFilter: 'blur(20px)',
+              color: '#16A34A',
+              border: '2px solid rgba(134,239,172,0.8)',
+              boxShadow: '0 10px 40px rgba(34,197,94,0.15)',
+            }}
+          >
+            <FaCheckCircle size={18} className="text-green-500" />
+            {success}
+          </div>
+        )}
+        {error && (
+          <div
+            className="flex items-center gap-3 px-6 py-4 rounded-[20px] text-sm font-black transition-all duration-300 animate-in fade-in slide-in-from-top-4"
+            style={{
+              background: 'rgba(255,255,255,0.95)',
+              backdropFilter: 'blur(20px)',
+              color: '#DC2626',
+              border: '2px solid rgba(252,165,165,0.8)',
+              boxShadow: '0 10px 40px rgba(220,38,38,0.15)',
+            }}
+          >
+            <FaTimes size={18} className="text-red-500" />
+            {error}
+          </div>
+        )}
+      </div>
 
-      {/* ── Hero Card ───────────────────────────────────────────────────── */}
-      <div
-        className="relative rounded-3xl overflow-hidden"
-        style={{
-          background: 'linear-gradient(135deg, #0369A1 0%, #06B6D4 45%, #22C55E 100%)',
-          boxShadow: '0 24px 64px rgba(6,182,212,0.3)',
-        }}
-      >
-        {/* Map-grid decorative overlay */}
-        <div
-          className="absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage:
-              'linear-gradient(rgba(255,255,255,0.8) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.8) 1px, transparent 1px)',
-            backgroundSize: '48px 48px',
-          }}
-        />
-        {/* Decorative blobs */}
-        <div className="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-white/5" />
-        <div className="absolute -bottom-12 -left-12 w-56 h-56 rounded-full bg-white/5" />
-        {/* Compass rose watermark */}
-        <div className="absolute bottom-14 right-6 text-white/10 text-[80px] select-none pointer-events-none">
-          ✦
-        </div>
-
-        {/* Content */}
-        <div className="relative z-10 flex flex-col md:flex-row items-center gap-6 p-8">
-
-          {/* Avatar */}
-          <div className="relative flex-shrink-0">
+      <div className="flex flex-col xl:flex-row gap-8 items-start relative mt-4">
+        
+        {/* ═══ LEFT PANEL: GEO ID CARD ═══ */}
+        <div className="w-full xl:w-[35%] xl:max-w-md flex flex-col gap-6 xl:sticky xl:top-28 z-20">
+          
+          <div
+            className="relative rounded-[40px] overflow-hidden flex flex-col items-center pt-12 pb-10 px-8 text-center"
+            style={{
+              background: 'linear-gradient(135deg, #0ea5e9, #6366f1, #ec4899)',
+              backgroundSize: '200% 200%',
+              animation: 'gradientMove 10s ease infinite',
+              boxShadow: '0 30px 60px rgba(99,102,241,0.25)',
+            }}
+          >
+            <style>{`
+              @keyframes gradientMove {
+                0% { background-position: 0% 50%; }
+                50% { background-position: 100% 50%; }
+                100% { background-position: 0% 50%; }
+              }
+            `}</style>
+            
+            {/* Hologram Overlay & grid */}
             <div
-              className="w-28 h-28 rounded-full overflow-hidden border-4 border-white/70"
-              style={{ boxShadow: '0 0 0 6px rgba(255,255,255,0.15), 0 12px 40px rgba(0,0,0,0.25)' }}
-            >
-              {displayAvatar ? (
-                <img src={displayAvatar} alt="avatar" className="w-full h-full object-cover" />
+              className="absolute inset-0 opacity-[0.1]"
+              style={{
+                backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
+                backgroundSize: '24px 24px',
+              }}
+            />
+            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[60px] rounded-full mix-blend-overlay"></div>
+            
+            <div className="absolute top-4 left-6 text-white/40 text-[10px] font-black uppercase tracking-[0.3em]">
+              CERT. // {new Date(profile.createdAt).getFullYear()}
+            </div>
+
+            {/* Avatar Hologram */}
+            <div className="relative mb-6 mt-4">
+              <div
+                className="w-36 h-36 rounded-full overflow-hidden border-[6px] border-white/80 bg-white/20 backdrop-blur-md relative z-10"
+                style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}
+              >
+                {displayAvatar ? (
+                  <img src={displayAvatar} alt="avatar" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center font-black text-white/50 text-6xl">
+                    {(profile.fullName?.charAt(0) || profile.username.charAt(0)).toUpperCase()}
+                  </div>
+                )}
+              </div>
+              
+              <div className="absolute inset-[-12px] border-[2px] border-dashed border-white/40 rounded-full animate-[spin_10s_linear_infinite] pointer-events-none" />
+
+              {editing && (
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="absolute bottom-2 right-0 w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center text-indigo-500 hover:scale-110 hover:bg-slate-50 transition-all duration-300 z-20 border-[3px] border-white"
+                  title="Đổi ảnh đại diện"
+                >
+                  <FaCamera size={18} />
+                </button>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handleAvatarChange}
+              />
+            </div>
+
+            <h1 className="text-3xl font-black text-white tracking-tight drop-shadow-md relative z-10 w-full truncate px-4">
+              {profile.fullName || profile.username}
+            </h1>
+            <p className="text-white/80 font-bold text-sm mb-4 bg-black/10 px-4 py-1.5 rounded-full mt-2 inline-flex relative z-10 border border-white/10">
+              @{profile.username}
+            </p>
+
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-6 relative z-10">
+              <span className="px-4 py-1.5 rounded-[12px] text-xs font-black bg-white/20 text-white backdrop-blur-md border border-white/30 shadow-sm uppercase tracking-wider">
+                {ROLE_LABEL[profile.role]}
+              </span>
+              <span className="px-4 py-1.5 rounded-[12px] text-[10px] font-black bg-gradient-to-r from-yellow-300 to-orange-400 text-white shadow-md uppercase tracking-wider flex items-center gap-1">
+                <FaCompass size={12} /> Nhà Khám Phá
+              </span>
+            </div>
+
+            <p className="text-white/60 text-[10px] font-black font-mono flex items-center justify-center gap-2 bg-white/10 px-4 py-2.5 rounded-[14px] backdrop-blur-sm border border-white/10 relative z-10">
+              <FaMapMarkerAlt />
+              {geoCoords
+                ? `${Math.abs(geoCoords.lat).toFixed(1)}°${geoCoords.lat >= 0 ? 'N' : 'S'} · ${Math.abs(geoCoords.lon).toFixed(1)}°${geoCoords.lon >= 0 ? 'E' : 'W'}`
+                : 'P/S: Đang dò tìm tín hiệu...'}
+            </p>
+
+            {/* Action Buttons */}
+            <div className="w-full mt-8 flex flex-col gap-3 relative z-10">
+              {!editing ? (
+                <button
+                  onClick={startEditing}
+                  className="w-full group h-[54px] rounded-[20px] bg-white text-indigo-600 font-black text-sm flex items-center justify-center gap-2 shadow-lg hover:shadow-[0_15px_30px_rgba(255,255,255,0.3)] hover:-translate-y-1 transition-all"
+                >
+                  <FaEdit className="group-hover:scale-125 transition-transform" size={16} /> Chỉnh sửa Hồ sơ
+                </button>
               ) : (
-                <div className="w-full h-full flex items-center justify-center bg-white/20 backdrop-blur-sm">
-                  <span className="text-5xl">🌍</span>
+                <div className="flex gap-3">
+                  <button
+                    onClick={handleSave}
+                    disabled={saving}
+                    className="flex-1 h-[54px] rounded-[20px] bg-green-400 text-white font-black text-sm hover:bg-green-500 hover:shadow-[0_10px_20px_rgba(74,222,128,0.4)] disabled:opacity-50 transition-all flex items-center justify-center gap-2"
+                  >
+                    <FaSave /> {saving ? 'Ghi đè...' : 'Lưu Dữ Liệu'}
+                  </button>
+                  <button
+                    onClick={cancelEditing}
+                    className="w-[54px] h-[54px] shrink-0 rounded-[20px] bg-white/20 backdrop-blur-md text-white hover:bg-red-500 hover:border-red-500 border border-white/30 transition-all flex items-center justify-center"
+                  >
+                    <FaTimes size={18} />
+                  </button>
                 </div>
               )}
             </div>
-            {editing && (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
-                className="absolute -bottom-1 -right-1 w-9 h-9 rounded-full bg-white shadow-lg flex items-center justify-center text-[#06B6D4] hover:scale-110 hover:bg-[#E0F2FE] transition-all duration-200"
-                title="Đổi ảnh đại diện"
-              >
-                <FaCamera size={14} />
-              </button>
-            )}
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept="image/*"
-              className="hidden"
-              onChange={handleAvatarChange}
-            />
           </div>
 
-          {/* Name & badges */}
-          <div className="text-center md:text-left flex-1 min-w-0">
-            <h1 className="text-2xl font-bold text-white truncate">
-              {profile.fullName || profile.username}
-            </h1>
-            <p className="text-white/60 text-sm mb-3">@{profile.username}</p>
-            <div className="flex flex-wrap items-center justify-center md:justify-start gap-2">
-              <span className="px-3 py-1 rounded-full text-xs font-bold bg-white/20 text-white backdrop-blur-sm border border-white/20">
-                {ROLE_LABEL[profile.role]}
-              </span>
-              {profile.school && (
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/15 text-white/90 backdrop-blur-sm flex items-center gap-1 border border-white/20">
-                  <FaGraduationCap size={10} /> {profile.school}
-                </span>
-              )}
-              {profile.className && (
-                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-white/15 text-white/90 backdrop-blur-sm border border-white/20">
-                  Lớp {profile.className}
-                </span>
-              )}
-            </div>
-            {/* Geo decoration */}
-            <p className="text-white/40 text-[11px] mt-3 font-mono flex items-center justify-center md:justify-start gap-1.5">
-              <FaCompass size={10} />
-              {geoCoords
-                ? `${Math.abs(geoCoords.lat).toFixed(1)}°${geoCoords.lat >= 0 ? 'N' : 'S'} · ${Math.abs(geoCoords.lon).toFixed(1)}°${geoCoords.lon >= 0 ? 'E' : 'W'} · ${geoCoords.city ? geoCoords.city + ', ' : ''}${geoCoords.country}`
-                : '··· · ··· · ···'}
-            </p>
+          {/* Stats Widgets Matrix */}
+          <div className="grid grid-cols-2 gap-4">
+            {[
+              { icon: '🌍', label: 'Vùng đất', value: '1', color: 'from-blue-50 to-cyan-50' },
+              { icon: '🏆', label: 'Hạng cao', value: '—', color: 'from-yellow-50 to-orange-50' },
+              { icon: '⚡', label: 'Giải đó', value: '0', color: 'from-purple-50 to-pink-50' },
+              { icon: '🔥', label: 'Chuỗi ngày', value: '0', color: 'from-red-50 to-rose-50' },
+            ].map((s) => (
+              <div key={s.label} className={`flex flex-col p-5 rounded-[28px] bg-gradient-to-br ${s.color} border border-white shadow-[0_5px_15px_rgba(14,165,233,0.05)] hover:shadow-[0_15px_30px_rgba(14,165,233,0.1)] hover:-translate-y-1 transition-all`}>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-2xl drop-shadow-sm">{s.icon}</span>
+                  <span className="text-2xl font-black text-[#082F49] tracking-tight">{s.value}</span>
+                </div>
+                <span className="text-[#334155] text-[10px] font-black uppercase tracking-widest">{s.label}</span>
+              </div>
+            ))}
           </div>
 
-          {/* Action buttons */}
-          <div className="flex flex-row md:flex-col gap-2 flex-shrink-0">
-            {!editing ? (
-              <button
-                onClick={startEditing}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white/20 hover:bg-white/35 text-white font-semibold backdrop-blur-sm text-sm transition-all duration-300 border border-white/25"
-              >
-                <FaEdit size={13} /> Chỉnh sửa
-              </button>
-            ) : (
-              <>
-                <button
-                  onClick={handleSave}
-                  disabled={saving}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white text-[#0369A1] font-bold text-sm hover:bg-[#E0F2FE] transition-all duration-300 shadow-md disabled:opacity-60"
-                >
-                  <FaSave size={13} /> {saving ? 'Đang lưu...' : 'Lưu lại'}
-                </button>
-                <button
-                  onClick={cancelEditing}
-                  className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-white/15 hover:bg-white/25 text-white font-semibold text-sm transition-all duration-300 border border-white/20"
-                >
-                  <FaTimes size={13} /> Hủy
-                </button>
-              </>
-            )}
-          </div>
         </div>
 
-        {/* Stats strip */}
-        <div className="relative z-10 grid grid-cols-4 border-t border-white/15">
-          {[
-            { icon: '🌍', label: 'Vùng khám phá', value: '1' },
-            { icon: '🏆', label: 'Điểm cao nhất', value: '—' },
-            { icon: '⚡', label: 'Lượt quiz', value: '0' },
-            { icon: '🔥', label: 'Chuỗi ngày', value: '0' },
-          ].map((s) => (
-            <div key={s.label} className="flex flex-col items-center py-4 gap-0.5 hover:bg-white/5 transition-colors">
-              <span className="text-xl mb-0.5">{s.icon}</span>
-              <span className="text-white font-bold text-base leading-none">{s.value}</span>
-              <span className="text-white/50 text-[9px] uppercase tracking-wide text-center leading-tight px-1 mt-0.5">{s.label}</span>
-            </div>
-          ))}
-        </div>
-      </div>
+        {/* ═══ RIGHT PANEL: SETTINGS MATRIX ═══ */}
+        <div className="flex-1 w-full grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
       {/* ── Thông tin cá nhân ─────────────────────────────────────────────── */}
       <SectionCard icon={<FaUser size={13} />} title="Thông tin cá nhân">
@@ -852,9 +867,12 @@ export function ProfileClient() {
         )}
       </SectionCard>
 
+        </div>
+      </div>
+
       {/* ── Footer ────────────────────────────────────────────────────────── */}
-      <p className="text-center text-[#94A3B8] text-xs py-2">
-        🌏 Tham gia GeoLearn từ{' '}
+      <p className="text-center text-slate-400 font-bold text-xs pt-12 pb-4 tracking-widest uppercase">
+        🌏 Thiết lập hệ thống GeoLearn từ{' '}
         {new Date(profile.createdAt).toLocaleDateString('vi-VN', {
           year: 'numeric',
           month: 'long',

@@ -17,7 +17,7 @@
 }
 
 @theme inline {
-  --font-sans: var(--font-nunito), sans-serif;
+  --font-sans: var(--font-be-vietnam-pro), sans-serif;
 }
 
 body {
@@ -29,7 +29,7 @@ body {
     radial-gradient(at 100% 100%, var(--background-bottom) 0px, transparent 50%),
     var(--background-center);
   color: var(--color-body);
-  font-family: var(--font-nunito), sans-serif;
+  font-family: var(--font-be-vietnam-pro), sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -40,3 +40,9 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Glassmorphism rules applied via utility classes in components */
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0px); }
+}

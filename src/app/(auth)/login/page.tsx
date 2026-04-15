@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { FaEye, FaEyeSlash, FaChevronDown } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaChevronDown, FaGlobeAsia, FaMapMarkedAlt, FaCompass, FaPaperPlane } from 'react-icons/fa';
 
 // ---------------------------------------------------------------------------
 // Sub-components
@@ -308,26 +308,67 @@ export default function LoginPage() {
 
   return (
     <main
-      className="min-h-screen flex items-center justify-center p-4"
+      className="min-h-screen flex items-center justify-center p-4 lg:p-8 relative overflow-hidden"
       style={{
         background: 'linear-gradient(135deg, #E0F2FE 0%, #FFFFFF 50%, #DCFCE7 100%)',
       }}
     >
-      <div
-        className="w-full max-w-md rounded-3xl p-8 shadow-xl"
+      {/* Decorative background blobs */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40vw] h-[40vw] rounded-full bg-cyan-200/50 blur-3xl z-0 pointer-events-none animate-pulse" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[40vw] h-[40vw] rounded-full bg-green-200/50 blur-3xl z-0 pointer-events-none" style={{ animation: 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite', animationDelay: '2s'}} />
+
+      {/* Main Glass Container */}
+      <div 
+        className="relative z-10 w-full max-w-5xl rounded-[32px] overflow-hidden flex flex-col lg:flex-row shadow-2xl"
         style={{
-          background: 'rgba(255,255,255,0.75)',
-          backdropFilter: 'blur(20px)',
+          background: 'rgba(255,255,255,0.6)',
+          backdropFilter: 'blur(24px)',
           border: '1px solid rgba(255,255,255,1)',
-          boxShadow: '0 10px 30px rgba(14,165,233,0.08)',
+          boxShadow: '0 20px 60px rgba(14,165,233,0.1)',
         }}
       >
-        {/* Logo */}
-        <div className="text-center mb-6">
-          <div className="text-5xl mb-2">🌍</div>
-          <h1 className="text-2xl font-bold text-[#082F49]">GeoLearn</h1>
-          <p className="text-[#94A3B8] text-sm mt-1">Khám phá thế giới địa lý</p>
+        {/* Left Side: Creative Illustration (Hidden on Mobile) */}
+        <div className="hidden lg:flex flex-col items-center justify-center w-1/2 p-12 relative overflow-hidden border-r border-white/50">
+          {/* Subtle animated background shapes */}
+          <div className="absolute inset-0 z-0 opacity-20 pointer-events-none overflow-hidden">
+             <FaMapMarkedAlt className="absolute top-12 left-10 text-[80px] text-cyan-500 animate-bounce" style={{ animationDuration: '3s'}} />
+             <FaCompass className="absolute bottom-24 right-10 text-[100px] text-blue-500 animate-pulse" style={{ animationDuration: '5s'}} />
+             <FaPaperPlane className="absolute top-1/4 right-1/4 text-6xl text-green-500 animate-bounce" style={{ animationDuration: '4s'}} />
+          </div>
+
+          <div className="relative z-10 flex flex-col items-center text-center">
+            {/* 3D-like Globe */}
+            <div className="w-56 h-56 rounded-full bg-gradient-to-tr from-cyan-400 via-[#0ea5e9] to-blue-500 flex items-center justify-center shadow-[0_10px_40px_rgba(6,182,212,0.5)] mb-10 border-4 border-white animate-bounce group" style={{ animationDuration: '6s' }}>
+               <FaGlobeAsia className="text-[120px] text-white group-hover:rotate-12 transition-transform duration-500" />
+            </div>
+            
+            <h2 className="text-4xl font-extrabold text-[#082F49] mb-4 tracking-tight">
+              Khám Phá Thế Giới
+            </h2>
+            <p className="text-[#334155] text-lg max-w-sm leading-relaxed">
+              Bước vào hành trình chinh phục kiến thức Địa lý thú vị dành riêng cho bạn!
+            </p>
+          </div>
         </div>
+
+        {/* Right Side: Form Content */}
+        <div className="w-full lg:w-1/2 p-8 lg:p-12 flex flex-col items-center justify-center bg-white/40">
+          <div className="w-full max-w-md">
+            
+            {/* Logo Mobile (Only shows on small screens) */}
+            <div className="text-center mb-8 lg:hidden">
+              <div className="w-16 h-16 mx-auto rounded-[22px] bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-300/40 mb-3 text-white text-4xl">
+                <FaGlobeAsia />
+              </div>
+              <h1 className="text-2xl font-bold text-[#082F49]">GeoExplore</h1>
+              <p className="text-[#94A3B8] text-sm mt-1">Hành trình bắt đầu từ đây</p>
+            </div>
+
+            {/* Title Desktop (Only shows on large screens) */}
+            <div className="hidden lg:block text-center mb-10">
+               <h1 className="text-3xl font-extrabold text-[#082F49]">GeoExplore</h1>
+               <p className="text-[#94A3B8] font-medium mt-2">Đăng nhập để vào lớp học</p>
+            </div>
 
         {/* Tab switcher */}
         <div className="flex rounded-2xl bg-white/50 p-1 mb-6 gap-1">
@@ -615,6 +656,8 @@ export default function LoginPage() {
             </div>
           </form>
         )}
+          </div>
+        </div>
       </div>
     </main>
   );

@@ -2,7 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
-import { signOut } from 'next-auth/react';
+
 import { FaGlobeAsia, FaMapMarkedAlt, FaGamepad, FaUsers, FaBell, FaBook, FaUserCircle, FaSignOutAlt, FaCog } from 'react-icons/fa';
 
 const NAV_ITEMS = [
@@ -10,13 +10,19 @@ const NAV_ITEMS = [
   { href: '/map',     label: 'Bản đồ',    icon: '🗺️',  color: 'text-green-500', bg: 'bg-green-50',  dot: 'bg-green-500' },
 ];
 
-export function Navbar({ user }: { user?: { name?: string | null; image?: string | null } }) {
+export function Navbar({ user }: { user?: { name?: string | null; image?: string | null; role?: number } }) {
+  const roleName = user?.role === 1 ? 'Quản trị viên' : user?.role === 2 ? 'Giáo viên' : 'Học sinh';
+
   const [scrolled, setScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
+  const dropdownRef1 = useRef<HTMLDivElement>(null);
+  const dropdownRef2 = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 60);
+    const onScroll = () => {
+      setScrolled(window.scrollY > 60);
+      setDropdownOpen(false); // Auto close dropdown on scroll
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
@@ -24,13 +30,74 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
   // Close dropdown on outside click
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      if (
+        (!dropdownRef1.current || !dropdownRef1.current.contains(target)) &&
+        (!dropdownRef2.current || !dropdownRef2.current.contains(target))
+      ) {
         setDropdownOpen(false);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  const DropdownMenu = () => (
+    <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white/95 backdrop-blur-xl border border-white/80 rounded-[20px] shadow-[0_16px_40px_rgba(8,47,73,0.15)] overflow-hidden z-[9999] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+      {/* User info header */}
+      <div className="px-4 py-3 bg-gradient-to-br from-cyan-50 to-blue-50 border-b border-slate-100">
+        <div className="flex items-center gap-3">
+          {user?.image ? (
+            <img src={user.image} alt="Avatar" className="w-10 h-10 rounded-[12px] object-cover shadow-sm border-[2px] border-white" />
+          ) : (
+            <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-black text-base shadow-sm border-[2px] border-white">
+              {(user?.name?.charAt(0) || 'K').toUpperCase()}
+            </div>
+          )}
+          <div className="min-w-0">
+            <p className="font-extrabold text-[#082F49] text-sm truncate">{user?.name || 'Khách'}</p>
+            <p className="text-[#94A3B8] text-xs font-semibold">{roleName}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Menu items */}
+      <div className="p-2">
+        <Link
+          href="/profile"
+          onClick={() => setDropdownOpen(false)}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-sm font-semibold text-[#334155] hover:bg-cyan-50 hover:text-cyan-700 transition-colors group"
+        >
+          <div className="w-7 h-7 rounded-[8px] bg-slate-100 group-hover:bg-cyan-100 flex items-center justify-center transition-colors">
+            <FaUserCircle className="text-slate-400 group-hover:text-cyan-500 text-xs transition-colors" />
+          </div>
+          Thông tin cá nhân
+        </Link>
+        <Link
+          href="/settings"
+          onClick={() => setDropdownOpen(false)}
+          className="flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-sm font-semibold text-[#334155] hover:bg-slate-50 hover:text-slate-700 transition-colors group"
+        >
+          <div className="w-7 h-7 rounded-[8px] bg-slate-100 group-hover:bg-slate-200 flex items-center justify-center transition-colors">
+            <FaCog className="text-slate-400 text-xs" />
+          </div>
+          Cài đặt
+        </Link>
+
+        <div className="my-2 mx-1 h-px bg-slate-100" />
+
+        <button
+          onClick={() => window.location.href = '/api/logout'}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors group"
+        >
+          <div className="w-7 h-7 rounded-[8px] bg-red-50 group-hover:bg-red-100 flex items-center justify-center transition-colors">
+            <FaSignOutAlt className="text-red-400 text-xs" />
+          </div>
+          Đăng xuất
+        </button>
+      </div>
+    </div>
+  );
 
   return (
     <>
@@ -180,14 +247,18 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
               </button>
 
               {/* User pill + dropdown */}
-              <div className="relative" ref={dropdownRef}>
+              <div className="relative" ref={dropdownRef1}>
                 <button
                   onClick={() => setDropdownOpen(v => !v)}
                   className="flex items-center gap-2.5 h-10 pl-1.5 pr-4 rounded-[14px] bg-gradient-to-r from-slate-50 to-blue-50 border border-slate-100 cursor-pointer hover:border-cyan-200 hover:shadow-md hover:shadow-cyan-100/50 transition-all duration-200 group"
                 >
-                  <div className="w-7 h-7 rounded-[10px] bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-[10px] font-black shadow-sm group-hover:scale-105 transition-transform">
-                    {(user?.name?.charAt(0) || 'K').toUpperCase()}
-                  </div>
+                  {user?.image ? (
+                    <img src={user.image} alt="Avatar" className="w-7 h-7 rounded-[10px] object-cover shadow-sm group-hover:scale-105 transition-transform" />
+                  ) : (
+                    <div className="w-7 h-7 rounded-[10px] bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-[10px] font-black shadow-sm group-hover:scale-105 transition-transform">
+                      {(user?.name?.charAt(0) || 'K').toUpperCase()}
+                    </div>
+                  )}
                   <span className="font-bold text-sm text-[#082F49] hidden sm:block truncate max-w-[100px]">
                     {user?.name || 'Khách'}
                   </span>
@@ -197,59 +268,7 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
                 </button>
 
                 {/* Dropdown menu */}
-                {dropdownOpen && (
-                  <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white/90 backdrop-blur-xl border border-white rounded-[20px] shadow-[0_16px_40px_rgba(8,47,73,0.15)] overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200 origin-top-right">
-                    {/* User info header */}
-                    <div className="px-4 py-3 bg-gradient-to-br from-cyan-50 to-blue-50 border-b border-slate-100">
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-black text-base shadow-sm">
-                          {(user?.name?.charAt(0) || 'K').toUpperCase()}
-                        </div>
-                        <div className="min-w-0">
-                          <p className="font-extrabold text-[#082F49] text-sm truncate">{user?.name || 'Khách'}</p>
-                          <p className="text-[#94A3B8] text-xs">Học sinh</p>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Menu items */}
-                    <div className="p-2">
-                      <Link
-                        href="/profile"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-sm font-semibold text-[#334155] hover:bg-cyan-50 hover:text-cyan-700 transition-colors group"
-                      >
-                        <div className="w-7 h-7 rounded-[8px] bg-slate-100 group-hover:bg-cyan-100 flex items-center justify-center transition-colors">
-                          <FaUserCircle className="text-slate-400 group-hover:text-cyan-500 text-xs transition-colors" />
-                        </div>
-                        Thông tin cá nhân
-                      </Link>
-
-                      <Link
-                        href="/settings"
-                        onClick={() => setDropdownOpen(false)}
-                        className="flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-sm font-semibold text-[#334155] hover:bg-slate-50 hover:text-slate-700 transition-colors group"
-                      >
-                        <div className="w-7 h-7 rounded-[8px] bg-slate-100 group-hover:bg-slate-200 flex items-center justify-center transition-colors">
-                          <FaCog className="text-slate-400 text-xs" />
-                        </div>
-                        Cài đặt
-                      </Link>
-
-                      <div className="my-2 mx-1 h-px bg-slate-100" />
-
-                      <button
-                        onClick={() => { setDropdownOpen(false); signOut({ callbackUrl: '/login' }); }}
-                        className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors group"
-                      >
-                        <div className="w-7 h-7 rounded-[8px] bg-red-50 group-hover:bg-red-100 flex items-center justify-center transition-colors">
-                          <FaSignOutAlt className="text-red-400 text-xs" />
-                        </div>
-                        Đăng xuất
-                      </button>
-                    </div>
-                  </div>
-                )}
+                {!scrolled && dropdownOpen && <DropdownMenu />}
               </div>
             </div>
           </div>
@@ -282,14 +301,25 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
             <span className="island-notif-dot" />
           </div>
 
-          {/* Avatar */}
-          <button
-            onClick={() => setDropdownOpen(v => !v)}
-            className="island-avatar ml-1 cursor-pointer"
-            title={user?.name || 'Khách'}
-          >
-            {(user?.name?.charAt(0) || 'K').toUpperCase()}
-          </button>
+          {/* Avatar Area inside Island */}
+          <div className="relative" ref={dropdownRef2}>
+            <button
+              onClick={() => setDropdownOpen(v => !v)}
+              className="island-avatar ml-1 cursor-pointer overflow-hidden border border-white/20"
+              title={user?.name || 'Khách'}
+            >
+              {user?.image ? (
+                <img src={user.image} alt="Avatar" className="w-full h-full object-cover" />
+              ) : (
+                <span>{(user?.name?.charAt(0) || 'K').toUpperCase()}</span>
+              )}
+            </button>
+            {scrolled && dropdownOpen && (
+              <div className="absolute top-[100%] right-0 pt-3">
+                <DropdownMenu />
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </>
