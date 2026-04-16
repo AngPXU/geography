@@ -6,9 +6,13 @@ import { ALL_MISSIONS } from '@/utils/missions';
 import { claimMission, claimMissionWithExp } from '@/utils/missionTracker';
 import { useStudyTimer } from '@/utils/useStudyTimer';
 import type { MissionId, IMissionSlot } from '@/models/DailyMission';
+import { FlashcardPanel } from '@/components/ui/FlashcardPanel';
 
-const MODULES = [
-  { id: 'overview', label: 'Tổng quan', sub: 'Tiến độ & Hoạt động', icon: '🏠', href: '/', active: true }
+type ActiveTab = 'overview' | 'flashcard';
+
+const MODULES: { id: ActiveTab | string; label: string; sub: string; icon: string; href?: string; isTab?: boolean }[] = [
+  { id: 'overview',   label: 'Tổng quan',    sub: 'Tiến độ & Hoạt động', icon: '🏠', isTab: true },
+  { id: 'flashcard',  label: 'Thẻ Ghi Nhớ', sub: 'Luyện tập thẻ 3D',     icon: '📝', isTab: true },
 ];
 
 const DAYS = ['CN', 'TH 2', 'TH 3', 'TH 4', 'TH 5', 'TH 6', 'TH 7'];
@@ -65,6 +69,7 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
   const moduleRef = useRef<HTMLDivElement>(null);
   const today = new Date().getDay();
   const resetCountdown = useResetCountdown();
+  const [activeTab, setActiveTab] = useState<ActiveTab>('overview');
 
   // ── Study timer (real-time, persists to DB) ──
   const studySecs = useStudyTimer(initialStudySeconds);
@@ -146,23 +151,40 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
             ref={moduleRef}
             className="flex gap-4 overflow-x-auto snap-x snap-mandatory pb-3 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]"
           >
-            {MODULES.map((mod) => (
-              <Link
-                key={mod.id}
-                href={mod.href}
-                className={`shrink-0 snap-start w-[140px] md:w-[160px] rounded-[24px] p-5 flex flex-col items-center gap-2 transition-all duration-300 border ${
-                  mod.active
-                    ? 'bg-gradient-to-br from-cyan-400 to-blue-500 text-white border-transparent shadow-[0_8px_24px_rgba(6,182,212,0.35)] hover:shadow-[0_12px_32px_rgba(6,182,212,0.45)] hover:-translate-y-1'
-                    : 'bg-white/75 backdrop-blur-xl border-white text-[#082F49] shadow-[0_4px_16px_rgba(14,165,233,0.06)] hover:shadow-[0_8px_24px_rgba(14,165,233,0.12)] hover:-translate-y-1 hover:border-cyan-100'
-                }`}
-              >
-                <span className="text-3xl leading-none">{mod.icon}</span>
-                <span className={`font-black text-sm text-center leading-tight ${mod.active ? 'text-white' : 'text-[#082F49]'}`}>{mod.label}</span>
-                <span className={`text-[11px] text-center leading-tight ${mod.active ? 'text-white/80' : 'text-slate-400'}`}>{mod.sub}</span>
-              </Link>
-            ))}
+            {MODULES.map((mod) => {
+              const isActive = mod.isTab ? activeTab === mod.id : false;
+              const cls = `shrink-0 snap-start w-[140px] md:w-[160px] rounded-[24px] p-5 flex flex-col items-center gap-2 transition-all duration-300 border ${
+                isActive
+                  ? 'bg-gradient-to-br from-cyan-400 to-blue-500 text-white border-transparent shadow-[0_8px_24px_rgba(6,182,212,0.35)] hover:shadow-[0_12px_32px_rgba(6,182,212,0.45)] hover:-translate-y-1'
+                  : 'bg-white/75 backdrop-blur-xl border-white text-[#082F49] shadow-[0_4px_16px_rgba(14,165,233,0.06)] hover:shadow-[0_8px_24px_rgba(14,165,233,0.12)] hover:-translate-y-1 hover:border-cyan-100'
+              }`;
+              const inner = (
+                <>
+                  <span className="text-3xl leading-none">{mod.icon}</span>
+                  <span className={`font-black text-sm text-center leading-tight ${isActive ? 'text-white' : 'text-[#082F49]'}`}>{mod.label}</span>
+                  <span className={`text-[11px] text-center leading-tight ${isActive ? 'text-white/80' : 'text-slate-400'}`}>{mod.sub}</span>
+                </>
+              );
+              if (mod.isTab) {
+                return (
+                  <button key={mod.id} onClick={() => setActiveTab(mod.id as ActiveTab)} className={cls}>
+                    {inner}
+                  </button>
+                );
+              }
+              return (
+                <Link key={mod.id} href={mod.href ?? '/'} className={cls}>
+                  {inner}
+                </Link>
+              );
+            })}
           </div>
         </div>
+
+        {/* ── Tab content ── */}
+        {activeTab === 'flashcard' && <FlashcardPanel />}
+
+        {activeTab === 'overview' && <>
 
         {/* ── Greeting Bar ── */}
         <div
@@ -512,6 +534,9 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
           </div>
 
         </div>
+
+        </> /* end overview tab */
+        }
 
       </div>
     </section>

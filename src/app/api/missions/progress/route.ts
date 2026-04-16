@@ -4,7 +4,7 @@ import dbConnect from "@/utils/db";
 import DailyMission from "@/models/DailyMission";
 import User from "@/models/User";
 import { getVietnamDateStr } from "@/utils/missions";
-import type { MissionId } from "@/models/DailyMission";
+import type { MissionId, IMissionSlot } from "@/models/DailyMission";
 
 /**
  * POST /api/missions/progress
@@ -35,7 +35,7 @@ export async function POST(req: NextRequest) {
   const doc = await DailyMission.findOne({ userId: dbUser._id, date: today });
   if (!doc) return NextResponse.json({ error: "No missions for today" }, { status: 404 });
 
-  const slot = doc.missions.find((m) => m.missionId === missionId);
+  const slot = doc.missions.find((m: IMissionSlot) => m.missionId === missionId);
   if (!slot) return NextResponse.json({ error: "Mission not in today's set" }, { status: 404 });
 
   // Don't update already-completed missions

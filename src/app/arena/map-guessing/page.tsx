@@ -1,317 +1,430 @@
-'use client';
+﻿'use client';
 
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
 import { trackMission } from '@/utils/missionTracker';
 
-// Dynamically import Leaflet map to prevent SSR window is not defined
-const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
-const TileLayer = dynamic(() => import('react-leaflet').then(m => m.TileLayer), { ssr: false });
-const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr: false });
-const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false });
-const Polyline = dynamic(() => import('react-leaflet').then(m => m.Polyline), { ssr: false });
-
 import type L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-// ── HA VERSINE ALGORITHM TO CALCULATE DISTANCE ────────
+
+// Haversine
 function calcDistanceKM(lat1: number, lon1: number, lat2: number, lon2: number) {
-  const R = 6371; // Bán kính khối cầu Trái Đất (km)
+  const R = 6371;
   const dLat = (lat2 - lat1) * Math.PI / 180;
   const dLon = (lon2 - lon1) * Math.PI / 180;
-  const a = 
-    Math.sin(dLat/2) * Math.sin(dLat/2) +
-    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * 
-    Math.sin(dLon/2) * Math.sin(dLon/2); 
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
-  return R * c;
+  const a =
+    Math.sin(dLat / 2) ** 2 +
+    Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-// ── GAME COMPONENT ──────────────────────────────────────────────────────────
-export default function MapGuessingGame() {
-  const [dbFeatures, setDbFeatures] = useState<any[]>([]);
-  const [status, setStatus] = useState<'LOADING' | 'MENU' | 'PLAYING' | 'SUMMARY'>('LOADING');
-  
-  // Game State
-  const [topic, setTopic] = useState<string>('all');
-  const [queue, setQueue] = useState<any[]>([]); // 10 câu hỏi dc bốc
-  const [currentRound, setCurrentRound] = useState(0);
-  const [score, setScore] = useState(0);
-  
-  // Round State
-  const [guessLat, setGuessLat] = useState<number | null>(null);
-  const [guessLng, setGuessLng] = useState<number | null>(null);
-  const [roundDistance, setRoundDistance] = useState<number | null>(null);
-  const [roundScore, setRoundScore] = useState<number>(0);
-  const [roundEnd, setRoundEnd] = useState(false);
-  const [redIcon, setRedIcon] = useState<any>(null);
+// Category display
+const CATEGORY_LABEL: Record<string, { label: string; icon: string }> = {
+  mountain:        { label: 'Đỉnh Núi',   icon: '⛰️' },
+  river:           { label: 'Con Sông',   icon: '🌞️' },
+  ocean:           { label: 'Đại Dương',  icon: '🌊' },
+  lake:            { label: 'Hồ',         icon: '💧' },
+  desert:          { label: 'Sa Mạc',     icon: '🐪' },
+  plain:           { label: 'Đồng Bằng',  icon: '🌾' },
+  island:          { label: 'Đảo',        icon: '🏖️' },
+  volcano:         { label: 'Núi Lửa',   icon: '🌋' },
+  country_economy: { label: 'Quốc Gia',   icon: '🌍' },
+  country:         { label: 'Quốc Gia',   icon: '🌍' },
+};
+function getCat(sub: string) {
+  return CATEGORY_LABEL[sub] ?? { label: sub, icon: '📍' };
+}
 
-  // Khởi chạy: Kéo Dữ liệu 1 lần duy nhất để làm Ngân hàng câu hỏi
+// Score grade
+function getGrade(pts: number) {
+  if (pts >= 800) return { label: '🌟 Xuất Sắc!',      barColor: 'from-emerald-400 to-green-500', textColor: 'text-emerald-600', badgeBg: 'bg-emerald-50 border-emerald-200' };
+  if (pts >= 500) return { label: '👍 Rất Tốt!',        barColor: 'from-cyan-400 to-blue-500',     textColor: 'text-cyan-600',     badgeBg: 'bg-cyan-50 border-cyan-200'       };
+  if (pts >= 200) return { label: '😊 Khá Ổn',          barColor: 'from-amber-400 to-orange-400',  textColor: 'text-amber-600',    badgeBg: 'bg-amber-50 border-amber-200'     };
+  return           { label: '💪 Cố Gắng Hơn!',         barColor: 'from-rose-400 to-red-500',      textColor: 'text-rose-600',     badgeBg: 'bg-rose-50 border-rose-200'       };
+}
+
+// Rich target info cards
+function TargetInfoGrid({ target }: { target: any }) {
+  const rows: { icon: string; label: string; value: string }[] = [];
+  if (target.elevation)      rows.push({ icon: '📐', label: 'Độ cao',       value: `${Number(target.elevation).toLocaleString('vi-VN')} m` });
+  if (target.length)         rows.push({ icon: '📐', label: 'Chiều dài',    value: `${Number(target.length).toLocaleString('vi-VN')} km` });
+  if (target.depth)          rows.push({ icon: '🌊', label: 'Độ sâu',       value: `${Number(target.depth).toLocaleString('vi-VN')} m` });
+  if (target.area)           rows.push({ icon: '🗺️', label: 'Diện tích',   value: `${Number(target.area).toLocaleString('vi-VN')} km²` });
+  if (target.population)     rows.push({ icon: '👥', label: 'Dân số',       value: `${(Number(target.population) / 1_000_000).toFixed(1)} triệu` });
+  if (target.gdpTotal)       rows.push({ icon: '🏦', label: 'GDP',          value: `$${Number(target.gdpTotal).toFixed(1)} tỷ` });
+  if (target.gdpPerCapita)   rows.push({ icon: '💰', label: 'GDP/người',    value: `$${Number(target.gdpPerCapita).toLocaleString('vi-VN')}` });
+  if (target.lifeExpectancy) rows.push({ icon: '❤️', label: 'Tuổi thọ',    value: `${target.lifeExpectancy} tuổi` });
+  if (target.unemployment)   rows.push({ icon: '📊', label: 'Thất nghiệp', value: `${Number(target.unemployment).toFixed(1)}%` });
+  if (target.region)         rows.push({ icon: '🌐', label: 'Khu vực',      value: target.region });
+  if (target.incomeLevel)    rows.push({ icon: '💳', label: 'Thu nhập',     value: target.incomeLevel });
+  if (target.country)        rows.push({ icon: '🏳️', label: 'Quốc gia',   value: target.country });
+  if (target.continent)      rows.push({ icon: '🌍', label: 'Châu lục',    value: target.continent });
+  if (!rows.length) return null;
+  return (
+    <div className="grid grid-cols-2 gap-2">
+      {rows.slice(0, 6).map((r, i) => (
+        <div key={i} className="flex items-center gap-2 bg-slate-50 rounded-[14px] px-3 py-2">
+          <span className="text-lg shrink-0">{r.icon}</span>
+          <div className="min-w-0">
+            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">{r.label}</p>
+            <p className="text-sm font-black text-[#082F49] leading-tight truncate">{r.value}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Dynamic Leaflet components (all OUTSIDE component to prevent remount)
+const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
+const TileLayer    = dynamic(() => import('react-leaflet').then(m => m.TileLayer),    { ssr: false });
+const Marker       = dynamic(() => import('react-leaflet').then(m => m.Marker),       { ssr: false });
+const Polyline     = dynamic(() => import('react-leaflet').then(m => m.Polyline),     { ssr: false });
+
+// MapController: click handler + auto-fit — OUTSIDE component
+const MapController = dynamic(
+  () => import('react-leaflet').then(m => {
+    const { useMap, useMapEvents } = m;
+    return function MC({
+      onMapClick,
+      boundsKey,
+      boundsArr,
+    }: {
+      onMapClick: (ll: L.LatLng) => void;
+      boundsKey: string;
+      boundsArr: [[number, number], [number, number]] | null;
+    }) {
+      const map = useMap();
+      useMapEvents({ click(e) { onMapClick(e.latlng); } });
+      React.useEffect(() => {
+        if (!boundsArr) return;
+        const t = setTimeout(() => {
+          try { map.fitBounds(boundsArr, { padding: [110, 110], maxZoom: 9, animate: true, duration: 0.9 }); } catch { /* ignore */ }
+        }, 350);
+        return () => clearTimeout(t);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }, [boundsKey]);
+      return null;
+    };
+  }),
+  { ssr: false }
+);
+
+// Main component
+export default function MapGuessingGame() {
+  const [dbFeatures, setDbFeatures]   = useState<any[]>([]);
+  const [status, setStatus]           = useState<'LOADING' | 'MENU' | 'PLAYING' | 'SUMMARY'>('LOADING');
+  const [topic, setTopic]             = useState('all');
+  const [queue, setQueue]             = useState<any[]>([]);
+  const [currentRound, setCurrentRound] = useState(0);
+  const [score, setScore]             = useState(0);
+  const [guessLat, setGuessLat]       = useState<number | null>(null);
+  const [guessLng, setGuessLng]       = useState<number | null>(null);
+  const [roundDistance, setRoundDistance] = useState<number | null>(null);
+  const [roundScore, setRoundScore]   = useState(0);
+  const [roundEnd, setRoundEnd]       = useState(false);
+  const [guessIcon, setGuessIcon]     = useState<any>(null);
+  const [targetIcon, setTargetIcon]   = useState<any>(null);
+
   useEffect(() => {
-    // Sửa lỗi Icon Leaflet trên Next.js Client
-    import('leaflet').then(leaflet => {
-      const L = leaflet.default;
+    import('leaflet').then(({ default: L }) => {
       delete (L.Icon.Default.prototype as any)._getIconUrl;
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-        iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-        shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-      });
-      
-      setRedIcon(new L.Icon({
-        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-        iconSize: [25, 41], iconAnchor: [12, 41]
+      setGuessIcon(L.divIcon({
+        className: '',
+        html: '<div style="width:20px;height:20px;border-radius:50%;background:#06B6D4;border:3px solid white;box-shadow:0 0 0 3px rgba(6,182,212,0.35),0 3px 10px rgba(0,0,0,0.3)"></div>',
+        iconSize: [20, 20], iconAnchor: [10, 10],
+      }));
+      setTargetIcon(L.divIcon({
+        className: 'geo-target-icon',
+        html: '<div style="position:relative;width:36px;height:36px"><div class="geo-ring" style="position:absolute;inset:0;border-radius:50%;background:rgba(239,68,68,0.25)"></div><div style="position:absolute;inset:6px;border-radius:50%;background:#EF4444;border:3px solid white;box-shadow:0 0 0 3px rgba(239,68,68,0.4),0 4px 14px rgba(0,0,0,0.35)"></div></div>',
+        iconSize: [36, 36], iconAnchor: [18, 18],
       }));
     });
-
     Promise.all([
-      fetch('/api/map/features?category=physical').then(r=>r.json()),
-      fetch('/api/map/features?category=economic').then(r=>r.json()),
+      fetch('/api/map/features?category=physical').then(r => r.json()),
+      fetch('/api/map/features?category=economic').then(r => r.json()),
     ]).then(([phys, econ]) => {
-      // Làm phẳng attributes
-      const m1 = phys.map((item:any) => ({ ...item, ...item.attributes }));
-      const m2 = econ.map((item:any) => ({ ...item, ...item.attributes }));
-      setDbFeatures([...m1, ...m2].filter(f => f.lat && f.lng));
+      const all = [
+        ...phys.map((f: any) => ({ ...f, ...f.attributes })),
+        ...econ.map((f: any) => ({ ...f, ...f.attributes })),
+      ].filter(f => f.lat && f.lng);
+      setDbFeatures(all);
       setStatus('MENU');
     });
   }, []);
 
-  const startGame = (selectedTopic: string) => {
-    setTopic(selectedTopic);
+  const startGame = useCallback((sel: string) => {
+    setTopic(sel);
     let pool = dbFeatures;
-    if (selectedTopic === 'mountain') pool = pool.filter(f => f.subCategory === 'mountain');
-    if (selectedTopic === 'river') pool = pool.filter(f => f.subCategory === 'river');
-    if (selectedTopic === 'country' || selectedTopic.startsWith('country_')) {
+    if (sel === 'mountain') pool = pool.filter(f => f.subCategory === 'mountain');
+    if (sel === 'river')    pool = pool.filter(f => f.subCategory === 'river');
+    if (sel === 'country' || sel.startsWith('country_')) {
       pool = pool.filter(f => f.subCategory === 'country_economy');
-      if (selectedTopic === 'country_pop') pool = pool.filter(f => f.population);
-      if (selectedTopic === 'country_gdp') pool = pool.filter(f => f.gdpTotal);
-      if (selectedTopic === 'country_life') pool = pool.filter(f => f.lifeExpectancy);
+      if (sel === 'country_pop')  pool = pool.filter(f => f.population);
+      if (sel === 'country_gdp')  pool = pool.filter(f => f.gdpTotal);
+      if (sel === 'country_life') pool = pool.filter(f => f.lifeExpectancy);
     }
-    
-    // Xáo trộn và bốc 10 câu
-    const shuffled = [...pool].sort(() => 0.5 - Math.random());
-    const rawTargets = shuffled.slice(0, 10);
-    
-    // Tạo câu hỏi động (Dynamic Questions)
-    const questions = rawTargets.map(target => {
-      let qText = target.name;
-      let qDesc = target.desc;
-      let qTitle = "Tìm kiếm mục tiêu";
-
-      if (selectedTopic === 'country_pop' && target.population) {
-        qTitle = "Thử thách Dân Số";
-        qText = `Quốc gia có dân số ~${(target.population / 1_000_000).toFixed(1)} triệu người`;
-        qDesc = `Mức thu nhập: ${target.incomeLevel} | Khu vực: ${target.region}`;
-      } else if (selectedTopic === 'country_gdp' && target.gdpTotal) {
-        qTitle = "Thử thách Kinh Tế";
-        qText = `Quốc gia có GDP đạt mức ~${target.gdpTotal.toLocaleString('vi-VN')} tỷ USD`;
-        qDesc = `Mức thu nhập: ${target.incomeLevel} | Khu vực: ${target.region}`;
-      } else if (selectedTopic === 'country_life' && target.lifeExpectancy) {
-        qTitle = "Thử thách Chất Lượng Sống";
-        qText = `Quốc gia có Tuổi thọ trung bình ${target.lifeExpectancy} tuổi`;
-        qDesc = `GDP bình quân: ${target.gdpPerCapita?.toLocaleString('vi-VN')} USD | Khu vực: ${target.region}`;
+    const questions = [...pool].sort(() => Math.random() - 0.5).slice(0, 10).map(t => {
+      const cat = getCat(t.subCategory ?? '');
+      let qTitle = cat.icon + ' ' + cat.label;
+      let qText  = t.name;
+      let qDesc  = t.desc ?? '';
+      if (sel === 'country_pop' && t.population) {
+        qTitle = '👥 Thử thách Dân Số';
+        qText  = `Quốc gia có ~${(Number(t.population) / 1_000_000).toFixed(1)} triệu dân`;
+        qDesc  = `Khu vực: ${t.region ?? '?'} • Thu nhập: ${t.incomeLevel ?? '?'}`;
+      } else if (sel === 'country_gdp' && t.gdpTotal) {
+        qTitle = '🏦 Thử thách GDP';
+        qText  = `Quốc gia có GDP ≈ $${Number(t.gdpTotal).toFixed(0)} tỷ USD`;
+        qDesc  = `Khu vực: ${t.region ?? '?'} • GDP/người: $${Number(t.gdpPerCapita ?? 0).toFixed(0)}`;
+      } else if (sel === 'country_life' && t.lifeExpectancy) {
+        qTitle = '❤️ Thử thách Tuổi Thọ';
+        qText  = `Quốc gia có tuổi thọ TB ${t.lifeExpectancy} tuổi`;
+        qDesc  = `Khu vực: ${t.region ?? '?'} • GDP/người: $${Number(t.gdpPerCapita ?? 0).toFixed(0)}`;
+      } else if (t.subCategory === 'mountain' && t.elevation) {
+        qDesc = `Cao ${Number(t.elevation).toLocaleString('vi-VN')} m so với mực nước biển${t.country ? ' • ' + t.country : ''}`;
+      } else if (t.subCategory === 'river' && t.length) {
+        qDesc = `Dài ${Number(t.length).toLocaleString('vi-VN')} km${t.continent ? ' • ' + t.continent : ''}`;
+      } else if (t.subCategory === 'country_economy' && t.region) {
+        qDesc = `${t.region}${t.incomeLevel ? ' • ' + t.incomeLevel : ''}`;
       }
-      return { ...target, qText, qDesc, qTitle };
+      return { ...t, qTitle, qText, qDesc };
     });
-
     setQueue(questions);
-    setCurrentRound(0);
-    setScore(0);
-    setRoundEnd(false);
+    setCurrentRound(0); setScore(0);
+    setGuessLat(null);  setGuessLng(null);
+    setRoundDistance(null); setRoundEnd(false);
     setStatus('PLAYING');
-  };
+  }, [dbFeatures]);
+
+  const handleMapClick = useCallback((latlng: L.LatLng) => {
+    if (roundEnd) return;
+    const target = queue[currentRound];
+    if (!target) return;
+    const dist = calcDistanceKM(latlng.lat, latlng.lng, target.lat, target.lng);
+    const pts  = dist <= 50 ? 1000 : dist > 5000 ? 0 : Math.round(1000 * (1 - dist / 5000));
+    setGuessLat(latlng.lat); setGuessLng(latlng.lng);
+    setRoundDistance(dist);  setRoundScore(pts);
+    setScore(s => s + pts);  setRoundEnd(true);
+  }, [roundEnd, queue, currentRound]);
 
   const nextRound = () => {
-    if (currentRound >= 9) {
-      setStatus('SUMMARY');
-      trackMission('play-arena', 1);
-    } else {
-      setCurrentRound(c => c + 1);
-      setGuessLat(null); setGuessLng(null);
-      setRoundDistance(null);
-      setRoundEnd(false);
-    }
+    if (currentRound >= 9) { setStatus('SUMMARY'); trackMission('play-arena', 1); }
+    else { setCurrentRound(c => c + 1); setGuessLat(null); setGuessLng(null); setRoundDistance(null); setRoundEnd(false); }
   };
 
   const target = queue[currentRound];
+  const boundsArr: [[number, number], [number, number]] | null =
+    roundEnd && guessLat !== null && guessLng !== null && target
+      ? [[Math.min(guessLat, target.lat), Math.min(guessLng, target.lng)],
+         [Math.max(guessLat, target.lat), Math.max(guessLng, target.lng)]]
+      : null;
+  const boundsKey = boundsArr ? boundsArr.flat().join(',') : '';
 
-  // Logic Khi người dùng Click trên MapComponent -> Bắt tọa độ (Component MapLeaflet tự sinh sự kiện Click)
-  const handleMapClick = (latlng: L.LatLng) => {
-    if (roundEnd || !target) return;
-    
-    const lat = latlng.lat;
-    const lng = latlng.lng;
-    setGuessLat(lat);
-    setGuessLng(lng);
-    
-    // Tính Distance (km)
-    const dist = calcDistanceKM(lat, lng, target.lat, target.lng);
-    setRoundDistance(dist);
-    
-    // Tính Điểm (Công thức: 1000 điểm nếu sai số < 50km, rớt dần về 0 nếu sai quá 5000km)
-    let pts = 0;
-    if (dist <= 50) pts = 1000;
-    else if (dist > 5000) pts = 0;
-    else {
-      pts = Math.round(1000 * (1 - dist / 5000));
-    }
-    
-    setRoundScore(pts);
-    setScore(s => s + Math.max(0, pts));
-    setRoundEnd(true);
-  };
-
-  // Component Map con nhận event (Sử dụng MapContainer context)
-  const MapEvents = dynamic(() => import('react-leaflet').then(m => {
-    return function MapEventsInner({ onMapClick }: { onMapClick: (ll: L.LatLng) => void }) {
-      m.useMapEvents({ click(e) { onMapClick(e.latlng); } });
-      return null;
-    }
-  }), { ssr: false });
-
+  // LOADING
   if (status === 'LOADING') return (
-    <div className="flex h-screen items-center justify-center bg-[#F0F9FF]">
-      <p className="text-xl font-bold text-cyan-600 animate-pulse">⏳ Đang tải Ngân hàng Câu hỏi...</p>
-    </div>
-  );
-
-  if (status === 'MENU') return (
-    <div className="flex flex-col h-screen items-center justify-center bg-gradient-to-br from-cyan-100 to-rose-50 p-6">
-      <div className="bg-white/80 backdrop-blur-xl p-8 rounded-[32px] shadow-2xl border border-white max-w-lg w-full text-center">
-        <h1 className="text-3xl font-black text-[#082F49] mb-2">Bút Toán Bản Đồ</h1>
-        <p className="text-slate-500 font-medium mb-6">Bạn am hiểu Trái Đất đến mức nào? 10 câu hỏi đang chờ bạn!</p>
-        
-        <div className="grid grid-cols-2 gap-3 mb-6">
-          <button onClick={() => startGame('all')} className="col-span-2 py-4 bg-gradient-to-r from-rose-400 to-orange-400 text-white rounded-2xl font-bold text-lg hover:scale-[1.02] transition-transform shadow-lg shadow-rose-200">
-            🎲 Đấu Trường Ngẫu Nhiên (Mix)
-          </button>
-          
-          <div className="col-span-2 text-left mt-2 pl-2 border-l-[3px] border-cyan-400">
-            <p className="font-extrabold text-[#082F49] text-sm uppercase tracking-wider">Câu đố Lãnh thổ</p>
-          </div>
-          <button onClick={() => startGame('country')} className="py-2.5 bg-white text-slate-700 rounded-xl font-bold text-sm border border-slate-200 hover:bg-cyan-50 hover:text-cyan-600 transition-colors">
-            Khám phá Quốc Gia
-          </button>
-          <button onClick={() => startGame('mountain')} className="py-2.5 bg-white text-slate-700 rounded-xl font-bold text-sm border border-slate-200 hover:bg-slate-50 transition-colors">
-            Đỉnh Núi Kỷ Lục
-          </button>
-          
-          <div className="col-span-2 text-left mt-2 pl-2 border-l-[3px] border-emerald-400">
-            <p className="font-extrabold text-[#082F49] text-sm uppercase tracking-wider mb-2">Thử thách World Bank (Kinh tế)</p>
-          </div>
-          <button onClick={() => startGame('country_pop')} className="py-2.5 bg-white text-slate-700 rounded-xl font-bold text-sm border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
-            👥 Định vị Dân Số
-          </button>
-          <button onClick={() => startGame('country_gdp')} className="py-2.5 bg-white text-slate-700 rounded-xl font-bold text-sm border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
-            🏦 Tìm GDP Cường Quốc
-          </button>
-          <button onClick={() => startGame('country_life')} className="col-span-2 py-2.5 bg-white text-slate-700 rounded-xl font-bold text-sm border border-slate-200 hover:bg-emerald-50 hover:text-emerald-600 transition-colors">
-            ❤️ Đoán Tuổi Thọ & Mức Sống
-          </button>
-        </div>
-        <Link href="/arena" className="block mt-6 text-sm font-bold text-rose-500 hover:underline">← Trở về Sảnh</Link>
+    <div className="flex h-screen items-center justify-center bg-gradient-to-br from-[#E0F2FE] to-[#DCFCE7]">
+      <div className="flex flex-col items-center gap-4">
+        <div className="w-16 h-16 rounded-full border-4 border-cyan-400 border-t-transparent animate-spin" />
+        <p className="text-xl font-black text-[#082F49]">Đang tải bản đồ thế giới...</p>
       </div>
     </div>
   );
 
-  if (status === 'SUMMARY') return (
-    <div className="flex flex-col h-screen items-center justify-center bg-gradient-to-br from-[#082f49] to-[#0f172a] p-6 text-white text-center relative overflow-hidden">
-      {/* Pháo giấy CSS đơn giản */}
-      <div className="absolute inset-0 pointer-events-none opacity-50 bg-[url('https://c.tenor.com/_MhIt_rC_sIAAAAC/confetti.gif')] bg-cover mix-blend-screen" />
-      
-      <div className="bg-white/10 backdrop-blur-2xl p-10 rounded-[40px] border border-white/20 z-10 max-w-lg w-full">
-        <div className="text-6xl mb-4">🏆</div>
-        <h2 className="text-3xl font-black text-rose-400 mb-2">Trận Đấu Kết Thúc</h2>
-        <p className="text-slate-300 font-medium text-lg mb-8">Kỷ lục của bạn trong chủ đề {topic}</p>
-        
-        <div className="text-7xl font-black text-cyan-300 mb-2 drop-shadow-[0_0_15px_rgba(34,211,238,0.5)]">
-          {score}
-        </div>
-        <p className="text-sm font-bold text-slate-400 uppercase tracking-widest mb-10">/ 10,000 Điểm tối đa</p>
-        
-        <div className="flex gap-4">
-          <button onClick={() => setStatus('MENU')} className="flex-1 py-4 bg-white/10 hover:bg-white/20 rounded-2xl font-bold transition-all border border-white/10">Menu</button>
-          <button onClick={() => startGame(topic)} className="flex-1 py-4 bg-rose-500 hover:bg-rose-600 rounded-2xl font-bold transition-all shadow-lg shadow-rose-500/30">Chơi Lại</button>
+  // MENU
+  if (status === 'MENU') {
+    const MODES = [
+      { key: 'all',          icon: '🎲', label: 'Đấu Trường Ngẫu Nhiên', sub: 'Mix tất cả chủ đề',           span: true,  grad: 'from-rose-400 to-orange-400',   sh: 'shadow-rose-200'    },
+      { key: 'country',      icon: '🌍', label: 'Khám phá Quốc Gia',     sub: 'Tìm vị trí các quốc gia',     span: false, grad: 'from-cyan-400 to-blue-400',     sh: 'shadow-cyan-200'    },
+      { key: 'mountain',     icon: '⛰️', label: 'Đỉnh Núi Kỷ Lục',      sub: 'Các ngọn núi cao nhất',        span: false, grad: 'from-slate-500 to-slate-700',   sh: 'shadow-slate-200'   },
+      { key: 'river',        icon: '🌞️', label: 'Sông Ngòi Thế Giới',   sub: 'Các dòng sông lớn',            span: false, grad: 'from-teal-400 to-emerald-500',  sh: 'shadow-teal-200'    },
+      { key: 'country_pop',  icon: '👥', label: 'Định Vị Dân Số',        sub: 'Đoán quốc gia từ dân số',      span: false, grad: 'from-violet-400 to-purple-500', sh: 'shadow-violet-200'  },
+      { key: 'country_gdp',  icon: '🏦', label: 'Tìm GDP Cường Quốc',   sub: 'Đoán quốc gia từ GDP',          span: false, grad: 'from-amber-400 to-yellow-500',  sh: 'shadow-amber-200'   },
+      { key: 'country_life', icon: '❤️', label: 'Tuổi Thọ & Mức Sống',  sub: 'Đoán quốc gia từ tuổi thọ TB', span: true,  grad: 'from-pink-400 to-rose-500',     sh: 'shadow-pink-200'    },
+    ];
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#E0F2FE] via-white to-[#DCFCE7] flex items-center justify-center p-4">
+        <div className="w-full max-w-lg">
+          <div className="text-center mb-7">
+            <span className="inline-block px-4 py-1.5 rounded-full bg-rose-50 text-rose-600 font-bold text-xs uppercase tracking-widest mb-3 border border-rose-100">Đấu Trường Địa Lý</span>
+            <h1 className="text-4xl font-black text-[#082F49]">🎯 Bút Toán Bản Đồ</h1>
+            <p className="text-slate-500 font-medium mt-2">Bạn am hiểu Trái Đất đến mức nào? 10 câu hỏi đang chờ!</p>
+          </div>
+          <div
+            className="grid grid-cols-2 gap-3 mb-5"
+            style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,1)', boxShadow: '0 10px 30px rgba(14,165,233,0.08)', borderRadius: 24, padding: 20 }}
+          >
+            {MODES.map(m => (
+              <button
+                key={m.key}
+                onClick={() => startGame(m.key)}
+                className={`${m.span ? 'col-span-2' : ''} flex items-center gap-3 p-4 rounded-[18px] bg-white border border-slate-100 hover:shadow-lg hover:-translate-y-0.5 transition-all duration-300 text-left group`}
+              >
+                <div className={`w-11 h-11 rounded-[14px] bg-gradient-to-br ${m.grad} flex items-center justify-center text-xl shadow-md ${m.sh} shrink-0 group-hover:scale-110 transition-transform duration-300`}>{m.icon}</div>
+                <div>
+                  <p className="font-black text-[#082F49] text-sm leading-tight">{m.label}</p>
+                  <p className="text-slate-400 font-medium text-xs mt-0.5">{m.sub}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+          <Link href="/arena" className="flex items-center justify-center gap-2 text-sm font-bold text-slate-400 hover:text-rose-500 transition-colors">← Trở về Sảnh Đấu Trường</Link>
         </div>
       </div>
-    </div>
-  );
+    );
+  }
 
-  // PLAYING STATE
+  // SUMMARY
+  if (status === 'SUMMARY') {
+    const pct = Math.round((score / 10000) * 100);
+    const sg = score >= 8000 ? { icon: '🏆', label: 'Thần Đồng Địa Lý', c: 'text-yellow-400' }
+             : score >= 5000 ? { icon: '🥇', label: 'Nhà Thám Hiểm',    c: 'text-cyan-400'   }
+             : score >= 3000 ? { icon: '🥈', label: 'Người Học Việc',    c: 'text-slate-300'  }
+             :                 { icon: '🌱', label: 'Tập Sự Địa Lý',     c: 'text-emerald-400'};
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#082f49] to-[#0c2340] flex items-center justify-center p-6">
+        <div className="w-full max-w-lg bg-white/10 backdrop-blur-2xl rounded-[40px] border border-white/20 p-8 text-center">
+          <div className="text-7xl mb-3">{sg.icon}</div>
+          <p className={`font-black text-2xl mb-1 ${sg.c}`}>{sg.label}</p>
+          <p className="text-slate-400 font-medium mb-7">Chủ đề: {topic}</p>
+          <div className="text-7xl font-black text-white mb-1 tabular-nums">{score.toLocaleString('vi-VN')}</div>
+          <p className="text-slate-400 font-bold text-sm uppercase tracking-widest mb-3">/ 10,000 điểm tối đa</p>
+          <div className="w-full h-3 rounded-full bg-white/10 overflow-hidden mb-8">
+            <div className="h-full rounded-full bg-gradient-to-r from-cyan-400 to-emerald-400 transition-all duration-1000" style={{ width: `${pct}%` }} />
+          </div>
+          <div className="flex gap-3">
+            <button onClick={() => setStatus('MENU')} className="flex-1 py-4 rounded-[18px] bg-white/10 hover:bg-white/20 text-white font-black transition-all border border-white/10">Menu</button>
+            <button onClick={() => startGame(topic)} className="flex-1 py-4 rounded-[18px] bg-gradient-to-r from-rose-500 to-orange-500 text-white font-black transition-all shadow-lg shadow-rose-500/30 hover:-translate-y-0.5">Сhơi Lại 🔄</button>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // PLAYING
+  if (!target) return null;
+  const grade = getGrade(roundScore);
+  const cat   = getCat(target.subCategory ?? '');
+
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-[#082F49]">
-      {/* ── MAP CONTAINER (Esri World Imagery No Labels) ── */}
-      <MapContainer 
-        center={[20, 0]} zoom={3} 
-        style={{ width: '100%', height: '100%' }}
-        zoomControl={false}
-      >
+
+      <style>{`
+        @keyframes geo-ring-pulse { 0%{transform:scale(0.8);opacity:0.9} 100%{transform:scale(2.8);opacity:0} }
+        .geo-target-icon{ background:transparent!important;border:none!important; }
+        .geo-ring{ animation:geo-ring-pulse 1.6s ease-out infinite; }
+      `}</style>
+
+      <MapContainer center={[20, 10]} zoom={2} style={{ width: '100%', height: '100%' }} zoomControl={false}>
         <TileLayer
           url="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
           attribution="&copy; Esri"
         />
-        <MapEvents onMapClick={handleMapClick} />
-        
-        {/* Draw Line and Markers when round ended */}
-        {roundEnd && target && guessLat !== null && guessLng !== null && (
-          <>
-            {/* Điểm đoán của User */}
-            <Marker position={[guessLat, guessLng]} />
-            {/* Điểm của Target */}
-            {redIcon && (
-              <Marker position={[target.lat, target.lng]} icon={redIcon}>
-                <Popup>{target.name}</Popup>
-              </Marker>
-            )}
-            {/* Đường nối */}
-            <Polyline positions={[[guessLat, guessLng], [target.lat, target.lng]]} 
-              pathOptions={{ color: '#F43F5E', dashArray: '10 10', weight: 3 }} />
-          </>
+        <MapController onMapClick={handleMapClick} boundsKey={boundsKey} boundsArr={boundsArr} />
+        {guessLat !== null && guessLng !== null && guessIcon && (
+          <Marker position={[guessLat, guessLng]} icon={guessIcon} zIndexOffset={100} />
+        )}
+        {roundEnd && targetIcon && (
+          <Marker position={[target.lat, target.lng]} icon={targetIcon} zIndexOffset={200} />
+        )}
+        {roundEnd && guessLat !== null && guessLng !== null && (
+          <Polyline
+            positions={[[guessLat, guessLng], [target.lat, target.lng]]}
+            pathOptions={{ color: '#FBBF24', dashArray: '8 6', weight: 2.5, opacity: 0.9 }}
+          />
         )}
       </MapContainer>
 
-      {/* ── GAME HUD (Top Center) ── */}
-      <div className="absolute top-6 left-1/2 -translate-x-1/2 z-[1000] flex flex-col items-center">
-        <div className="bg-white/90 backdrop-blur-md px-6 py-3 rounded-full border border-white/50 shadow-xl mb-3 flex items-center gap-4">
-          <div className="w-10 h-10 rounded-full bg-cyan-100 text-cyan-600 flex items-center justify-center font-black text-sm shrink-0 shadow-inner">
-            {currentRound + 1}/10
+      {/* HUD: top question bar */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-2xl px-4 pointer-events-none">
+        <div
+          className="rounded-[20px] p-3 md:p-4 flex items-center gap-3 pointer-events-auto"
+          style={{ background: 'rgba(255,255,255,0.93)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,1)', boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}
+        >
+          <div className="shrink-0 w-12 h-12 rounded-[14px] bg-gradient-to-br from-rose-400 to-orange-400 flex flex-col items-center justify-center text-white shadow-md">
+            <span className="font-black text-base leading-none">{currentRound + 1}</span>
+            <span className="text-[9px] font-bold opacity-70">/10</span>
           </div>
-          <div className="text-center px-4 w-full max-w-lg">
-            <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest leading-tight mb-0.5">{target?.qTitle}</p>
-            <p className="text-lg md:text-xl font-black text-[#082F49]">{target?.qText}</p>
+          <div className="flex-1 min-w-0">
+            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none mb-0.5">{target.qTitle}</p>
+            <p className="text-base md:text-lg font-black text-[#082F49] leading-snug">{target.qText}</p>
+            {target.qDesc && !roundEnd && (
+              <p className="text-xs text-slate-400 font-medium mt-0.5 truncate">💡 {target.qDesc}</p>
+            )}
           </div>
-          <div className="px-3 py-1 bg-slate-100 rounded-lg text-slate-600 font-bold text-sm border border-slate-200">
-            {score} pts
+          <div className="shrink-0 text-right">
+            <p className="text-[9px] font-black uppercase tracking-widest text-slate-400 leading-none">Điểm</p>
+            <p className="text-xl font-black text-[#082F49] tabular-nums">{score.toLocaleString('vi-VN')}</p>
           </div>
         </div>
-        
-        {/* Clue box for difficulty */}
-        {target?.qDesc && !roundEnd && (
-          <div className="bg-[#082F49]/80 backdrop-blur-md px-4 py-2 rounded-2xl border border-white/10 text-cyan-100 text-sm mt-2 max-w-md text-center font-medium shadow-2xl leading-relaxed">
-            💡 Gợi ý: {target.qDesc}
-          </div>
-        )}
+        <div className="flex justify-center gap-1.5 mt-2">
+          {Array.from({ length: 10 }, (_, i) => (
+            <div key={i} className={`h-1.5 rounded-full transition-all duration-500 ${i < currentRound ? 'w-4 bg-emerald-400' : i === currentRound ? 'w-7 bg-rose-400' : 'w-2.5 bg-white/30'}`} />
+          ))}
+        </div>
       </div>
 
-      {roundEnd && (
-        <div className="absolute inset-0 z-[2000] bg-black/20 backdrop-blur-[2px] flex items-end justify-center pb-12 pointer-events-none">
-          <div className="bg-white p-8 rounded-[32px] max-w-md w-full shadow-[0_20px_60px_rgba(0,0,0,0.3)] pointer-events-auto border-4 border-white transform translate-y-0 text-center animate-in slide-in-from-bottom-10 duration-300">
-            
-            <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Lượt {currentRound + 1}</p>
-            <h2 className="text-4xl font-black text-[#082F49] mb-1">
-              +{roundScore} ĐIỂM
-            </h2>
-            <p className="text-rose-500 font-extrabold text-lg flex items-center justify-center gap-2 mb-6">
-              Nguyệt lệch: {roundDistance?.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} km
-            </p>
-            
-            <div className="bg-slate-50 rounded-2xl p-4 mb-6">
-              <p className="text-[10px] font-bold text-slate-400 uppercase mb-1">Đáp án Lịch sử</p>
-              <p className="font-bold text-[#082F49]">{target.name} ({target.subCategory})</p>
-            </div>
+      {!roundEnd && (
+        <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-[1000] pointer-events-none">
+          <div className="px-5 py-2.5 rounded-full text-white font-bold text-sm flex items-center gap-2"
+            style={{ background: 'rgba(8,47,73,0.85)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.15)' }}>
+            {guessLat ? <><div className="w-3 h-3 rounded-full bg-cyan-400 shrink-0" />Đã chọn vị trí — chờ xác nhận...</>
+                      : <><span>👆</span>Nhấp vào bản đồ để đánh dấu vị trí</>}
+          </div>
+        </div>
+      )}
 
-            <button onClick={nextRound} className="w-full py-4 rounded-2xl font-black text-lg bg-[#082F49] text-white hover:bg-[#061f30] transition-colors shadow-xl">
-              {currentRound >= 9 ? 'KẾT THÚC' : 'CÂU TIẾP THEO'}
+      {roundEnd && (
+        <div className="absolute z-[1000] pointer-events-none"
+          style={{ bottom: 'calc(min(340px, 46vh) + 8px)', left: '16px' }}>
+          <div className="rounded-[14px] px-3 py-2 flex flex-col gap-1.5"
+            style={{ background: 'rgba(8,47,73,0.85)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,0.15)' }}>
+            <div className="flex items-center gap-2 text-xs text-white font-bold">
+              <div className="w-3.5 h-3.5 rounded-full bg-cyan-400 border-2 border-white shrink-0" /> Vị trí bạn chọn
+            </div>
+            <div className="flex items-center gap-2 text-xs text-white font-bold">
+              <div className="w-3.5 h-3.5 rounded-full bg-red-500 border-2 border-white shrink-0" /> Vị trí thực tế
+            </div>
+          </div>
+        </div>
+      )}
+
+      {roundEnd && (
+        <div className="absolute bottom-0 left-0 right-0 z-[1000] px-3 pb-3 md:px-6 md:pb-4">
+          <div
+            className="rounded-[28px] p-4 md:p-5 max-w-xl mx-auto"
+            style={{ background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(24px)', border: '1.5px solid rgba(255,255,255,1)', boxShadow: '0 -4px 40px rgba(0,0,0,0.18)' }}
+          >
+            <div className="flex items-start gap-3 mb-3">
+              <div className="shrink-0">
+                <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black border ${grade.badgeBg} ${grade.textColor} mb-1.5`}>{grade.label}</span>
+                <p className={`text-3xl font-black tabular-nums leading-none ${grade.textColor}`}>
+                  +{roundScore.toLocaleString('vi-VN')}<span className="text-sm font-bold text-slate-400 ml-1">điểm</span>
+                </p>
+                <p className="text-slate-400 font-bold text-xs mt-1">
+                  Sai lệch: <span className="text-rose-500 font-black">{roundDistance?.toLocaleString('vi-VN', { maximumFractionDigits: 0 })} km</span>
+                </p>
+              </div>
+              <div className="w-px self-stretch bg-slate-100 mx-1 shrink-0" />
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-1.5 mb-0.5">
+                  <span className="text-lg">{cat.icon}</span>
+                  <span className="text-[9px] font-black uppercase tracking-widest text-slate-400">{cat.label}</span>
+                </div>
+                <p className="font-black text-[#082F49] text-lg leading-tight">{target.name}</p>
+                {target.qDesc && <p className="text-xs text-slate-400 font-medium mt-0.5 line-clamp-2">{target.qDesc}</p>}
+              </div>
+            </div>
+            <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden mb-3">
+              <div className={`h-full rounded-full bg-gradient-to-r ${grade.barColor} transition-all duration-1000`} style={{ width: `${(roundScore / 1000) * 100}%` }} />
+            </div>
+            <div className="mb-3"><TargetInfoGrid target={target} /></div>
+            <button
+              onClick={nextRound}
+              className="w-full py-3.5 rounded-[18px] bg-gradient-to-r from-[#082F49] to-[#0a3d62] text-white font-black text-base shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all duration-300"
+            >
+              {currentRound >= 9 ? '🏆 Xem Tổng Kết' : `Câu ${currentRound + 2} →`}
             </button>
           </div>
         </div>

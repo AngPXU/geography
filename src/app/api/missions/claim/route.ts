@@ -4,7 +4,7 @@ import dbConnect from "@/utils/db";
 import DailyMission from "@/models/DailyMission";
 import User from "@/models/User";
 import { getVietnamDateStr } from "@/utils/missions";
-import type { MissionId } from "@/models/DailyMission";
+import type { MissionId, IMissionSlot } from "@/models/DailyMission";
 
 /**
  * POST /api/missions/claim
@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
   const doc = await DailyMission.findOne({ userId: dbUser._id, date: today });
   if (!doc) return NextResponse.json({ error: "No missions for today" }, { status: 404 });
 
-  const slot = doc.missions.find((m) => m.missionId === missionId);
+  const slot = doc.missions.find((m: IMissionSlot) => m.missionId === missionId);
   if (!slot) return NextResponse.json({ error: "Mission not found" }, { status: 404 });
   if (!slot.completed) return NextResponse.json({ error: "Mission not completed yet" }, { status: 400 });
   if (slot.claimed)   return NextResponse.json({ error: "Already claimed" }, { status: 400 });
@@ -42,7 +42,7 @@ export async function POST(req: NextRequest) {
 
   // ── Streak logic: only update on FIRST claimed mission of the day ──
   const wasAnyClaimedBefore = doc.missions.some(
-    (m) => m.missionId !== missionId && m.claimed
+    (m: IMissionSlot) => m.missionId !== missionId && m.claimed
   );
   const yesterday = getVietnamDateStr(new Date(Date.now() - 86_400_000));
   const currentStreak: number = (dbUser as any).streak ?? 0;
