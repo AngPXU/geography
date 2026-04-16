@@ -1,24 +1,1289 @@
 {
   "mountains": [
-    { "id": "himalaya", "name": "Dãy Himalaya", "lat": 27.986065, "lng": 86.922623, "desc": "Mái nhà của thế giới, đỉnh Everest cao 8,848m.", "emoji": "🏔️" },
-    { "id": "andes", "name": "Dãy Andes", "lat": -32.6531, "lng": -70.0112, "desc": "Dãy núi dài nhất thế giới, chạy dọc Nam Mỹ dài khoảng 7,000km.", "emoji": "⛰️" },
-    { "id": "alps", "name": "Dãy Alps", "lat": 46.8876, "lng": 9.657, "desc": "Hệ thống đồi núi lớn nhất châu Âu.", "emoji": "🏔️" },
-    { "id": "rocky", "name": "Dãy Rocky", "lat": 43.4382, "lng": -110.8654, "desc": "Dãy núi dài và rộng lớn tại Bắc Mỹ.", "emoji": "⛰️" }
+    {
+      "id": "everest",
+      "name": "Đỉnh Everest",
+      "lat": 27.9881,
+      "lng": 86.925,
+      "elevation": 8849,
+      "continent": "Châu Á",
+      "desc": "Đỉnh núi cao nhất thế giới (8.849m), nằm trong dãy Himalaya tại biên giới Nepal-Tây Tạng.",
+      "emoji": "🏔️"
+    },
+    {
+      "id": "aconcagua",
+      "name": "Đỉnh Aconcagua",
+      "lat": -32.6532,
+      "lng": -70.0109,
+      "elevation": 6961,
+      "continent": "Nam Mỹ",
+      "desc": "Đỉnh núi cao nhất Tây Bán cầu (6.961m), thuộc dãy Andes tại Argentina.",
+      "emoji": "⛰️"
+    },
+    {
+      "id": "kilimanjaro",
+      "name": "Kilimanjaro",
+      "lat": -3.0674,
+      "lng": 37.3556,
+      "elevation": 5895,
+      "continent": "Châu Phi",
+      "desc": "Núi lửa ngủ yên cao nhất châu Phi (5.895m), nằm ở Tanzania gần xích đạo.",
+      "emoji": "🏔️"
+    },
+    {
+      "id": "elbrus",
+      "name": "Đỉnh Elbrus",
+      "lat": 43.3499,
+      "lng": 42.4453,
+      "elevation": 5642,
+      "continent": "Châu Âu",
+      "desc": "Đỉnh núi cao nhất châu Âu (5.642m), thuộc dãy Kavkaz tại Nga.",
+      "emoji": "⛰️"
+    },
+    {
+      "id": "denali",
+      "name": "Đỉnh Denali",
+      "lat": 63.0692,
+      "lng": -151.007,
+      "elevation": 6194,
+      "continent": "Bắc Mỹ",
+      "desc": "Đỉnh núi cao nhất Bắc Mỹ (6.194m), thuộc Alaska, Hoa Kỳ.",
+      "emoji": "🏔️"
+    },
+    {
+      "id": "fansipan",
+      "name": "Đỉnh Fansipan",
+      "lat": 22.3033,
+      "lng": 103.7755,
+      "elevation": 3143,
+      "continent": "Đông Nam Á",
+      "desc": "Nóc nhà Đông Dương (3.143m), thuộc dãy Hoàng Liên Sơn, tỉnh Lào Cai, Việt Nam.",
+      "emoji": "🇻🇳"
+    },
+    {
+      "id": "fuji",
+      "name": "Núi Phú Sĩ",
+      "lat": 35.3606,
+      "lng": 138.7274,
+      "elevation": 3776,
+      "continent": "Châu Á",
+      "desc": "Ngọn núi lửa ngủ cao nhất Nhật Bản (3.776m) và là biểu tượng văn hóa của đất nước Mặt Trời Mọc.",
+      "emoji": "🏔️"
+    },
+    {
+      "id": "mont-blanc",
+      "name": "Đỉnh Mont Blanc",
+      "lat": 45.8326,
+      "lng": 6.8652,
+      "elevation": 4808,
+      "continent": "Châu Âu",
+      "desc": "Đỉnh núi cao nhất dãy Alps (4.808m), nằm trên biên giới Pháp-Ý.",
+      "emoji": "⛰️"
+    },
+    {
+      "id": "himalayas",
+      "name": "Dãy Himalaya",
+      "lat": 28.5,
+      "lng": 84,
+      "elevation": 0,
+      "continent": "Châu Á",
+      "desc": "Hệ thống núi cao nhất thế giới, trải dài qua 5 nước: Nepal, Ấn Độ, Tây Tạng, Bhutan, Pakistan.",
+      "emoji": "🏔️"
+    },
+    {
+      "id": "andes",
+      "name": "Dãy Andes",
+      "lat": -20,
+      "lng": -68,
+      "elevation": 0,
+      "continent": "Nam Mỹ",
+      "desc": "Dãy núi dài nhất thế giới (7.000km), chạy dọc bờ Tây Nam Mỹ qua 7 quốc gia.",
+      "emoji": "⛰️"
+    },
+    {
+      "id": "rocky",
+      "name": "Dãy Rocky",
+      "lat": 45,
+      "lng": -113,
+      "elevation": 0,
+      "continent": "Bắc Mỹ",
+      "desc": "Hệ thống núi lớn nhất Bắc Mỹ, trải dài từ Canada đến New Mexico (Hoa Kỳ).",
+      "emoji": "⛰️"
+    },
+    {
+      "id": "urals",
+      "name": "Dãy Ural",
+      "lat": 60,
+      "lng": 59,
+      "elevation": 0,
+      "continent": "Ranh giới Á-Âu",
+      "desc": "Dãy núi tạo thành ranh giới tự nhiên giữa châu Âu và châu Á, trải dài qua nước Nga.",
+      "emoji": "🏔️"
+    }
   ],
-  "biomes": [
-    { "id": "sahara", "name": "Sa mạc Sahara", "lat": 23.4162, "lng": 25.6628, "desc": "Sa mạc nóng lớn nhất thế giới, xấp xỉ diện tích Hoa Kỳ.", "emoji": "🏜️", "color": "#f59e0b" },
-    { "id": "amazon", "name": "Rừng Amazon", "lat": -3.4653, "lng": -62.2159, "desc": "Lá phổi xanh của Trái Đất, lưu vực Nam Mỹ.", "emoji": "🌲", "color": "#10b981" },
-    { "id": "siberia", "name": "Đồng rêu Siberia", "lat": 61.0, "lng": 100.0, "desc": "Vùng đất rộng lớn lạnh giá phủ đầy băng tuyết và rừng taiga.", "emoji": "❄️", "color": "#9ca3af" },
-    { "id": "congo", "name": "Rừng Congo", "lat": -1.41, "lng": 23.08, "desc": "Rừng nhiệt đới lớn thứ hai thế giới.", "emoji": "🌳", "color": "#059669" }
+  "rivers": [
+    {
+      "id": "nile",
+      "name": "Sông Nile",
+      "lat": 15,
+      "lng": 32,
+      "length": 6650,
+      "continent": "Châu Phi",
+      "desc": "Sông dài nhất thế giới (6.650km), chảy qua 11 quốc gia châu Phi đổ vào Địa Trung Hải.",
+      "emoji": ""
+    },
+    {
+      "id": "amazon",
+      "name": "Sông Amazon",
+      "lat": -3.5,
+      "lng": -60,
+      "length": 6400,
+      "continent": "Nam Mỹ",
+      "desc": "Sông có lưu lượng nước lớn nhất thế giới (6.400km), chảy qua Peru, Colombia, Brazil.",
+      "emoji": ""
+    },
+    {
+      "id": "yangtze",
+      "name": "Sông Trường Giang",
+      "lat": 30,
+      "lng": 110,
+      "length": 6300,
+      "continent": "Châu Á",
+      "desc": "Sông dài nhất châu Á và Trung Quốc (6.300km), là huyết mạch kinh tế quan trọng.",
+      "emoji": ""
+    },
+    {
+      "id": "mississippi",
+      "name": "Sông Mississippi",
+      "lat": 35,
+      "lng": -90,
+      "length": 3730,
+      "continent": "Bắc Mỹ",
+      "desc": "Sông lớn nhất Hoa Kỳ (3.730km), chảy từ Minnesota đến vịnh Mexico.",
+      "emoji": ""
+    },
+    {
+      "id": "ob",
+      "name": "Sông Ob-Irtysh",
+      "lat": 62,
+      "lng": 70,
+      "length": 5410,
+      "continent": "Châu Á",
+      "desc": "Hệ thống sông dài nhất Siberia (5.410km), đổ vào Bắc Băng Dương.",
+      "emoji": ""
+    },
+    {
+      "id": "mekong",
+      "name": "Sông Mê Kông",
+      "lat": 18,
+      "lng": 102.5,
+      "length": 4350,
+      "continent": "Đông Nam Á",
+      "desc": "Sông dài nhất Đông Nam Á (4.350km), chảy qua 6 nước: Trung Quốc, Myanmar, Lào, Thái Lan, Campuchia, Việt Nam.",
+      "emoji": ""
+    },
+    {
+      "id": "congo",
+      "name": "Sông Congo",
+      "lat": -2,
+      "lng": 23,
+      "length": 4700,
+      "continent": "Châu Phi",
+      "desc": "Sông sâu nhất thế giới và lớn thứ hai châu Phi (4.700km), chảy qua Cộng hòa Dân chủ Congo.",
+      "emoji": ""
+    },
+    {
+      "id": "niger",
+      "name": "Sông Niger",
+      "lat": 9,
+      "lng": 5,
+      "length": 4180,
+      "continent": "Châu Phi",
+      "desc": "Sông lớn thứ ba châu Phi (4.180km), chảy qua Guinea, Mali, Niger, Benin, Nigeria.",
+      "emoji": ""
+    },
+    {
+      "id": "ganges",
+      "name": "Sông Hằng",
+      "lat": 25,
+      "lng": 83,
+      "length": 2525,
+      "continent": "Châu Á",
+      "desc": "Sông thiêng liêng nhất Ấn Độ (2.525km), được người Hindu tôn thờ như một vị thần.",
+      "emoji": ""
+    },
+    {
+      "id": "rhine",
+      "name": "Sông Rhine",
+      "lat": 50.5,
+      "lng": 7.5,
+      "length": 1230,
+      "continent": "Châu Âu",
+      "desc": "Huyết mạch giao thông quốc tế quan trọng nhất châu Âu (1.230km), chảy qua Thụy Sĩ, Đức, Hà Lan.",
+      "emoji": ""
+    }
   ],
-  "population": [
-    { "id": "tokyo", "name": "Tokyo, Nhật Bản", "lat": 35.6762, "lng": 139.6503, "pop": 37400000, "desc": "Vùng đô thị đông dân nhất thế giới." },
-    { "id": "delhi", "name": "Delhi, Ấn Độ", "lat": 28.7041, "lng": 77.1025, "pop": 29399000, "desc": "Trung tâm chính trị khu vực với dân số tăng phi mã." },
-    { "id": "shanghai", "name": "Thượng Hải, TQ", "lat": 31.2304, "lng": 121.4737, "pop": 26320000, "desc": "Siêu cảng biển và trung tâm tài chính Đông Á." },
-    { "id": "saopaulo", "name": "São Paulo, Brazil", "lat": -23.5505, "lng": -46.6333, "pop": 21846000, "desc": "Thủ đô kinh tế của Nam Mỹ với mật độ dân số đặc." },
-    { "id": "dhaka", "name": "Dhaka, Bangladesh", "lat": 23.8103, "lng": 90.4125, "pop": 20283000, "desc": "Thành phố có độ nhộn nhịp cao kỷ lục." },
-    { "id": "hcmc", "name": "Hồ Chí Minh, VN", "lat": 10.8231, "lng": 106.6297, "pop": 9000000, "desc": "Đô thị sôi động nhất cực Nam Việt Nam." },
-    { "id": "newyork", "name": "New York, Mỹ", "lat": 40.7128, "lng": -74.006, "pop": 20140000, "desc": "Thủ đô tài chính sôi động của Mỹ." },
-    { "id": "lagos", "name": "Lagos, Nigeria", "lat": 6.5244, "lng": 3.3792, "pop": 19000000, "desc": "Vùng đô thị đang bùng nổ dân số khủng khiếp ở Tây Phi." }
+  "climatePoints": [
+    {
+      "id": "cl-tropical-amazon",
+      "name": "Rừng nhiệt đới Amazon",
+      "lat": -3.4653,
+      "lng": -62.2159,
+      "zone": "Af",
+      "featureClass": "Khí hậu Xích đạo ẩm",
+      "comment": "Rừng mưa nhiệt đới lớn nhất hành tinh, vòng tuần hoàn nước tự cung tự cấp. Lượng mưa cực lớn quanh năm.",
+      "emoji": "🌴"
+    },
+    {
+      "id": "cl-tropical-congo",
+      "name": "Lưu vực sông Congo",
+      "lat": 0,
+      "lng": 22,
+      "zone": "Af",
+      "featureClass": "Khí hậu Xích đạo ẩm",
+      "comment": "Rừng rậm thường xanh lớn thứ hai thế giới tại trung tâm Châu Phi.",
+      "emoji": "🌴"
+    },
+    {
+      "id": "cl-desert-sahara",
+      "name": "Sa mạc Sahara",
+      "lat": 23.4162,
+      "lng": 25.6628,
+      "zone": "BWh",
+      "featureClass": "Khí hậu Sa mạc nóng",
+      "comment": "Sa mạc rộng lớn khốc liệt nhất hành tinh. Nhiệt độ ban ngày có thể lên tới 50°C, lượng mưa gần như bằng không.",
+      "emoji": "🐪"
+    },
+    {
+      "id": "cl-desert-arabia",
+      "name": "Sa mạc Ả Rập",
+      "lat": 23.4241,
+      "lng": 53.8478,
+      "zone": "BWh",
+      "featureClass": "Khí hậu Sa mạc nóng",
+      "comment": "Đặc trưng bởi lượng cồn cát khổng lồ và chênh lệch nhiệt độ cực độ giữa ngày và đêm.",
+      "emoji": "🐪"
+    },
+    {
+      "id": "cl-desert-gobi",
+      "name": "Sa mạc Gobi",
+      "lat": 42.59,
+      "lng": 103.43,
+      "zone": "BWk",
+      "featureClass": "Khí hậu Sa mạc lạnh",
+      "comment": "Đại sa mạc ôn đới nằm sâu trong nội địa Châu Á, mùa đông có bão tuyết âm 40 độ.",
+      "emoji": "🏜️"
+    },
+    {
+      "id": "cl-steppe-mongol",
+      "name": "Thảo nguyên Mông Cổ",
+      "lat": 46.8625,
+      "lng": 103.8467,
+      "zone": "BSk",
+      "featureClass": "Khí hậu Thảo nguyên (Steppe)",
+      "comment": "Hệ sinh thái đồng cỏ rộng lớn, độ ẩm thấp, là cái nôi của lối sống du mục Á-Âu.",
+      "emoji": "🐎"
+    },
+    {
+      "id": "cl-mediterranean-spain",
+      "name": "Vùng Địa Trung Hải",
+      "lat": 38,
+      "lng": 0,
+      "zone": "Csa",
+      "featureClass": "Khí hậu Địa Trung Hải",
+      "comment": "Mùa hè khô nóng, mùa đông ấm ướt áp. Cực kỳ lý tưởng cho canh tác nho và ô-liu.",
+      "emoji": "🍇"
+    },
+    {
+      "id": "cl-humid-subtropical-seusa",
+      "name": "Đông Nam Hoa Kỳ",
+      "lat": 33.74,
+      "lng": -84.38,
+      "zone": "Cfa",
+      "featureClass": "Khí hậu Cận nhiệt đới ẩm",
+      "comment": "Không có mùa khô thật sự, thường xuyên xuất hiện bão nhiệt đới dữ dội (Hurricanes).",
+      "emoji": "🌪️"
+    },
+    {
+      "id": "cl-monsoon-vn",
+      "name": "Đông Nam Á (Việt Nam)",
+      "lat": 14.05,
+      "lng": 108.27,
+      "zone": "Am / Aw",
+      "featureClass": "Khí hậu Nhiệt đới Gió mùa",
+      "comment": "Gió mùa mang lại một mùa mưa cực ẩm ướt và một mùa khô rõ rệt.",
+      "emoji": "🌧️"
+    },
+    {
+      "id": "cl-oceanic-uk",
+      "name": "Tây Âu (Quần đảo Anh)",
+      "lat": 53,
+      "lng": -2,
+      "zone": "Cfb",
+      "featureClass": "Khí hậu Đại dương ôn hòa",
+      "comment": "Nhờ dòng hải lưu Gulf Stream sưởi ấm, mùa đông không đóng băng gắt dù vĩ độ rất cao.",
+      "emoji": "☁️"
+    },
+    {
+      "id": "cl-continental-russia",
+      "name": "Đồng bằng Nga & Siberia",
+      "lat": 55.75,
+      "lng": 37.61,
+      "zone": "Dfb",
+      "featureClass": "Khí hậu Lục địa ẩm",
+      "comment": "Mùa đông dài và vô tận với tuyết dày, đối lập với mùa hè ấm áp nhưng cực kỳ ngắn.",
+      "emoji": "⛄"
+    },
+    {
+      "id": "cl-boreal-canada",
+      "name": "Rừng thông Taiga Canada",
+      "lat": 56.13,
+      "lng": -106.34,
+      "zone": "Dfc",
+      "featureClass": "Khí hậu Cận Bắc Cực",
+      "comment": "Khắc nghiệt, nơi thống trị của hệ thống rừng kim và hiện tượng đóng băng vĩnh cửu.",
+      "emoji": "🌲"
+    },
+    {
+      "id": "cl-tundra-siberia",
+      "name": "Đài nguyên Siberia (Tundra)",
+      "lat": 66.25,
+      "lng": 100,
+      "zone": "ET",
+      "featureClass": "Khí hậu Đài nguyên",
+      "comment": "Chỉ có khoảng 1-2 tháng nhiệt độ nhoi lên trên 0°C đủ để rêu và địa y mọc được.",
+      "emoji": "❄️"
+    },
+    {
+      "id": "cl-icecap-antarctica",
+      "name": "Băng nguyên Nam Cực",
+      "lat": -82.86,
+      "lng": 135,
+      "zone": "EF",
+      "featureClass": "Khí hậu Băng nguyên cực",
+      "comment": "Môi trường sống cực hạn, lục địa khô nhất, gió mạnh nhất và nhiệt độ xuống tận âm 89 độ.",
+      "emoji": "🐧"
+    },
+    {
+      "id": "cl-highland-tibetan",
+      "name": "Cao nguyên Tây Tạng",
+      "lat": 33,
+      "lng": 88,
+      "zone": "H",
+      "featureClass": "Khí hậu Vùng cao nguyên",
+      "comment": "Được gọi là \"Cực thứ 3\", không khí loãng, rất nhiều sông băng nguồn của toàn cõi Châu Á.",
+      "emoji": "🏔️"
+    }
+  ],
+  "oceans": [
+    {
+      "id": "pacific",
+      "name": "Thái Bình Dương",
+      "lat": 0,
+      "lng": -160,
+      "area": 165250000,
+      "depth": 10994,
+      "desc": "Đại dương lớn nhất thế giới (165 triệu km²), chứa hơn 50% lượng nước biển. Điểm sâu nhất: Vực Mariana 10.994m.",
+      "emoji": ""
+    },
+    {
+      "id": "atlantic",
+      "name": "Đại Tây Dương",
+      "lat": 15,
+      "lng": -30,
+      "area": 106460000,
+      "depth": 8376,
+      "desc": "Đại dương lớn thứ hai (106 triệu km²), ngăn cách châu Âu-Phi với châu Mỹ. Điểm sâu nhất: Vực Puerto Rico.",
+      "emoji": ""
+    },
+    {
+      "id": "indian",
+      "name": "Ấn Độ Dương",
+      "lat": -20,
+      "lng": 80,
+      "area": 70560000,
+      "depth": 7258,
+      "desc": "Đại dương ấm nhất thế giới (70 triệu km²), đường thương mại hàng hải quan trọng từ Đông sang Tây.",
+      "emoji": ""
+    },
+    {
+      "id": "southern",
+      "name": "Nam Đại Dương",
+      "lat": -60,
+      "lng": 0,
+      "area": 21960000,
+      "depth": 7236,
+      "desc": "Đại dương quanh Nam Cực (22 triệu km²), được công nhận chính thức năm 2000. Sóng mạnh nhất thế giới.",
+      "emoji": ""
+    },
+    {
+      "id": "arctic",
+      "name": "Bắc Băng Dương",
+      "lat": 85,
+      "lng": 0,
+      "area": 14056000,
+      "depth": 5450,
+      "desc": "Đại dương nhỏ nhất (14 triệu km²), băng bao phủ phần lớn mặt biển. Tuyến đường biển phía Bắc ngày càng quan trọng.",
+      "emoji": ""
+    },
+    {
+      "id": "south-china-sea",
+      "name": "Biển Đông (Biển Nam Trung Hoa)",
+      "lat": 12,
+      "lng": 114,
+      "area": 3500000,
+      "depth": 5559,
+      "desc": "Biển lớn nhất Đông Nam Á, tuyến hàng hải quốc tế quan trọng. Việt Nam có bờ biển dài 3.260km tiếp giáp Biển Đông.",
+      "emoji": "🏔️"
+    },
+    {
+      "id": "mediterranean",
+      "name": "Địa Trung Hải",
+      "lat": 35,
+      "lng": 18,
+      "area": 2510000,
+      "depth": 5267,
+      "desc": "Biển nội địa lớn nhất, nơi khai sinh văn minh Hy Lạp-La Mã. Nối với Đại Tây Dương qua eo Gibraltar.",
+      "emoji": ""
+    },
+    {
+      "id": "caribbean",
+      "name": "Biển Caribbean",
+      "lat": 15,
+      "lng": -75,
+      "area": 2754000,
+      "depth": 7686,
+      "desc": "Biển nhiệt đới nổi tiếng với rạn san hô, hải tặc lịch sử và du lịch biển đảo phong phú.",
+      "emoji": ""
+    },
+    {
+      "id": "red-sea",
+      "name": "Biển Đỏ",
+      "lat": 22,
+      "lng": 37,
+      "area": 438000,
+      "depth": 3040,
+      "desc": "Tuyến vận tải chiến lược nối Địa Trung Hải với Ấn Độ Dương qua kênh đào Suez, phân tách châu Phi và bán đảo Ả Rập.",
+      "emoji": ""
+    },
+    {
+      "id": "persian-gulf",
+      "name": "Vịnh Ba Tư",
+      "lat": 26.5,
+      "lng": 52,
+      "area": 251000,
+      "depth": 90,
+      "desc": "Vịnh biển nông nhưng cực kỳ quan trọng, khu vực dầu mỏ lớn nhất thế giới, tiếp giáp với 8 quốc gia.",
+      "emoji": ""
+    }
+  ],
+  "currents": [
+    {
+      "id": "gulf-stream",
+      "name": "Dòng Gulf Stream (nóng)",
+      "type": "warm",
+      "lat": 42,
+      "lng": -45,
+      "desc": "Dòng hải lưu nóng mạnh nhất từ vịnh Mexico chảy lên Bắc Đại Tây Dương, ấm hóa khí hậu Tây Âu lên 3-5°C.",
+      "path": [
+        [
+          25,
+          -80
+        ],
+        [
+          30,
+          -78
+        ],
+        [
+          35,
+          -75
+        ],
+        [
+          40,
+          -68
+        ],
+        [
+          45,
+          -55
+        ],
+        [
+          52,
+          -38
+        ],
+        [
+          58,
+          -20
+        ],
+        [
+          60,
+          -10
+        ],
+        [
+          58,
+          -5
+        ]
+      ]
+    },
+    {
+      "id": "kuroshio",
+      "name": "Dòng Kuroshio (nóng)",
+      "type": "warm",
+      "lat": 35,
+      "lng": 152,
+      "desc": "Dòng hải lưu nóng chảy dọc bờ đông Nhật Bản, ảnh hưởng khí hậu và nghề cá Đông Á. Tên có nghĩa 'dòng nước đen'.",
+      "path": [
+        [
+          12,
+          127
+        ],
+        [
+          20,
+          130
+        ],
+        [
+          30,
+          138
+        ],
+        [
+          38,
+          145
+        ],
+        [
+          45,
+          155
+        ],
+        [
+          48,
+          170
+        ]
+      ]
+    },
+    {
+      "id": "labrador",
+      "name": "Dòng Labrador (lạnh)",
+      "type": "cold",
+      "lat": 58,
+      "lng": -52,
+      "desc": "Dòng hải lưu lạnh từ Bắc Cực xuống bờ đông Canada, mang theo tảng băng trôi, lạnh hóa khí hậu vùng duyên hải.",
+      "path": [
+        [
+          78,
+          -70
+        ],
+        [
+          70,
+          -60
+        ],
+        [
+          62,
+          -55
+        ],
+        [
+          55,
+          -52
+        ],
+        [
+          48,
+          -52
+        ],
+        [
+          45,
+          -55
+        ]
+      ]
+    },
+    {
+      "id": "california",
+      "name": "Dòng California (lạnh)",
+      "type": "cold",
+      "lat": 37,
+      "lng": -126,
+      "desc": "Dòng hải lưu lạnh chảy từ bắc xuống dọc bờ tây Hoa Kỳ, tạo ra hiện tượng nước trồi giàu dinh dưỡng, địa điểm đánh cá lớn.",
+      "path": [
+        [
+          55,
+          -140
+        ],
+        [
+          46,
+          -130
+        ],
+        [
+          37,
+          -125
+        ],
+        [
+          28,
+          -118
+        ],
+        [
+          20,
+          -108
+        ]
+      ]
+    },
+    {
+      "id": "humboldt",
+      "name": "Dòng Humboldt/Peru (lạnh)",
+      "type": "cold",
+      "lat": -20,
+      "lng": -77,
+      "desc": "Dòng hải lưu lạnh dọc bờ tây Nam Mỹ, nguyên nhân tạo ra sa mạc Atacama và tạo điều kiện El Niño.",
+      "path": [
+        [
+          -45,
+          -75
+        ],
+        [
+          -35,
+          -74
+        ],
+        [
+          -20,
+          -75
+        ],
+        [
+          -10,
+          -78
+        ],
+        [
+          0,
+          -80
+        ],
+        [
+          5,
+          -78
+        ]
+      ]
+    },
+    {
+      "id": "west-wind-drift",
+      "name": "Dòng gió Tây Nam Cực (lạnh)",
+      "type": "cold",
+      "lat": -55,
+      "lng": 0,
+      "desc": "Dòng hải lưu mạnh nhất thế giới vòng quanh Nam Cực theo hướng đông, không bị lục địa ngăn cản.",
+      "path": [
+        [
+          -55,
+          -70
+        ],
+        [
+          -55,
+          -35
+        ],
+        [
+          -55,
+          0
+        ],
+        [
+          -55,
+          40
+        ],
+        [
+          -55,
+          80
+        ],
+        [
+          -55,
+          120
+        ],
+        [
+          -55,
+          160
+        ]
+      ]
+    }
+  ],
+  "vnRegions": [
+    {
+      "id": "vn-tay-bac",
+      "name": "Vùng Tây Bắc",
+      "lat": 21.5,
+      "lng": 103.5,
+      "color": "#8b5cf6",
+      "desc": "Vùng núi cao phía tây bắc, địa hình hiểm trở với nhiều dân tộc thiểu số. Kinh tế: trồng trọt nương rẫy, thủy điện Sơn La, Hòa Bình.",
+      "emoji": "⛰️"
+    },
+    {
+      "id": "vn-dong-bac",
+      "name": "Vùng Đông Bắc",
+      "lat": 21.8,
+      "lng": 106.5,
+      "color": "#0ea5e9",
+      "desc": "Vùng đồi núi trùng điệp với Vịnh Hạ Long - Di sản UNESCO. Khai thác than (Quảng Ninh), du lịch biển đảo.",
+      "emoji": "🏝️"
+    },
+    {
+      "id": "vn-dbsh",
+      "name": "Đồng bằng Sông Hồng",
+      "lat": 20.5,
+      "lng": 106,
+      "color": "#ef4444",
+      "desc": "Trung tâm chính trị-kinh tế-văn hóa miền Bắc. Vùng sản xuất lúa, rau màu trù phú. Dân số đông đúc nhất.",
+      "emoji": "🌾"
+    },
+    {
+      "id": "vn-btb",
+      "name": "Bắc Trung Bộ",
+      "lat": 18.5,
+      "lng": 106,
+      "color": "#16a34a",
+      "desc": "Vùng duyên hải hẹp, chịu nhiều thiên tai. Di sản phong phú: Cố đô Huế, Phố cổ Hội An, Động Phong Nha.",
+      "emoji": "🏛️"
+    },
+    {
+      "id": "vn-ntb",
+      "name": "Nam Trung Bộ",
+      "lat": 13.5,
+      "lng": 108.5,
+      "color": "#f97316",
+      "desc": "Bờ biển dài đẹp với nhiều cảng biển, khu kinh tế. Phát triển du lịch, đánh bắt hải sản, công nghiệp dầu khí.",
+      "emoji": "🌊"
+    },
+    {
+      "id": "vn-tay-nguyen",
+      "name": "Tây Nguyên",
+      "lat": 13,
+      "lng": 107.5,
+      "color": "#a16207",
+      "desc": "Cao nguyên rộng lớn giàu tài nguyên. Thủ phủ cà phê, hồ tiêu thế giới. Thủy điện lớn như Ya Ly, Sê San.",
+      "emoji": "☕"
+    },
+    {
+      "id": "vn-dnb",
+      "name": "Đông Nam Bộ",
+      "lat": 11,
+      "lng": 107,
+      "color": "#dc2626",
+      "desc": "Vùng kinh tế năng động nhất cả nước. TP.HCM là trung tâm kinh tế quốc gia, chiếm 35-40% GDP cả nước.",
+      "emoji": "🏙️"
+    },
+    {
+      "id": "vn-dbscl",
+      "name": "Đồng bằng Sông Cửu Long",
+      "lat": 10,
+      "lng": 105.5,
+      "color": "#0d9488",
+      "desc": "Vựa lúa, vựa cá tôm lớn nhất Việt Nam. Xuất khẩu gạo, thủy sản hàng đầu. Đang đối mặt nước biển dâng.",
+      "emoji": "🌾"
+    }
+  ],
+  "vnCities": [
+    {
+      "id": "vn-hanoi",
+      "name": "Hà Nội",
+      "lat": 21.0285,
+      "lng": 105.8542,
+      "pop": 8500000,
+      "desc": "Thủ đô nghìn năm tuổi, trung tâm chính trị-văn hóa Việt Nam. Hồ Hoàn Kiếm, Văn Miếu là biểu tượng.",
+      "emoji": "🏛️"
+    },
+    {
+      "id": "vn-hcmc",
+      "name": "TP. Hồ Chí Minh",
+      "lat": 10.8231,
+      "lng": 106.6297,
+      "pop": 9300000,
+      "desc": "Thành phố kinh tế lớn nhất, sôi động nhất Việt Nam. Chiếm 22% GDP cả nước, trung tâm thương mại quốc tế.",
+      "emoji": "🏙️"
+    },
+    {
+      "id": "vn-danang",
+      "name": "Đà Nẵng",
+      "lat": 16.0544,
+      "lng": 108.2022,
+      "pop": 1200000,
+      "desc": "Thành phố trực thuộc trung ương miền Trung, cửa ngõ Hành lang Kinh tế Đông Tây, du lịch biển nổi tiếng.",
+      "emoji": "🌊"
+    },
+    {
+      "id": "vn-haiphong",
+      "name": "Hải Phòng",
+      "lat": 20.8449,
+      "lng": 106.6881,
+      "pop": 2100000,
+      "desc": "Thành phố cảng lớn nhất miền Bắc, trung tâm công nghiệp và xuất nhập khẩu quan trọng của vùng ĐBSH.",
+      "emoji": "⚓"
+    },
+    {
+      "id": "vn-cantho",
+      "name": "Cần Thơ",
+      "lat": 10.0341,
+      "lng": 105.7903,
+      "pop": 1300000,
+      "desc": "Trái tim của Đồng bằng Sông Cửu Long, trung tâm kinh tế-xã hội vùng. Chợ nổi Cái Răng nổi tiếng.",
+      "emoji": "🌾"
+    },
+    {
+      "id": "vn-hue",
+      "name": "Huế",
+      "lat": 16.4637,
+      "lng": 107.5909,
+      "pop": 360000,
+      "desc": "Cố đô triều Nguyễn, thành phố di sản với Kinh thành Huế, lăng tẩm được UNESCO công nhận.",
+      "emoji": "🏛️"
+    },
+    {
+      "id": "vn-nhatrang",
+      "name": "Nha Trang",
+      "lat": 12.2388,
+      "lng": 109.1967,
+      "pop": 450000,
+      "desc": "Thiên đường biển đảo Khánh Hòa, nổi tiếng với bãi biển đẹp và Tháp Chàm cổ kính.",
+      "emoji": "🏖️"
+    },
+    {
+      "id": "vn-dalat",
+      "name": "Đà Lạt",
+      "lat": 11.9465,
+      "lng": 108.4419,
+      "pop": 230000,
+      "desc": "Thành phố sương mù ở độ cao 1.500m, vựa rau & hoa lớn nhất VN, thiên đường du lịch sinh thái Tây Nguyên.",
+      "emoji": "🌸"
+    },
+    {
+      "id": "vn-vinh",
+      "name": "Vinh (Nghệ An)",
+      "lat": 18.6658,
+      "lng": 105.692,
+      "pop": 490000,
+      "desc": "Trung tâm kinh tế-thương mại vùng Bắc Trung Bộ, quê hương Chủ tịch Hồ Chí Minh.",
+      "emoji": "🌍"
+    },
+    {
+      "id": "vn-buonmathuot",
+      "name": "Buôn Ma Thuột",
+      "lat": 12.6833,
+      "lng": 108.05,
+      "pop": 380000,
+      "desc": "Thủ phủ Tây Nguyên, Thành phố Cà phê thế giới - sản xuất cà phê Robusta hàng đầu thế giới.",
+      "emoji": "☕"
+    },
+    {
+      "id": "vn-halongcity",
+      "name": "Hạ Long (Quảng Ninh)",
+      "lat": 20.9487,
+      "lng": 107.0825,
+      "pop": 250000,
+      "desc": "Vịnh Hạ Long - kỳ quan thiên nhiên thế giới với 1.969 hòn đảo. Trung tâm khai thác than lớn nhất VN.",
+      "emoji": "🏝️"
+    },
+    {
+      "id": "vn-vungtau",
+      "name": "Vũng Tàu",
+      "lat": 10.346,
+      "lng": 107.0843,
+      "pop": 350000,
+      "desc": "Trung tâm khai thác dầu khí thềm lục địa Việt Nam. Thành phố biển nổi tiếng gần TP.HCM.",
+      "emoji": "🛢️"
+    }
+  ],
+  "oceanFeatures": [
+    {
+      "id": "oc-mariana-trench",
+      "subCategory": "trench",
+      "name": "Rãnh Mariana (Vực thẳm Challenger)",
+      "lat": 11.3733,
+      "lng": 142.5917,
+      "emoji": "🦑",
+      "desc": "Điểm sâu nhất hành tinh thuộc Thái Bình Dương, độ sâu tối đa 10.984m. Nơi cư ngụ của các loài sinh vật chịu áp suất cực cao.",
+      "attributes": {
+        "depth": -10984,
+        "type": "Rãnh Đại Tây"
+      }
+    },
+    {
+      "id": "oc-tonga-trench",
+      "subCategory": "trench",
+      "name": "Rãnh Tonga",
+      "lat": -22.946,
+      "lng": -174.555,
+      "emoji": "🐙",
+      "desc": "Rãnh vực sâu thứ hai thế giới (10.800m) phía tây nam Thái Bình Dương, được bồi tụ bởi mảng kiến tạo Thái Bình Dương chui xuống dưới mảng Ấn-Úc.",
+      "attributes": {
+        "depth": -10800,
+        "type": "Rãnh Đại Tây"
+      }
+    },
+    {
+      "id": "oc-puerto-rico-trench",
+      "subCategory": "trench",
+      "name": "Rãnh Puerto Rico",
+      "lat": 19.641,
+      "lng": -67.275,
+      "emoji": "🦈",
+      "desc": "Điểm sâu nhất của Đại Tây Dương (Độ sâu thẳm Milwaukee: 8.376m), khu vực điểm nóng của động đất nhiệt đới.",
+      "attributes": {
+        "depth": -8376,
+        "type": "Rãnh Đại Tây"
+      }
+    },
+    {
+      "id": "oc-java-trench",
+      "subCategory": "trench",
+      "name": "Rãnh Sunda (Java)",
+      "lat": -10.316,
+      "lng": 109.983,
+      "emoji": "🐋",
+      "desc": "Rãnh sâu nhất Ấn Độ Dương (7.725m), thủ phạm của trân động đất sóng thần 2004.",
+      "attributes": {
+        "depth": -7725,
+        "type": "Rãnh Đại Tây"
+      }
+    },
+    {
+      "id": "oc-eurasian-basin",
+      "subCategory": "trench",
+      "name": "Lưu vực Á-Âu (Bắc Băng Dương)",
+      "lat": 82,
+      "lng": 60,
+      "emoji": "🧊",
+      "desc": "Khu vực vực thềm sâu nhất của Bắc Băng Dương, độ sâu 5.450m, thường trực bị đóng băng mặt trên.",
+      "attributes": {
+        "depth": -5450,
+        "type": "Lưu vực Băng Cực"
+      }
+    },
+    {
+      "id": "oc-gulf-stream",
+      "subCategory": "current",
+      "name": "Dòng hải lưu Gulf Stream",
+      "emoji": "🔴",
+      "desc": "Dòng chảy nóng siêu khổng lồ xuất phát từ Vịnh Mexico, mang nhiệt lượng khổng lồ sưởi ấm toàn bộ Tây Âu.",
+      "attributes": {
+        "type": "Dòng nóng",
+        "speed": "1.5 - 2.0 m/s"
+      },
+      "path": [
+        [
+          25,
+          -80
+        ],
+        [
+          35,
+          -75
+        ],
+        [
+          40,
+          -60
+        ],
+        [
+          50,
+          -40
+        ],
+        [
+          55,
+          -20
+        ]
+      ]
+    },
+    {
+      "id": "oc-kuroshio",
+      "subCategory": "current",
+      "name": "Dòng hải lưu Kuroshio",
+      "emoji": "🔴",
+      "desc": "Dòng biển Đen (do vạch nước sẫm màu), mang vệt nước ấm từ Philipines lên bờ Đông Nhật Bản, tốc độ cực nhanh.",
+      "attributes": {
+        "type": "Dòng nóng",
+        "speed": "1.0 - 2.0 m/s"
+      },
+      "path": [
+        [
+          15,
+          125
+        ],
+        [
+          25,
+          125
+        ],
+        [
+          35,
+          140
+        ],
+        [
+          40,
+          150
+        ]
+      ]
+    },
+    {
+      "id": "oc-brazil-current",
+      "subCategory": "current",
+      "name": "Dòng hải lưu Brazil",
+      "emoji": "🔴",
+      "desc": "Khởi nguồn từ xích đạo xẻ dọc xuống bờ Tây Đại Tây Dương Nam, mang sự ẩm ướt trù phú cho Brazil.",
+      "attributes": {
+        "type": "Dòng nóng",
+        "speed": "0.5 - 1.0 m/s"
+      },
+      "path": [
+        [
+          -10,
+          -35
+        ],
+        [
+          -20,
+          -40
+        ],
+        [
+          -30,
+          -45
+        ],
+        [
+          -40,
+          -50
+        ]
+      ]
+    },
+    {
+      "id": "oc-agulhas",
+      "subCategory": "current",
+      "name": "Dòng hải lưu Agulhas",
+      "emoji": "🔴",
+      "desc": "Dòng chảy mạnh nhất ở bờ Tây Ấn Độ Dương, dội nước ấm xuống cực Nam Châu Phi rồi bẻ ngoặt quay lại hệ thống vòng hoàn.",
+      "attributes": {
+        "type": "Dòng nóng",
+        "speed": "1.5 m/s"
+      },
+      "path": [
+        [
+          -20,
+          40
+        ],
+        [
+          -30,
+          32
+        ],
+        [
+          -40,
+          20
+        ],
+        [
+          -45,
+          35
+        ]
+      ]
+    },
+    {
+      "id": "oc-e-australian",
+      "subCategory": "current",
+      "name": "Dòng hải lưu Đông Úc (EAC)",
+      "emoji": "🔴",
+      "desc": "Nổi tiếng qua bộ phim Đi tìm Nemo, đưa sinh vật từ rạn san hô Great Barrier xuôi xuống Nam.",
+      "attributes": {
+        "type": "Dòng nóng",
+        "speed": "1.0 m/s"
+      },
+      "path": [
+        [
+          -15,
+          150
+        ],
+        [
+          -25,
+          155
+        ],
+        [
+          -35,
+          150
+        ]
+      ]
+    },
+    {
+      "id": "oc-antartic-circumpolar",
+      "subCategory": "current",
+      "name": "Dòng Nam Cực vòng quanh (ACC)",
+      "emoji": "🥶",
+      "desc": "Hải lưu mạnh nhất và lớn nhất Trái Đất vận chuyển khối nước khổng lồ bao ráp Nam Cực, ngăn không khí nóng xâm nhập lục địa băng.",
+      "attributes": {
+        "type": "Dòng lạnh",
+        "speed": "Rất lớn (khối lượng), 0.3 m/s (tốc độ)"
+      },
+      "path": [
+        [
+          -60,
+          -180
+        ],
+        [
+          -60,
+          -90
+        ],
+        [
+          -60,
+          0
+        ],
+        [
+          -60,
+          90
+        ],
+        [
+          -60,
+          179
+        ]
+      ]
+    },
+    {
+      "id": "oc-peru-humboldt",
+      "subCategory": "current",
+      "name": "Dòng hải lưu Peru (Humboldt)",
+      "emoji": "🔵",
+      "desc": "Mang nước buốt lạnh từ Nam Cực đi qua bờ tây Nam Mỹ, làm khí hậu bờ biển Chile và Peru cực kỳ khô khan tạo Sa mạc Atacama, nhưng là ngư trường lớn bậc nhất thế giới do hiện tượng nước trồi.",
+      "attributes": {
+        "type": "Dòng lạnh",
+        "speed": "0.2 - 0.5 m/s"
+      },
+      "path": [
+        [
+          -45,
+          -75
+        ],
+        [
+          -30,
+          -72
+        ],
+        [
+          -15,
+          -75
+        ],
+        [
+          -5,
+          -85
+        ]
+      ]
+    },
+    {
+      "id": "oc-california",
+      "subCategory": "current",
+      "name": "Dòng hải lưu California",
+      "emoji": "🔵",
+      "desc": "Nguồn nước lạnh di chuyển về Xích đạo qua bờ Tây Hoa Kỳ, nguyên nhân tạo lớp sương mù đặc trưng của San Francisco.",
+      "attributes": {
+        "type": "Dòng lạnh",
+        "speed": "0.2 m/s"
+      },
+      "path": [
+        [
+          45,
+          -130
+        ],
+        [
+          35,
+          -125
+        ],
+        [
+          25,
+          -120
+        ],
+        [
+          15,
+          -115
+        ]
+      ]
+    },
+    {
+      "id": "oc-canary",
+      "subCategory": "current",
+      "name": "Dòng hải lưu Canary",
+      "emoji": "🔵",
+      "desc": "Dòng chảy cuộn vòng bờ Tây Bắc Châu Phi, duy trì sa mạc Sahara khô rát vì gió biển đi qua nó không thể bốc hơi nước đọng vào bờ.",
+      "attributes": {
+        "type": "Dòng lạnh",
+        "speed": "0.3 m/s"
+      },
+      "path": [
+        [
+          40,
+          -15
+        ],
+        [
+          30,
+          -15
+        ],
+        [
+          20,
+          -20
+        ],
+        [
+          10,
+          -30
+        ]
+      ]
+    },
+    {
+      "id": "oc-benguela",
+      "subCategory": "current",
+      "name": "Dòng hải lưu Benguela",
+      "emoji": "🔵",
+      "desc": "Một trong 4 siêu hệ thống nước trồi vĩ đại phía bờ tây Đại Tây Dương Nam (Châu Phi), cá mập trắng hội tụ cực kỳ đông tại đây.",
+      "attributes": {
+        "type": "Dòng lạnh",
+        "speed": "0.3 m/s"
+      },
+      "path": [
+        [
+          -35,
+          15
+        ],
+        [
+          -25,
+          10
+        ],
+        [
+          -15,
+          5
+        ]
+      ]
+    },
+    {
+      "id": "oc-oyashio",
+      "subCategory": "current",
+      "name": "Dòng hải lưu Oyashio",
+      "emoji": "🔵",
+      "desc": "Làn hải lưu lạnh thấu xương từ Bắc Băng Dương tràn xuống Hokkaido, giao thoa với dòng Kuroshio tạo sương mù dày đặc và sinh khí dồi dào.",
+      "attributes": {
+        "type": "Dòng lạnh",
+        "speed": "0.5 m/s"
+      },
+      "path": [
+        [
+          60,
+          170
+        ],
+        [
+          50,
+          160
+        ],
+        [
+          40,
+          145
+        ]
+      ]
+    },
+    {
+      "id": "oc-labrador",
+      "subCategory": "current",
+      "name": "Dòng hải lưu Labrador",
+      "emoji": "🔵",
+      "desc": "Dòng nước lạnh mang băng trôi từ Bắc Cực xuống Canada, từng bị đổ lỗi vì kéo những tảng băng khổng lồ cản luồng tàu Titanic.",
+      "attributes": {
+        "type": "Dòng lạnh",
+        "speed": "0.4 m/s"
+      },
+      "path": [
+        [
+          60,
+          -60
+        ],
+        [
+          50,
+          -50
+        ],
+        [
+          42,
+          -50
+        ]
+      ]
+    }
   ]
 }

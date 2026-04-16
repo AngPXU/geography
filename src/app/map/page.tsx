@@ -25,10 +25,10 @@ export default async function MapPage() {
         {/* Tiêu đề & Giới thiệu ngắn */}
         <div className="w-full text-center mt-4">
           <h1 className="text-4xl md:text-5xl font-black text-[#082F49] tracking-tight">
-            Thế Giới Qua Quăng Kính
+            Bản Đồ Học Tập Địa Lý
           </h1>
           <p className="text-[#334155] font-medium mt-2 max-w-2xl mx-auto">
-            Trải nghiệm các khía cạnh khác nhau của Trái Đất thông qua 4 lớp bản đồ: Địa Hình, Thiên Nhiên, Dân Cư và Ngày/Đêm.
+            6 chế độ bản đồ chuyên dụng: Chính trị · Địa hình · Khí hậu · Đại dương · Kinh tế · Việt Nam
           </p>
         </div>
 

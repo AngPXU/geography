@@ -1,14 +1,14 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  // Turbopack config (Next.js 16+ mặc định dùng Turbopack)
+  // Turbopack config
   turbopack: {
     resolveAlias: {
-      canvas: './src/utils/empty-module.ts',
+      canvas:   './src/utils/empty-module.ts',
       encoding: './src/utils/empty-module.ts',
     },
   },
-  // Giữ webpack config cho fallback
+  // Webpack fallback
   webpack: (config) => {
     config.resolve.alias.canvas = false;
     config.resolve.alias.encoding = false;

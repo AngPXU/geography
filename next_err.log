@@ -1,0 +1,21 @@
+
+> geography@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.3 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.3.174:3000
+- Environments: .env
+✓ Ready in 600ms
+
+ GET /map 200 in 1406ms (next.js: 207ms, proxy.ts: 353ms, application-code: 846ms)
+ GET /icon-192x192.png 404 in 127ms (next.js: 44ms, application-code: 83ms)
+ GET /icon-192x192.png 404 in 59ms (next.js: 9ms, application-code: 50ms)
+ GET /api/map/features?category=status 500 in 373ms (next.js: 144ms, application-code: 229ms)
+ GET /api/map/features?category=status 500 in 114ms (next.js: 16ms, application-code: 98ms)
+ GET /api/map/countries 200 in 2.1s (next.js: 80ms, application-code: 2.0s)
+ GET /api/map/countries 200 in 192ms (next.js: 8ms, application-code: 184ms)
+ POST /api/map/features 500 in 2.6s (next.js: 3ms, application-code: 2.6s)
+ GET /map 200 in 1598ms (next.js: 1046ms, proxy.ts: 307ms, application-code: 246ms)
+ GET /icon-192x192.png 404 in 131ms (next.js: 17ms, application-code: 114ms)
+ POST /api/map/features 200 in 1644ms (next.js: 63ms, application-code: 1581ms)

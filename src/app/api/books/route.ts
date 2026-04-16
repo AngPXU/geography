@@ -10,6 +10,6 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const grade = searchParams.get('grade');
   const filter = grade ? { grade: parseInt(grade) } : {};
-  const books = await GeoBook.find(filter).sort({ grade: 1 }).lean();
+  const books = await GeoBook.find(filter as any).sort({ grade: 1 }).lean();
   return NextResponse.json({ books });
 }
