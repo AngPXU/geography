@@ -1,9 +1,10 @@
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+import Link from 'next/link';
 import { Navbar } from "@/layouts/Navbar";
 import { EarthGlobe } from "@/components/ui/EarthGlobe";
 import { FaRocket, FaMap } from "react-icons/fa";
-import { BookExplorer } from "@/components/ui/BookExplorer";
+import { EarthRecords } from "@/components/ui/EarthRecords";
 import { GeoQuestions } from "@/components/ui/GeoQuestions";
 import { GeoFunFacts } from "@/components/ui/GeoFunFacts";
 import { Footer } from "@/layouts/Footer";
@@ -49,12 +50,12 @@ export default async function HomePage() {
           </p>
 
           <div className="flex flex-col sm:flex-row items-center gap-5 mt-4">
-            <button className="group h-[60px] px-10 rounded-[24px] bg-gradient-to-r from-fuchsia-500 to-pink-500 text-white font-black text-lg shadow-[0_15px_30px_-5px_rgba(236,72,153,0.4)] hover:shadow-[0_20px_40px_-5px_rgba(236,72,153,0.5)] hover:-translate-y-1 transition-all flex items-center gap-3">
+            <Link href="/map" className="group h-[60px] px-10 rounded-[24px] bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-black text-lg shadow-[0_15px_30px_-5px_rgba(6,182,212,0.4)] hover:shadow-[0_20px_40px_-5px_rgba(6,182,212,0.5)] hover:-translate-y-1 transition-all flex items-center gap-3">
               Bắt đầu hành trình <FaRocket className="text-xl group-hover:scale-125 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-            </button>
-            <button className="h-[60px] px-10 rounded-[24px] bg-white/70 backdrop-blur-xl border-[2px] border-white text-[#082F49] font-black text-lg shadow-[0_10px_20px_rgba(0,0,0,0.05)] hover:bg-white hover:shadow-[0_15px_30px_rgba(14,165,233,0.1)] hover:-translate-y-1 transition-all flex items-center gap-3">
+            </Link>
+            <Link href="/roadmap" className="h-[60px] px-10 rounded-[24px] bg-white/70 backdrop-blur-xl border-[2px] border-white text-[#082F49] font-black text-lg shadow-[0_10px_20px_rgba(0,0,0,0.05)] hover:bg-white hover:shadow-[0_15px_30px_rgba(14,165,233,0.1)] hover:-translate-y-1 transition-all flex items-center gap-3">
               Xem lộ trình <FaMap className="text-xl text-blue-500" />
-            </button>
+            </Link>
           </div>
         </div>
 
@@ -66,8 +67,8 @@ export default async function HomePage() {
 
       </main>
 
-      {/* Book Explorer Section */}
-      <BookExplorer />
+      {/* Kỷ Lục Trái Đất */}
+      <EarthRecords />
 
       {/* 10 Vạn Câu Hỏi Vì Sao */}
       <GeoQuestions />

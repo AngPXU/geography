@@ -142,9 +142,21 @@ export function EarthGlobe({ userRole }: Props) {
   const [countries, setCountries] = useState<CountryData[]>([]);
   const [selected, setSelected] = useState<CountryData | null>(null);
   const [showEditor, setShowEditor] = useState(false);
+  const [graphics, setGraphics] = useState<'ultra' | 'smooth'>('ultra');
   const globeRef = useRef<any>(null);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+    const saved = localStorage.getItem('geo_graphics') as 'ultra' | 'smooth';
+    if (saved) setGraphics(saved);
+
+    const handleSettings = () => {
+      const g = localStorage.getItem('geo_graphics') as 'ultra' | 'smooth';
+      if (g) setGraphics(g);
+    };
+    window.addEventListener('geo_settings_changed', handleSettings);
+    return () => window.removeEventListener('geo_settings_changed', handleSettings);
+  }, []);
 
   const fetchCountries = useCallback(async () => {
     try {
@@ -195,33 +207,48 @@ export function EarthGlobe({ userRole }: Props) {
     <>
       <div className="w-full max-w-[600px] aspect-square relative mx-auto flex items-center justify-center pointer-events-auto globe-container cursor-grab active:cursor-grabbing">
 
-        {/* Edit button — role=1 only */}
-        {userRole === 1 && (
-          <button
-            onClick={(e) => { e.stopPropagation(); setShowEditor(true); }}
-            className="absolute top-3 right-3 z-30 flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-[11px] font-bold text-white transition-all duration-300 hover:scale-105"
+        {/* Top Badges */}
+        <div className="absolute top-3 right-3 z-30 flex items-center gap-2">
+          {/* Interaction notice */}
+          <div
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-[10px] font-bold text-slate-700 pointer-events-auto shadow-sm animate-pulse"
             style={{
-              background: 'rgba(6,182,212,0.85)',
+              background: 'rgba(255,255,255,0.85)',
               backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255,255,255,0.4)',
-              boxShadow: '0 4px 16px rgba(6,182,212,0.3)',
+              border: '1px solid rgba(255,255,255,1)'
             }}
           >
-            ✏️ Chỉnh sửa
-          </button>
-        )}
+            <span className="text-sm">👆</span> Có thể tương tác trực tiếp
+          </div>
+
+          {/* Edit button — role=1 only */}
+          {userRole === 1 && (
+            <button
+              onClick={(e) => { e.stopPropagation(); setShowEditor(true); }}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-[11px] font-bold text-white transition-all duration-300 hover:scale-105 pointer-events-auto"
+              style={{
+                background: 'rgba(6,182,212,0.85)',
+                backdropFilter: 'blur(8px)',
+                border: '1px solid rgba(255,255,255,0.4)',
+                boxShadow: '0 4px 16px rgba(6,182,212,0.3)',
+              }}
+            >
+              ✏️ Chỉnh sửa
+            </button>
+          )}
+        </div>
 
         <Globe
           ref={globeRef}
-          width={900}
-          height={900}
+          width={800}
+          height={800}
           globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
           bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
           backgroundImageUrl=""
           backgroundColor="rgba(0,0,0,0)"
-          showAtmosphere={true}
+          showAtmosphere={graphics === 'ultra'}
           atmosphereColor="#E0F2FE"
-          atmosphereAltitude={0.2}
+          atmosphereAltitude={graphics === 'ultra' ? 0.2 : 0}
           labelsData={countries}
           labelLat={(d: any) => d.lat}
           labelLng={(d: any) => d.lng}

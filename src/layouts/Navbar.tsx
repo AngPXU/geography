@@ -4,11 +4,14 @@ import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 
 import { FaGlobeAsia, FaMapMarkedAlt, FaGamepad, FaUsers, FaBell, FaBook, FaUserCircle, FaSignOutAlt, FaCog } from 'react-icons/fa';
+import { SettingsDrawer } from '@/components/ui/SettingsDrawer';
 
 const NAV_ITEMS = [
-  { href: '/classroom', label: 'Lớp học',  icon: '🏫', color: 'text-cyan-500',   bg: 'bg-cyan-50',   dot: 'bg-cyan-500' },
-  { href: '/map',       label: 'Bản đồ',   icon: '🗺️',  color: 'text-green-500', bg: 'bg-green-50',  dot: 'bg-green-500' },
-  { href: '/books',     label: 'Sách',     icon: '📖', color: 'text-violet-500', bg: 'bg-violet-50', dot: 'bg-violet-500' },
+  { href: '/',          label: 'Trang chủ',   icon: '🏠', color: 'text-blue-500',   bg: 'bg-blue-50',   dot: 'bg-blue-500' },
+  { href: '/classroom', label: 'Lớp học',     icon: '🏫', color: 'text-cyan-500',   bg: 'bg-cyan-50',   dot: 'bg-cyan-500' },
+  { href: '/map',       label: 'Bản đồ',      icon: '🗺️', color: 'text-green-500', bg: 'bg-green-50',  dot: 'bg-green-500' },
+  { href: '/arena',     label: 'Đấu trường', icon: '⚔️', color: 'text-rose-500',  bg: 'bg-rose-50',   dot: 'bg-rose-500' },
+  { href: '/books',     label: 'Sách',        icon: '📖', color: 'text-violet-500', bg: 'bg-violet-50', dot: 'bg-violet-500' },
 ];
 
 export function Navbar({ user }: { user?: { name?: string | null; image?: string | null; role?: number } }) {
@@ -16,6 +19,7 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
 
   const [scrolled, setScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const dropdownRef1 = useRef<HTMLDivElement>(null);
   const dropdownRef2 = useRef<HTMLDivElement>(null);
 
@@ -74,16 +78,18 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
           </div>
           Thông tin cá nhân
         </Link>
-        <Link
-          href="/settings"
-          onClick={() => setDropdownOpen(false)}
-          className="flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-sm font-semibold text-[#334155] hover:bg-slate-50 hover:text-slate-700 transition-colors group"
+        <button
+          onClick={() => {
+            setDropdownOpen(false);
+            setIsSettingsOpen(true);
+          }}
+          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-sm font-semibold text-[#334155] hover:bg-slate-50 hover:text-slate-700 transition-colors group"
         >
           <div className="w-7 h-7 rounded-[8px] bg-slate-100 group-hover:bg-slate-200 flex items-center justify-center transition-colors">
             <FaCog className="text-slate-400 text-xs" />
           </div>
           Cài đặt
-        </Link>
+        </button>
 
         <div className="my-2 mx-1 h-px bg-slate-100" />
 
@@ -102,6 +108,7 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
 
   return (
     <>
+      <SettingsDrawer isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} user={user} />
       <style>{`
         /* ---- Full bar ---- */
         .navbar-full {
