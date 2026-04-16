@@ -11,19 +11,8 @@ const Marker = dynamic(() => import('react-leaflet').then(m => m.Marker), { ssr:
 const Popup = dynamic(() => import('react-leaflet').then(m => m.Popup), { ssr: false });
 const Polyline = dynamic(() => import('react-leaflet').then(m => m.Polyline), { ssr: false });
 
-import L from 'leaflet';
+import type L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-
-// Fix icon url for leaflet inside Next.js
-if (typeof window !== 'undefined') {
-  delete (L.Icon.Default.prototype as any)._getIconUrl;
-  L.Icon.Default.mergeOptions({
-    iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
-    iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
-    shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
-  });
-}
-
 // ── HA VERSINE ALGORITHM TO CALCULATE DISTANCE ────────
 function calcDistanceKM(lat1: number, lon1: number, lat2: number, lon2: number) {
   const R = 6371; // Bán kính khối cầu Trái Đất (km)
@@ -54,9 +43,26 @@ export default function MapGuessingGame() {
   const [roundDistance, setRoundDistance] = useState<number | null>(null);
   const [roundScore, setRoundScore] = useState<number>(0);
   const [roundEnd, setRoundEnd] = useState(false);
+  const [redIcon, setRedIcon] = useState<any>(null);
 
   // Khởi chạy: Kéo Dữ liệu 1 lần duy nhất để làm Ngân hàng câu hỏi
   useEffect(() => {
+    // Sửa lỗi Icon Leaflet trên Next.js Client
+    import('leaflet').then(leaflet => {
+      const L = leaflet.default;
+      delete (L.Icon.Default.prototype as any)._getIconUrl;
+      L.Icon.Default.mergeOptions({
+        iconRetinaUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon-2x.png',
+        iconUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-icon.png',
+        shadowUrl: 'https://unpkg.com/leaflet@1.7.1/dist/images/marker-shadow.png',
+      });
+      
+      setRedIcon(new L.Icon({
+        iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+        iconSize: [25, 41], iconAnchor: [12, 41]
+      }));
+    });
+
     Promise.all([
       fetch('/api/map/features?category=physical').then(r=>r.json()),
       fetch('/api/map/features?category=economic').then(r=>r.json()),
@@ -250,12 +256,11 @@ export default function MapGuessingGame() {
             {/* Điểm đoán của User */}
             <Marker position={[guessLat, guessLng]} />
             {/* Điểm của Target */}
-            <Marker position={[target.lat, target.lng]} icon={new L.Icon({
-              iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
-              iconSize: [25, 41], iconAnchor: [12, 41]
-            })}>
-              <Popup>{target.name}</Popup>
-            </Marker>
+            {redIcon && (
+              <Marker position={[target.lat, target.lng]} icon={redIcon}>
+                <Popup>{target.name}</Popup>
+              </Marker>
+            )}
             {/* Đường nối */}
             <Polyline positions={[[guessLat, guessLng], [target.lat, target.lng]]} 
               pathOptions={{ color: '#F43F5E', dashArray: '10 10', weight: 3 }} />
