@@ -213,8 +213,8 @@ export function EarthGlobe({ userRole }: Props) {
 
         <Globe
           ref={globeRef}
-          width={600}
-          height={600}
+          width={900}
+          height={900}
           globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
           bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
           backgroundImageUrl=""

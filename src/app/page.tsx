@@ -56,16 +56,6 @@ export default async function HomePage() {
               Xem lộ trình <FaMap className="text-xl text-blue-500" />
             </button>
           </div>
-
-          {/* Floating Widget 2 */}
-          <div className="hidden lg:flex absolute bottom-0 right-10 px-5 py-3 rounded-[20px] bg-white/80 backdrop-blur-xl border-[2px] border-white shadow-[0_10px_30px_rgba(236,72,153,0.1)] items-center gap-3 animate-[float_10s_ease-in-out_infinite_reverse]">
-            <span className="text-2xl drop-shadow-sm">⚡</span>
-            <div>
-              <p className="text-[10px] font-black uppercase tracking-widest text-[#94A3B8]">Dữ liệu làm mới 24/7</p>
-              <p className="text-[#082F49] text-sm font-bold mt-0.5">Cập nhật bởi AI</p>
-            </div>
-          </div>
-
         </div>
 
         {/* Right Column: 3D Earth Globe */}

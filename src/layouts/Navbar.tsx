@@ -6,8 +6,9 @@ import Link from 'next/link';
 import { FaGlobeAsia, FaMapMarkedAlt, FaGamepad, FaUsers, FaBell, FaBook, FaUserCircle, FaSignOutAlt, FaCog } from 'react-icons/fa';
 
 const NAV_ITEMS = [
-  { href: '/classroom', label: 'Lớp học', icon: '🏫', color: 'text-cyan-500',   bg: 'bg-cyan-50',   dot: 'bg-cyan-500' },
-  { href: '/map',     label: 'Bản đồ',    icon: '🗺️',  color: 'text-green-500', bg: 'bg-green-50',  dot: 'bg-green-500' },
+  { href: '/classroom', label: 'Lớp học',  icon: '🏫', color: 'text-cyan-500',   bg: 'bg-cyan-50',   dot: 'bg-cyan-500' },
+  { href: '/map',       label: 'Bản đồ',   icon: '🗺️',  color: 'text-green-500', bg: 'bg-green-50',  dot: 'bg-green-500' },
+  { href: '/books',     label: 'Sách',     icon: '📖', color: 'text-violet-500', bg: 'bg-violet-50', dot: 'bg-violet-500' },
 ];
 
 export function Navbar({ user }: { user?: { name?: string | null; image?: string | null; role?: number } }) {

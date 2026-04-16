@@ -1,18 +1,19 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  // Turbopack config (Next.js 16+ mặc định dùng Turbopack)
   turbopack: {
-    // Ép cứng thư mục gốc, tránh bị Next.js nhận diện nhầm do có file package.json rác bên ngoài
-    root: "c:\\Users\\nht_anh.BRYCENVN\\Documents\\geography",
+    resolveAlias: {
+      canvas: './src/utils/empty-module.ts',
+      encoding: './src/utils/empty-module.ts',
+    },
   },
+  // Giữ webpack config cho fallback
   webpack: (config) => {
-    // Tránh việc Webpack đi lạc ra ngoài thư mục dự án khi biên dịch PostCSS/Tailwind
-    config.resolve.modules = [
-      "c:\\Users\\nht_anh.BRYCENVN\\Documents\\geography\\node_modules",
-      "node_modules"
-    ];
+    config.resolve.alias.canvas = false;
+    config.resolve.alias.encoding = false;
     return config;
-  }
+  },
 };
 
 export default nextConfig;
