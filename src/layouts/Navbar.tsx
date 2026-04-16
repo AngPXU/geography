@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
+import { signOut } from 'next-auth/react';
 
 import { FaGlobeAsia, FaMapMarkedAlt, FaGamepad, FaUsers, FaBell, FaBook, FaUserCircle, FaSignOutAlt, FaCog } from 'react-icons/fa';
 import { SettingsDrawer } from '@/components/ui/SettingsDrawer';
@@ -94,7 +95,7 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
         <div className="my-2 mx-1 h-px bg-slate-100" />
 
         <button
-          onClick={() => window.location.href = '/api/logout'}
+          onClick={() => signOut({ callbackUrl: '/login' })}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors group"
         >
           <div className="w-7 h-7 rounded-[8px] bg-red-50 group-hover:bg-red-100 flex items-center justify-center transition-colors">
