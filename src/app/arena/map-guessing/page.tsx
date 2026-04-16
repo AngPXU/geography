@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import dynamic from 'next/dynamic';
 import Link from 'next/link';
+import { trackMission } from '@/utils/missionTracker';
 
 // Dynamically import Leaflet map to prevent SSR window is not defined
 const MapContainer = dynamic(() => import('react-leaflet').then(m => m.MapContainer), { ssr: false });
@@ -123,6 +124,7 @@ export default function MapGuessingGame() {
   const nextRound = () => {
     if (currentRound >= 9) {
       setStatus('SUMMARY');
+      trackMission('play-arena', 1);
     } else {
       setCurrentRound(c => c + 1);
       setGuessLat(null); setGuessLng(null);

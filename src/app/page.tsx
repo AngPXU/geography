@@ -5,11 +5,13 @@ import { Navbar } from "@/layouts/Navbar";
 import { EarthGlobe } from "@/components/ui/EarthGlobe";
 import { FaRocket, FaMap } from "react-icons/fa";
 import { EarthRecords } from "@/components/ui/EarthRecords";
+import { DashboardOverview } from "@/components/ui/DashboardOverview";
 import { GeoQuestions } from "@/components/ui/GeoQuestions";
 import { GeoFunFacts } from "@/components/ui/GeoFunFacts";
 import { Footer } from "@/layouts/Footer";
 import dbConnect from "@/utils/db";
 import User from "@/models/User";
+import { getVietnamDateStr } from "@/utils/missions";
 
 export default async function HomePage() {
   const session = await auth();
@@ -19,8 +21,16 @@ export default async function HomePage() {
   }
 
   await dbConnect();
-  const dbUser = await User.findOne({ username: session.user.name }).lean() as { role?: number } | null;
+  const dbUser = await User.findOne({ username: session.user.name }).lean() as {
+    role?: number; exp?: number; streak?: number;
+    studyTimeToday?: number; studyTimeDate?: string;
+  } | null;
   const userRole: number = dbUser?.role ?? 3;
+  const userExp: number = dbUser?.exp ?? 0;
+  const userStreak: number = dbUser?.streak ?? 0;
+  const today = getVietnamDateStr();
+  const userStudySeconds: number =
+    dbUser?.studyTimeDate === today ? (dbUser.studyTimeToday ?? 0) : 0;
 
   return (
     <div className="bg-gradient-to-b from-[#E0F2FE] via-[#FFFFFF] to-[#DCFCE7] relative overflow-x-hidden font-sans">
@@ -66,6 +76,9 @@ export default async function HomePage() {
         </div>
 
       </main>
+
+      {/* Bảng điều khiển tổng quan */}
+      <DashboardOverview username={session.user.name ?? 'Bạn'} avatar={session.user.image ?? undefined} initialExp={userExp} initialStreak={userStreak} initialStudySeconds={userStudySeconds} />
 
       {/* Kỷ Lục Trái Đất */}
       <EarthRecords />

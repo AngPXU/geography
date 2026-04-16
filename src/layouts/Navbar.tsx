@@ -12,7 +12,8 @@ const NAV_ITEMS = [
   { href: '/classroom', label: 'Lớp học',     icon: '🏫', color: 'text-cyan-500',   bg: 'bg-cyan-50',   dot: 'bg-cyan-500' },
   { href: '/map',       label: 'Bản đồ',      icon: '🗺️', color: 'text-green-500', bg: 'bg-green-50',  dot: 'bg-green-500' },
   { href: '/arena',     label: 'Đấu trường', icon: '⚔️', color: 'text-rose-500',  bg: 'bg-rose-50',   dot: 'bg-rose-500' },
-  { href: '/books',     label: 'Sách',        icon: '📖', color: 'text-violet-500', bg: 'bg-violet-50', dot: 'bg-violet-500' },
+  { href: '/books',    label: 'Sách',      icon: '📚', color: 'text-violet-500',  bg: 'bg-violet-50',  dot: 'bg-violet-500' },
+  { href: '/lessons',  label: 'Bài Giảng', icon: '📖', color: 'text-emerald-500', bg: 'bg-emerald-50', dot: 'bg-emerald-500' },
 ];
 
 export function Navbar({ user }: { user?: { name?: string | null; image?: string | null; role?: number } }) {

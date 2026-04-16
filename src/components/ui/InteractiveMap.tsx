@@ -6,6 +6,7 @@ import {
 } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import { trackMission } from '@/utils/missionTracker';
 import 'leaflet/dist/leaflet.css';
 // Không còn dùng import mapData from '@/data/mapData.json' vì đã dùng Database
 
@@ -532,6 +533,8 @@ export default function InteractiveMap({ is3D, onToggle3D, mode, onModeChange }:
   const handleSelectGeo = (item: GeoItem) => {
     setSelectedGeo(item);
     setPanelView('info');
+    // Track "explore-map" mission — fire-and-forget, only once needed per session
+    trackMission('explore-map', 1);
   };
 
   const currentTile = TILES[mode];

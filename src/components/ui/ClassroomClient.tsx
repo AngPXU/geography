@@ -6,6 +6,7 @@ import {
   FaUsers, FaBook, FaSignInAlt, FaTrash, FaArrowRight,
 } from 'react-icons/fa';
 import { ClassroomRoom } from './ClassroomRoom';
+import { trackMission } from '@/utils/missionTracker';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -213,6 +214,7 @@ export function ClassroomClient({ user }: ClassroomClientProps) {
     }
     await fetchClassrooms();
     setActiveRoom(data.classroom!);
+    trackMission('join-classroom', 1);
   }
 
   // ── Re-enter existing room (student) ──────────────────────────────────────

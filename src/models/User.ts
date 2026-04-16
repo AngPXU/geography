@@ -13,6 +13,11 @@ export interface IUser extends Document {
   province?: { code: number; name: string };
   ward?: { code: number; name: string };
   address?: string;
+  exp: number;
+  streak: number;
+  streakLastDate: string;
+  studyTimeToday: number;  // accumulated seconds today
+  studyTimeDate: string;  // YYYY-MM-DD (VN) of last study session
   createdAt: Date;
   updatedAt: Date;
 }
@@ -55,6 +60,11 @@ const UserSchema: Schema<IUser> = new mongoose.Schema(
     province: { code: { type: Number }, name: { type: String } },
     ward:     { code: { type: Number }, name: { type: String } },
     address:  { type: String, trim: true },
+    exp:             { type: Number, default: 0 },
+    streak:          { type: Number, default: 0 },
+    streakLastDate:  { type: String, default: '' },
+    studyTimeToday:  { type: Number, default: 0 },
+    studyTimeDate:   { type: String, default: '' },
   },
   {
     timestamps: true,

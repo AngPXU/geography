@@ -1,6 +1,7 @@
 'use client';
 
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { trackMission } from '@/utils/missionTracker';
 import dynamic from 'next/dynamic';
 
 /* ── Dynamic PDF Reader ─── */
@@ -163,6 +164,16 @@ export default function BooksPage({ isAdmin }: { isAdmin?: boolean }) {
   const [page, setPage] = useState(1);
   const [numPages, setNumPages] = useState(0);
 
+  // Track read-book mission once the user changes page (i.e. reads at least 1 page)
+  const hasTrackedRef = useRef(false);
+  const handlePageChange = useCallback((p: number) => {
+    setPage(p);
+    if (!hasTrackedRef.current) {
+      hasTrackedRef.current = true;
+      trackMission('read-book', 1);
+    }
+  }, []);
+
   const loadBooks = useCallback(async () => {
     const res = await fetch('/api/books');
     if (res.ok) { const d = await res.json(); setBooks(d.books); }
@@ -248,7 +259,7 @@ export default function BooksPage({ isAdmin }: { isAdmin?: boolean }) {
               color={book.coverColor}
               grade={activeGrade}
               startPage={book.startPage || 1}
-              onPageChange={setPage}
+              onPageChange={handlePageChange}
               onLoad={setNumPages}
             />
           </div>
