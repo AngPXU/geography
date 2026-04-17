@@ -4,7 +4,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
 
-import { FaGlobeAsia, FaMapMarkedAlt, FaGamepad, FaUsers, FaBell, FaBook, FaUserCircle, FaSignOutAlt, FaCog } from 'react-icons/fa';
+import { FaGlobeAsia, FaMapMarkedAlt, FaGamepad, FaUsers, FaBell, FaBook, FaUserCircle, FaSignOutAlt, FaCog, FaShieldAlt } from 'react-icons/fa';
 import { SettingsDrawer } from '@/components/ui/SettingsDrawer';
 
 const NAV_ITEMS = [
@@ -250,6 +250,17 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
 
             {/* Right actions */}
             <div className="flex items-center gap-2 shrink-0">
+              {/* Admin icon — role 1 only */}
+              {user?.role === 1 && (
+                <Link
+                  href="/admin"
+                  className="relative w-10 h-10 rounded-[14px] bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500 hover:bg-amber-100 hover:text-amber-600 hover:shadow-md transition-all duration-200 group"
+                  title="Quản trị viên"
+                >
+                  <FaShieldAlt className="text-[15px] group-hover:scale-110 transition-transform" />
+                </Link>
+              )}
+
               {/* Notification */}
               <button className="relative w-10 h-10 rounded-[14px] bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 hover:bg-white hover:text-slate-700 hover:shadow-md transition-all duration-200 group">
                 <FaBell className="text-[15px] group-hover:scale-110 transition-transform" />
@@ -304,6 +315,17 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
           ))}
 
           <div className="island-divider" />
+
+          {/* Admin icon in island — role 1 only */}
+          {user?.role === 1 && (
+            <>
+              <div className="island-divider" />
+              <Link href="/admin" className="island-icon" title="Quản trị viên"
+                style={{ color: '#f59e0b' }}>
+                <FaShieldAlt style={{ fontSize: 14 }} />
+              </Link>
+            </>
+          )}
 
           {/* Bell */}
           <div className="island-icon relative" title="Thông báo">
