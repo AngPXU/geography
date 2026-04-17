@@ -2,7 +2,7 @@ import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { Navbar } from "@/layouts/Navbar";
 import { Footer } from "@/layouts/Footer";
-import { ClassroomClient } from "@/components/ui/ClassroomClient";
+import { ClassroomTabs } from "@/components/ui/ClassroomTabs";
 
 export default async function ClassroomPage() {
   const session = await auth();
@@ -20,7 +20,7 @@ export default async function ClassroomPage() {
       </div>
 
       <main className="max-w-7xl mx-auto px-4 md:px-8 pt-28 pb-16 relative z-10">
-        <ClassroomClient user={session.user} />
+        <ClassroomTabs user={session.user} />
       </main>
 
       <Footer />

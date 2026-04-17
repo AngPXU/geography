@@ -7,6 +7,7 @@ import {
   FaArrowLeft, FaBell, FaChartBar, FaDatabase, FaEdit,
   FaGlobeAsia, FaPlus, FaSearch, FaShieldAlt, FaSpinner,
   FaTimes, FaTrash, FaUsers, FaDownload, FaExclamationTriangle,
+  FaUserPlus, FaSortAmountDown, FaSortAmountUp, FaSchool,
 } from 'react-icons/fa';
 
 /* ─────────────────────────── types ───────────────────────────── */
@@ -35,6 +36,36 @@ interface UserRow {
   createdAt: string;
   provider?: string;
   avatar?: string;
+}
+
+interface StudentSuggestion {
+  _id: string;
+  username: string;
+  fullName?: string;
+  avatar?: string;
+  className?: string;
+}
+
+interface AdminMember {
+  userId: string;
+  username: string;
+  fullName?: string;
+  avatar?: string;
+  joinedAt: string;
+}
+
+interface AdminClass {
+  _id: string;
+  name: string;
+  subject?: string;
+  description?: string;
+  grade?: number;
+  teacherId: string;
+  teacherName: string;
+  teacherAvatar?: string;
+  members: AdminMember[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface Stats {
@@ -1896,6 +1927,738 @@ function UsersTab() {
   );
 }
 
+/* ════════════════════════ CLASSROOMS TAB ══════════════════════════ */
+
+// ── ClassFormModal (add / edit) ───────────────────────────────────────────────
+function ClassFormModal({
+  mode, initial, onClose, onSaved,
+}: {
+  mode: 'add' | 'edit';
+  initial?: AdminClass;
+  onClose: () => void;
+  onSaved: (cls: AdminClass) => void;
+}) {
+  const [name, setName]               = useState(initial?.name ?? '');
+  const [subject, setSubject]         = useState(initial?.subject ?? '');
+  const [grade, setGrade]             = useState<string>(initial?.grade ? String(initial.grade) : '');
+  const [description, setDescription] = useState(initial?.description ?? '');
+  const [error, setError]             = useState('');
+  const [saving, setSaving]           = useState(false);
+
+  const fldCls = 'w-full px-3 py-2.5 rounded-[12px] border border-slate-200 bg-slate-50 text-sm font-semibold text-[#082F49] focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all';
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    if (!name.trim()) { setError('Tên lớp không được để trống.'); return; }
+    setSaving(true);
+    try {
+      const body = {
+        name: name.trim(),
+        subject: subject.trim() || undefined,
+        grade:   grade ? Number(grade) : undefined,
+        description: description.trim() || undefined,
+      };
+      const url    = mode === 'add' ? '/api/homeclass' : `/api/homeclass/${initial!._id}`;
+      const method = mode === 'add' ? 'POST' : 'PATCH';
+      const res    = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data   = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Lỗi khi lưu');
+      onSaved(data.class);
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Lỗi không xác định');
+    } finally { setSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
+      <div className="relative w-full max-w-md bg-white/90 backdrop-blur-[20px] border border-white
+        rounded-[24px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100
+          bg-gradient-to-r from-violet-50 to-purple-50">
+          <h3 className="font-black text-[#082F49] text-lg">
+            {mode === 'add' ? '🏡 Tạo lớp mới' : '✏️ Sửa lớp học'}
+          </h3>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200
+            flex items-center justify-center text-slate-500 transition-colors">
+            <FaTimes className="text-xs" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
+          {error && (
+            <div className="flex items-start gap-2 px-4 py-3 rounded-[12px] bg-red-50 border
+              border-red-200 text-red-600 text-sm font-semibold">
+              <FaExclamationTriangle className="shrink-0 mt-0.5" /> {error}
+            </div>
+          )}
+          <div>
+            <label className="block text-xs font-bold text-[#334155] mb-1">Tên lớp *</label>
+            <input value={name} onChange={e => setName(e.target.value)} required
+              placeholder="VD: Lớp Địa 6A" className={fldCls} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-bold text-[#334155] mb-1">Môn học</label>
+              <input value={subject} onChange={e => setSubject(e.target.value)}
+                placeholder="Địa lý" className={fldCls} />
+            </div>
+            <div>
+              <label className="block text-xs font-bold text-[#334155] mb-1">Khối lớp</label>
+              <select value={grade} onChange={e => setGrade(e.target.value)} className={fldCls}>
+                <option value="">Chưa chọn</option>
+                {[6, 7, 8, 9].map(g => <option key={g} value={g}>Lớp {g}</option>)}
+              </select>
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-bold text-[#334155] mb-1">Mô tả</label>
+            <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3}
+              placeholder="Mô tả lớp học..." className={fldCls + ' resize-none'} />
+          </div>
+          <div className="flex gap-3">
+            <button type="button" onClick={onClose}
+              className="flex-1 py-2.5 rounded-[12px] border border-slate-200 text-sm font-bold
+                text-[#334155] hover:bg-slate-50 transition-all">Huỷ</button>
+            <button type="submit" disabled={saving}
+              className="flex-1 py-2.5 rounded-[12px] bg-gradient-to-r from-violet-500 to-purple-500
+                text-white text-sm font-bold hover:from-violet-400 hover:to-purple-400 transition-all
+                flex items-center justify-center gap-2 disabled:opacity-50">
+              {saving && <FaSpinner className="animate-spin text-xs" />}
+              {mode === 'add' ? 'Tạo lớp học' : 'Lưu thay đổi'}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── ClassDetailView (member CRUD) ─────────────────────────────────────────────
+function ClassDetailView({ cls, onBack }: {
+  cls: AdminClass;
+  onBack: () => void;
+}) {
+  const [members, setMembers]             = useState<AdminMember[]>(cls.members);
+  const [addUsername, setAddUsername]     = useState('');
+  const [addLoading, setAddLoading]       = useState(false);
+  const [addError, setAddError]           = useState('');
+  const [removingId, setRemovingId]       = useState<string | null>(null);
+  const [toast, setToast]                 = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+  const [suggestions, setSuggestions]     = useState<StudentSuggestion[]>([]);
+  const [classNames, setClassNames]       = useState<string[]>([]);
+  const [classFilter, setClassFilter]     = useState('');
+  const [sortKey, setSortKey]             = useState<'username' | 'exp' | 'streak'>('username');
+  const [sortDir, setSortDir]             = useState<'asc' | 'desc'>('asc');
+  const [dropdownOpen, setDropdownOpen]   = useState(false);
+  const [searchLoading, setSearchLoading] = useState(false);
+  const dropdownRef                       = useRef<HTMLDivElement>(null);
+  const inputAdminRef                     = useRef<HTMLInputElement>(null);
+  const [ddPos, setDdPos]                 = useState<{ top: number; left: number; width: number } | null>(null);
+  const inputFldCls = 'w-full px-3 py-2.5 rounded-[12px] border border-slate-200 bg-slate-50 text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all';
+
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node))
+        setDropdownOpen(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
+
+  // Close dropdown on scroll so fixed coordinates stay accurate
+  useEffect(() => {
+    const handler = () => setDropdownOpen(false);
+    window.addEventListener('scroll', handler, true);
+    return () => window.removeEventListener('scroll', handler, true);
+  }, []);
+
+  const updateDdPos = () => {
+    if (inputAdminRef.current) {
+      const r = inputAdminRef.current.getBoundingClientRect();
+      setDdPos({ top: r.bottom + 6, left: r.left, width: r.width });
+    }
+  };
+
+  // Debounced search
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const t = setTimeout(() => fetchSugg(addUsername, classFilter, sortKey, sortDir), 250);
+    return () => clearTimeout(t);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [addUsername, classFilter, sortKey, sortDir, dropdownOpen]);
+
+  const fetchSugg = async (q: string, cf: string, sk: string, sd: string) => {
+    setSearchLoading(true);
+    const p = new URLSearchParams({ q, sort: sk, sortDir: sd, limit: '5' });
+    if (cf) p.set('className', cf);
+    const res  = await fetch(`/api/homeclass/search-students?${p}`);
+    const data = await res.json();
+    setSearchLoading(false);
+    if (res.ok) {
+      setSuggestions(data.students ?? []);
+      if (data.classNames?.length) setClassNames(data.classNames);
+    }
+  };
+
+  const toggleSuggSort = (key: 'username' | 'exp' | 'streak') => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortKey(key); setSortDir('asc'); }
+  };
+
+  const handleAddMember = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!addUsername.trim()) return;
+    setAddLoading(true); setAddError(''); setDropdownOpen(false);
+    const res  = await fetch(`/api/homeclass/${cls._id}/members`, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ username: addUsername.trim() }),
+    });
+    const data = await res.json();
+    setAddLoading(false);
+    if (!res.ok) { setAddError(data.error || 'Thêm thất bại'); return; }
+    setMembers(prev => [...prev, data.member]);
+    setAddUsername('');
+    showToast(`✅ Đã thêm ${addUsername}!`);
+  };
+
+  const handleRemoveMember = async (memberId: string) => {
+    setRemovingId(memberId);
+    const res = await fetch(`/api/homeclass/${cls._id}/members?memberId=${memberId}`, { method: 'DELETE' });
+    setRemovingId(null);
+    if (!res.ok) { showToast('Xoá thất bại', 'error'); return; }
+    setMembers(prev => prev.filter(m => m.userId !== memberId));
+    showToast('🗑️ Đã xoá học sinh!');
+  };
+
+  return (
+    <div className="space-y-5">
+      {toast && (
+        <div className={`fixed top-5 right-5 z-[99999] px-5 py-3 rounded-[14px] text-sm font-bold
+          shadow-[0_8px_24px_rgba(0,0,0,0.12)] border
+          ${toast.type === 'success'
+            ? 'bg-[rgba(187,247,208,0.95)] border-emerald-200 text-[#16A34A]'
+            : 'bg-[rgba(254,226,226,0.95)] border-red-200 text-[#DC2626]'
+          }`}>
+          {toast.msg}
+        </div>
+      )}
+
+      {/* Breadcrumb */}
+      <div className="flex items-center gap-3 flex-wrap">
+        <button onClick={onBack}
+          className="flex items-center gap-2 text-[#94A3B8] hover:text-[#334155] font-bold
+            text-sm transition-colors group">
+          <span className="w-8 h-8 rounded-[10px] bg-slate-100 group-hover:bg-slate-200
+            flex items-center justify-center transition-colors">
+            <FaArrowLeft className="text-xs" />
+          </span>
+          <span className="hidden sm:inline">Danh sách lớp học</span>
+        </button>
+        <span className="text-slate-300 font-bold">/</span>
+        <div>
+          <p className="font-black text-[#082F49] text-sm leading-none">{cls.name}</p>
+          <p className="text-[#94A3B8] text-xs font-semibold mt-0.5">
+            {cls.subject && `${cls.subject} · `}{cls.grade && `Lớp ${cls.grade} · `}{members.length} học sinh
+          </p>
+        </div>
+      </div>
+
+      {/* Info card */}
+      <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px] p-5
+        shadow-[0_10px_30px_rgba(14,165,233,0.08)] flex items-center gap-4">
+        <div className="w-14 h-14 rounded-[18px] bg-gradient-to-br from-violet-400 to-purple-500
+          flex items-center justify-center text-2xl shadow-md shrink-0">🏡</div>
+        <div className="flex-1 min-w-0">
+          <h2 className="font-black text-[#082F49] text-lg truncate">{cls.name}</h2>
+          <div className="flex items-center gap-2 mt-1 flex-wrap">
+            {cls.subject && <span className="text-xs font-semibold text-[#94A3B8]">📚 {cls.subject}</span>}
+            {cls.grade && (
+              <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-black border ${GRADE_COLORS[cls.grade] ?? ''}`}>
+                Lớp {cls.grade}
+              </span>
+            )}
+            <span className="text-xs font-semibold text-[#94A3B8]">👤 {cls.teacherName}</span>
+          </div>
+          {cls.description && <p className="text-[#94A3B8] text-xs mt-1">{cls.description}</p>}
+        </div>
+        <div className="text-right shrink-0">
+          <p className="text-2xl font-black text-violet-600">{members.length}</p>
+          <p className="text-[#94A3B8] text-xs font-semibold">học sinh</p>
+        </div>
+      </div>
+
+      {/* Add member */}
+      <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px] p-5
+        shadow-[0_10px_30px_rgba(14,165,233,0.08)]" style={{ position: 'relative', zIndex: 20 }}>
+        <h3 className="font-black text-[#082F49] text-sm mb-3 flex items-center gap-2">
+          <FaUserPlus className="text-cyan-500" /> Thêm học sinh
+        </h3>
+        {addError && (
+          <p className="text-red-600 text-xs font-semibold mb-3 px-3 py-2 bg-red-50
+            rounded-[10px] border border-red-200">{addError}</p>
+        )}
+        <form onSubmit={handleAddMember}>
+          <div ref={dropdownRef} className="relative">
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] text-xs pointer-events-none" />
+                <input
+                  ref={inputAdminRef}
+                  value={addUsername}
+                  onChange={e => { setAddUsername(e.target.value); updateDdPos(); setDropdownOpen(true); }}
+                  onFocus={() => { updateDdPos(); setDropdownOpen(true); fetchSugg(addUsername, classFilter, sortKey, sortDir); }}
+                  className={inputFldCls + ' pl-9'}
+                  placeholder="Tìm tên đăng nhập hoặc họ tên học sinh..."
+                  autoComplete="off"
+                />
+              </div>
+              <button type="submit" disabled={addLoading || !addUsername.trim()}
+                className="px-4 py-2 rounded-[12px] bg-gradient-to-r from-cyan-500 to-blue-500
+                  text-white text-sm font-bold hover:from-cyan-400 hover:to-blue-400 transition-all
+                  flex items-center gap-2 disabled:opacity-50 shrink-0">
+                {addLoading ? <FaSpinner className="animate-spin" /> : <FaUserPlus />}
+                Thêm
+              </button>
+            </div>
+
+            {/* Autocomplete dropdown — position:fixed to escape all stacking contexts */}
+            {dropdownOpen && ddPos && (
+              <div
+                style={{
+                  position: 'fixed',
+                  top: ddPos.top,
+                  left: ddPos.left,
+                  width: ddPos.width,
+                  zIndex: 9999,
+                  borderRadius: '18px',
+                  overflow: 'hidden',
+                  background: 'rgba(255,255,255,0.97)',
+                  backdropFilter: 'blur(20px)',
+                  border: '1px solid rgba(255,255,255,1)',
+                  boxShadow: '0 16px 40px rgba(14,165,233,0.14)',
+                }}>
+
+                {/* Filter & sort bar */}
+                <div className="px-3 pt-3 pb-2 border-b border-slate-100">
+                  {classNames.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {['', ...classNames].map(cn => (
+                        <button key={cn} type="button"
+                          onClick={() => setClassFilter(classFilter === cn ? '' : cn)}
+                          className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all
+                            ${classFilter === cn ? 'bg-cyan-500 text-white' : 'bg-slate-100 text-[#334155] hover:bg-slate-200'}`}>
+                          {cn === '' ? 'Tất cả' : `Lớp ${cn}`}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] text-[#94A3B8] font-semibold mr-1">Sắp xếp:</span>
+                    {(['username', 'exp', 'streak'] as const).map(k => (
+                      <button key={k} type="button" onClick={() => toggleSuggSort(k)}
+                        className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all
+                          ${sortKey === k ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-[#94A3B8] hover:bg-slate-200'}`}>
+                        {k === 'username' ? 'Tên' : k === 'exp' ? 'EXP' : 'Streak'}
+                        {sortKey === k && (sortDir === 'asc' ? <FaSortAmountUp className="text-[9px]" /> : <FaSortAmountDown className="text-[9px]" />)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Results */}
+                {searchLoading ? (
+                  <div className="flex items-center justify-center py-5">
+                    <FaSpinner className="animate-spin text-cyan-400" />
+                  </div>
+                ) : suggestions.length === 0 ? (
+                  <p className="text-center text-[#94A3B8] text-xs py-5">Không tìm thấy học sinh</p>
+                ) : (
+                  <ul>
+                    {suggestions.map((s, i) => (
+                      <li key={s._id}>
+                        <button type="button" onMouseDown={() => { setAddUsername(s.username); setDropdownOpen(false); }}
+                          className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-sky-50 transition-all
+                            ${i < suggestions.length - 1 ? 'border-b border-slate-50' : ''}`}>
+                          <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-violet-400 to-purple-500
+                            flex items-center justify-center text-white text-xs font-black shrink-0 overflow-hidden">
+                            {s.avatar
+                              ? <img src={s.avatar} alt="" className="w-full h-full object-cover" />
+                              : s.username.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="font-bold text-[#082F49] text-sm truncate">{s.username}</p>
+                            {s.fullName && <p className="text-[#94A3B8] text-xs truncate">{s.fullName}</p>}
+                          </div>
+                          {s.className && (
+                            <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-600">
+                              Lớp {s.className}
+                            </span>
+                          )}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </div>
+            )}
+          </div>
+        </form>
+      </div>
+
+      {/* Members table */}
+      {members.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 gap-3
+          bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px]
+          shadow-[0_10px_30px_rgba(14,165,233,0.08)]" style={{ position: 'relative', zIndex: 1 }}>
+          <span className="text-4xl">👥</span>
+          <p className="font-bold text-[#082F49]">Chưa có học sinh nào</p>
+          <p className="text-[#94A3B8] text-sm">Thêm học sinh bằng ô tìm kiếm ở trên.</p>
+        </div>
+      ) : (
+        <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px]
+          shadow-[0_10px_30px_rgba(14,165,233,0.08)] overflow-hidden"
+          style={{ position: 'relative', zIndex: 1 }}>
+          <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/60">
+            <p className="text-[#94A3B8] text-xs font-bold uppercase tracking-wide">
+              {members.length} học sinh
+            </p>
+          </div>
+          <table className="w-full text-sm">
+            <thead>
+              <tr className="border-b border-slate-100">
+                <th className="text-left px-5 py-3 text-[#94A3B8] font-bold text-xs w-[5%]">#</th>
+                <th className="text-left px-5 py-3 text-[#94A3B8] font-bold text-xs">Học sinh</th>
+                <th className="text-left px-5 py-3 text-[#94A3B8] font-bold text-xs hidden sm:table-cell">Lớp chính</th>
+                <th className="text-left px-5 py-3 text-[#94A3B8] font-bold text-xs hidden md:table-cell">Ngày tham gia</th>
+                <th className="px-5 py-3 text-[#94A3B8] font-bold text-xs text-right">Thao tác</th>
+              </tr>
+            </thead>
+            <tbody>
+              {members.map((m, i) => (
+                <tr key={m.userId} className="border-b border-slate-50 hover:bg-violet-50/20 transition-colors">
+                  <td className="px-5 py-3 text-[#94A3B8] text-xs font-bold">{i + 1}</td>
+                  <td className="px-5 py-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-violet-400 to-purple-500
+                        flex items-center justify-center text-white text-xs font-black shrink-0 overflow-hidden">
+                        {m.avatar
+                          ? <img src={m.avatar} alt="" className="w-full h-full object-cover" />
+                          : m.username.charAt(0).toUpperCase()}
+                      </div>
+                      <div>
+                        <p className="font-bold text-[#082F49] text-sm">{m.username}</p>
+                        {m.fullName && <p className="text-[#94A3B8] text-xs">{m.fullName}</p>}
+                      </div>
+                    </div>
+                  </td>
+                  <td className="px-5 py-3 text-[#94A3B8] text-xs hidden sm:table-cell">học sinh</td>
+                  <td className="px-5 py-3 text-[#94A3B8] text-xs hidden md:table-cell">
+                    {new Date(m.joinedAt).toLocaleDateString('vi-VN')}
+                  </td>
+                  <td className="px-5 py-3 text-right">
+                    <button onClick={() => handleRemoveMember(m.userId)}
+                      disabled={removingId === m.userId}
+                      className="w-7 h-7 rounded-[8px] bg-red-50 border border-red-200
+                        flex items-center justify-center text-red-400 hover:bg-red-100
+                        transition-all disabled:opacity-50 ml-auto">
+                      {removingId === m.userId
+                        ? <FaSpinner className="animate-spin text-[10px]" />
+                        : <FaTrash className="text-[10px]" />}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── ClassListView ─────────────────────────────────────────────────────────────
+function ClassListView({ onSelectClass }: { onSelectClass: (cls: AdminClass) => void }) {
+  const [classes, setClasses]           = useState<AdminClass[]>([]);
+  const [total, setTotal]               = useState(0);
+  const [page, setPage]                 = useState(1);
+  const [loading, setLoading]           = useState(true);
+  const [search, setSearch]             = useState('');
+  const [gradeFilter, setGradeFilter]   = useState<number | 'all'>('all');
+  const [sortKey, setSortKey]           = useState<'name' | 'grade' | 'members' | 'createdAt'>('createdAt');
+  const [sortDir, setSortDir]           = useState<'asc' | 'desc'>('desc');
+  const [formMode, setFormMode]         = useState<'add' | 'edit' | null>(null);
+  const [editTarget, setEditTarget]     = useState<AdminClass | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<AdminClass | null>(null);
+  const [toast, setToast]               = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+  const PAGE_SIZE = 14;
+
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setToast({ msg, type }); setTimeout(() => setToast(null), 3000);
+  };
+
+  const fetchClasses = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: String(page), limit: String(PAGE_SIZE), search, sort: sortKey, sortDir,
+      });
+      if (gradeFilter !== 'all') params.set('grade', String(gradeFilter));
+      const res  = await fetch(`/api/admin/classrooms?${params}`);
+      const data = await res.json();
+      setClasses(data.classes ?? []);
+      setTotal(data.total ?? 0);
+    } finally { setLoading(false); }
+  }, [page, search, gradeFilter, sortKey, sortDir]);
+
+  useEffect(() => { fetchClasses(); }, [fetchClasses]);
+
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+  const toggleSort = (key: typeof sortKey) => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortKey(key); setSortDir('asc'); }
+    setPage(1);
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    const res = await fetch(`/api/homeclass/${deleteTarget._id}`, { method: 'DELETE' });
+    if (!res.ok) { showToast('Xoá thất bại', 'error'); setDeleteTarget(null); return; }
+    showToast('🗑️ Đã xoá lớp học!', 'error');
+    setDeleteTarget(null);
+    if (classes.length === 1 && page > 1) setPage(p => p - 1);
+    else fetchClasses();
+  };
+
+  return (
+    <div className="space-y-5">
+      {toast && (
+        <div className={`fixed top-5 right-5 z-[99999] px-5 py-3 rounded-[14px] text-sm font-bold
+          shadow-[0_8px_24px_rgba(0,0,0,0.12)] border transition-all
+          ${toast.type === 'success'
+            ? 'bg-[rgba(187,247,208,0.95)] border-emerald-200 text-[#16A34A]'
+            : 'bg-[rgba(254,226,226,0.95)] border-red-200 text-[#DC2626]'
+          }`}>
+          {toast.msg}
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-[#082F49]">🏡 Lớp học</h2>
+          <p className="text-[#94A3B8] text-sm font-semibold mt-0.5">
+            {loading ? '...' : `${total} lớp học`}
+          </p>
+        </div>
+        <button onClick={() => { setEditTarget(null); setFormMode('add'); }}
+          className="sm:ml-auto flex items-center gap-2 px-4 py-2 rounded-[12px]
+            bg-gradient-to-r from-violet-500 to-purple-500 text-white text-sm font-bold
+            hover:from-violet-400 hover:to-purple-400 shadow-md transition-all">
+          <FaPlus className="text-xs" /> Tạo lớp mới
+        </button>
+      </div>
+
+      {/* Filter + sort + search */}
+      <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px]
+        p-4 shadow-[0_10px_30px_rgba(14,165,233,0.08)] space-y-3">
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold text-[#94A3B8] mr-1">Khối:</span>
+          {(['all', 6, 7, 8, 9] as const).map(g => (
+            <button key={g} onClick={() => { setGradeFilter(g); setPage(1); }}
+              className={`px-4 py-1.5 rounded-[9999px] text-sm font-bold border transition-all
+                ${gradeFilter === g
+                  ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white border-transparent shadow-md'
+                  : 'bg-slate-50 text-[#334155] border-slate-200 hover:border-violet-300 hover:text-violet-600'
+                }`}>
+              {g === 'all' ? 'Tất cả' : `Lớp ${g}`}
+            </button>
+          ))}
+        </div>
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-xs font-bold text-[#94A3B8]">Sắp xếp:</span>
+          {([['name', 'Tên lớp'], ['grade', 'Khối'], ['members', 'Học sinh'], ['createdAt', 'Ngày tạo']] as const).map(([k, lbl]) => (
+            <button key={k} onClick={() => toggleSort(k)}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-[10px] text-xs font-bold border transition-all
+                ${sortKey === k
+                  ? 'bg-violet-50 border-violet-300 text-violet-700'
+                  : 'bg-slate-50 border-slate-200 text-[#334155] hover:border-violet-200'
+                }`}>
+              {lbl} {sortKey === k && <span>{sortDir === 'asc' ? '↑' : '↓'}</span>}
+            </button>
+          ))}
+          <div className="ml-auto flex items-center gap-2 bg-slate-50 border border-slate-200
+            rounded-[12px] px-3 py-2 focus-within:border-violet-400 focus-within:ring-2
+            focus-within:ring-violet-100 transition-all">
+            <FaSearch className="text-[#94A3B8] text-xs shrink-0" />
+            <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
+              placeholder="Tìm tên lớp, giáo viên..."
+              className="bg-transparent text-sm font-semibold text-[#082F49]
+                placeholder:text-[#94A3B8] outline-none w-36 sm:w-44" />
+            {search && (
+              <button onClick={() => setSearch('')}
+                className="text-[#94A3B8] hover:text-slate-600 transition-colors">
+                <FaTimes className="text-xs" />
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <FaSpinner className="text-4xl text-violet-400 animate-spin" />
+          <p className="text-[#94A3B8] font-semibold text-sm">Đang tải...</p>
+        </div>
+      ) : classes.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <div className="w-20 h-20 rounded-[24px] bg-slate-100 flex items-center justify-center text-4xl">🏡</div>
+          <p className="text-[#082F49] font-bold text-base">Chưa có lớp học nào</p>
+          <button onClick={() => setFormMode('add')}
+            className="flex items-center gap-2 px-4 py-2 rounded-[12px] bg-gradient-to-r
+              from-violet-500 to-purple-500 text-white text-sm font-bold hover:from-violet-400
+              hover:to-purple-400 shadow-md transition-all">
+            <FaPlus className="text-xs" /> Tạo lớp đầu tiên
+          </button>
+        </div>
+      ) : (
+        <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px]
+          shadow-[0_10px_30px_rgba(14,165,233,0.08)] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-100 bg-slate-50/60">
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs w-[4%]">#</th>
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs">Lớp học</th>
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden sm:table-cell">Giáo viên</th>
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden md:table-cell">Khối</th>
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden md:table-cell">Học sinh</th>
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden lg:table-cell">Ngày tạo</th>
+                  <th className="px-5 py-3.5 text-[#94A3B8] font-bold text-xs text-right">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody>
+                {classes.map((cls, idx) => (
+                  <tr key={cls._id}
+                    className="border-b border-slate-50 hover:bg-violet-50/30 transition-colors cursor-pointer group"
+                    onClick={() => onSelectClass(cls)}>
+                    <td className="px-5 py-3.5 text-[#94A3B8] text-xs font-bold">
+                      {(page - 1) * PAGE_SIZE + idx + 1}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-9 h-9 rounded-[11px] bg-gradient-to-br from-violet-400 to-purple-500
+                          flex items-center justify-center text-white text-base font-black shrink-0">🏡</div>
+                        <div className="min-w-0">
+                          <p className="font-bold text-[#082F49] group-hover:text-violet-700 transition-colors truncate">{cls.name}</p>
+                          {cls.subject && <p className="text-[#94A3B8] text-xs truncate">{cls.subject}</p>}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5 hidden sm:table-cell">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded-[8px] bg-gradient-to-br from-cyan-400 to-blue-500
+                          flex items-center justify-center text-white text-xs font-black shrink-0 overflow-hidden">
+                          {cls.teacherAvatar
+                            ? <img src={cls.teacherAvatar} alt="" className="w-full h-full object-cover" />
+                            : cls.teacherName.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="text-[#334155] text-xs font-semibold truncate max-w-[120px]">{cls.teacherName}</span>
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5 hidden md:table-cell">
+                      {cls.grade
+                        ? <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-black border ${GRADE_COLORS[cls.grade] ?? ''}`}>Lớp {cls.grade}</span>
+                        : <span className="text-[#94A3B8] text-xs">—</span>
+                      }
+                    </td>
+                    <td className="px-5 py-3.5 font-bold text-violet-600 hidden md:table-cell">
+                      {cls.members.length}
+                    </td>
+                    <td className="px-5 py-3.5 text-[#94A3B8] text-xs hidden lg:table-cell">
+                      {new Date(cls.createdAt).toLocaleDateString('vi-VN')}
+                    </td>
+                    <td className="px-5 py-3.5 text-right" onClick={e => e.stopPropagation()}>
+                      <div className="flex items-center justify-end gap-1">
+                        <button onClick={() => { setEditTarget(cls); setFormMode('edit'); }}
+                          title="Sửa lớp"
+                          className="w-7 h-7 rounded-[8px] bg-slate-50 border border-slate-200
+                            flex items-center justify-center text-violet-600 hover:bg-violet-50
+                            hover:border-violet-300 transition-all">
+                          <FaEdit className="text-[10px]" />
+                        </button>
+                        <button onClick={() => setDeleteTarget(cls)}
+                          title="Xoá lớp"
+                          className="w-7 h-7 rounded-[8px] bg-slate-50 border border-slate-200
+                            flex items-center justify-center text-red-400 hover:bg-red-50
+                            hover:border-red-300 transition-all">
+                          <FaTrash className="text-[10px]" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100">
+              <p className="text-[#94A3B8] text-xs font-semibold">
+                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} / {total} lớp
+              </p>
+              <Paginator page={page} totalPages={totalPages} onPageChange={setPage} />
+            </div>
+          )}
+        </div>
+      )}
+
+      {formMode && (
+        <ClassFormModal
+          mode={formMode}
+          initial={editTarget ?? undefined}
+          onClose={() => { setFormMode(null); setEditTarget(null); }}
+          onSaved={saved => {
+            setFormMode(null); setEditTarget(null);
+            if (formMode === 'add') { showToast('✅ Đã tạo lớp học!'); fetchClasses(); }
+            else { setClasses(prev => prev.map(c => c._id === saved._id ? { ...c, ...saved } : c)); showToast('✅ Đã cập nhật lớp học!'); }
+          }}
+        />
+      )}
+      {deleteTarget && (
+        <ConfirmDialog
+          message={`Xoá lớp học "${deleteTarget.name}"? Toàn bộ bài tập sẽ bị xoá. Thao tác không thể hoàn tác.`}
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── ClassroomsTab orchestrator ────────────────────────────────────────────────
+function ClassroomsTab() {
+  const [view, setView]                   = useState<'list' | 'detail'>('list');
+  const [selectedClass, setSelectedClass] = useState<AdminClass | null>(null);
+  return (
+    <div>
+      {view === 'list' && (
+        <ClassListView onSelectClass={cls => { setSelectedClass(cls); setView('detail'); }} />
+      )}
+      {view === 'detail' && selectedClass && (
+        <ClassDetailView cls={selectedClass} onBack={() => { setView('list'); setSelectedClass(null); }} />
+      )}
+    </div>
+  );
+}
+
 /* ════════════════════════ OVERVIEW TAB ════════════════════════════  */
 
 function OverviewTab() {
@@ -1993,12 +2756,13 @@ function OverviewTab() {
 
 /* ═══════════════════════ MAIN ADMIN CLIENT ════════════════════════ */
 
-type SidebarTab = 'overview' | 'users' | 'data';
+type SidebarTab = 'overview' | 'users' | 'classrooms' | 'data';
 
 const SIDEBAR_ITEMS: { id: SidebarTab; label: string; icon: React.ReactNode; badge?: string }[] = [
-  { id: 'overview', label: 'Tổng quan', icon: <FaChartBar /> },
-  { id: 'users',    label: 'Người dùng', icon: <FaUsers /> },
-  { id: 'data',     label: 'Dữ liệu', icon: <FaDatabase /> },
+  { id: 'overview',    label: 'Tổng quan',   icon: <FaChartBar /> },
+  { id: 'users',       label: 'Người dùng',  icon: <FaUsers /> },
+  { id: 'classrooms',  label: 'Lớp học',     icon: <FaSchool /> },
+  { id: 'data',        label: 'Dữ liệu',     icon: <FaDatabase /> },
 ];
 
 export function AdminClient({ currentUser }: {
@@ -2124,9 +2888,10 @@ export function AdminClient({ currentUser }: {
 
           {/* Content */}
           <main className="flex-1 min-w-0">
-            {activeTab === 'overview' && <OverviewTab />}
-            {activeTab === 'users'    && <UsersTab />}
-            {activeTab === 'data'     && <DataTab />}
+            {activeTab === 'overview'   && <OverviewTab />}
+            {activeTab === 'users'      && <UsersTab />}
+            {activeTab === 'classrooms' && <ClassroomsTab />}
+            {activeTab === 'data'       && <DataTab />}
           </main>
         </div>
       </div>

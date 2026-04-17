@@ -18,14 +18,16 @@ export const authConfig = {
       return true;
     },
     jwt({ token, user }) {
-      if (user && 'role' in user) {
-        token.role = user.role;
+      if (user) {
+        if ('role' in user) token.role = user.role;
+        if (user.id) token.id = user.id;
       }
       return token;
     },
     session({ session, token }) {
-      if (session.user && token.role !== undefined) {
-        session.user.role = token.role as number;
+      if (session.user) {
+        if (token.role !== undefined) session.user.role = token.role as number;
+        if (token.id) session.user.id = token.id as string;
       }
       return session;
     },
