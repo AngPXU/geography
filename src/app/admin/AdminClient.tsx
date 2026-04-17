@@ -2,6 +2,7 @@
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   FaArrowLeft, FaBell, FaChartBar, FaDatabase, FaEdit,
   FaGlobeAsia, FaPlus, FaSearch, FaShieldAlt, FaSpinner,
@@ -32,6 +33,8 @@ interface UserRow {
   exp: number;
   streak: number;
   createdAt: string;
+  provider?: string;
+  avatar?: string;
 }
 
 interface Stats {
@@ -1533,82 +1536,327 @@ function DataTab() {
   );
 }
 
+/* ═══════════════════════ USER ROLE MODAL ════════════════════════════ */
+
+function UserRoleModal({ user, onClose, onSaved }: {
+  user: UserRow;
+  onClose: () => void;
+  onSaved: (userId: string, newRole: number) => Promise<void>;
+}) {
+  const [role, setRole]     = useState(user.role);
+  const [saving, setSaving] = useState(false);
+  const [error, setError]   = useState('');
+
+  const handle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    setError('');
+    try { await onSaved(user._id, role); onClose(); }
+    catch (err: unknown) { setError(err instanceof Error ? err.message : 'Lỗi không xác định'); }
+    finally { setSaving(false); }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
+      <div className="relative w-full max-w-sm bg-white/90 backdrop-blur-[20px] border border-white
+        rounded-[24px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100
+          bg-gradient-to-r from-violet-50 to-purple-50">
+          <h3 className="font-black text-[#082F49] text-lg">✏️ Phân quyền</h3>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200
+            flex items-center justify-center text-slate-500 transition-colors">
+            <FaTimes className="text-xs" />
+          </button>
+        </div>
+        <form onSubmit={handle} className="p-6 space-y-4">
+          {error && (
+            <div className="flex items-center gap-2 px-4 py-3 rounded-[12px] bg-red-50 border
+              border-red-200 text-red-600 text-sm font-semibold">
+              <FaExclamationTriangle className="shrink-0" /> {error}
+            </div>
+          )}
+          {/* User info */}
+          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-[14px] border border-slate-200">
+            <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-cyan-400 to-blue-500
+              flex items-center justify-center text-white font-black text-sm shrink-0 overflow-hidden">
+              {user.avatar
+                ? <img src={user.avatar} alt="" className="w-full h-full object-cover rounded-[12px]" />
+                : user.username.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <p className="font-black text-[#082F49] text-sm">{user.username}</p>
+              {user.fullName && <p className="text-[#94A3B8] text-xs">{user.fullName}</p>}
+            </div>
+          </div>
+          {/* Role options */}
+          <div>
+            <label className="block text-xs font-bold text-[#334155] mb-2">Chọn vai trò mới</label>
+            <div className="flex flex-col gap-2">
+              {([1, 2, 3] as const).map(r => {
+                const info = ROLE_LABEL[r];
+                return (
+                  <button key={r} type="button" onClick={() => setRole(r)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-[14px] border-2 text-left
+                      font-bold transition-all text-sm
+                      ${role === r
+                        ? 'border-violet-400 bg-violet-50 text-violet-700'
+                        : 'border-slate-200 bg-slate-50 text-[#334155] hover:border-slate-300'
+                      }`}>
+                    <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0
+                      ${role === r ? 'border-violet-500 bg-violet-500' : 'border-slate-300'}`}>
+                      {role === r && <span className="w-2 h-2 rounded-full bg-white" />}
+                    </span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs border ${info.cls}`}>{info.label}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+          <div className="flex gap-3">
+            <button type="button" onClick={onClose}
+              className="flex-1 py-2.5 rounded-[12px] border border-slate-200 text-sm font-bold
+                text-[#334155] hover:bg-slate-50 transition-all">Huỷ</button>
+            <button type="submit" disabled={saving || role === user.role}
+              className="flex-1 py-2.5 rounded-[12px] bg-gradient-to-r from-violet-500 to-purple-500
+                text-white text-sm font-bold hover:from-violet-400 hover:to-purple-400 transition-all
+                flex items-center justify-center gap-2 disabled:opacity-50">
+              {saving && <FaSpinner className="animate-spin text-xs" />}
+              Lưu thay đổi
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════════════════ USERS TAB ════════════════════════════════ */
 
 function UsersTab() {
-  const [users, setUsers]   = useState<UserRow[]>([]);
-  const [total, setTotal]   = useState(0);
-  const [page, setPage]     = useState(1);
-  const [loading, setLoading] = useState(true);
-  const LIMIT = 20;
+  const router = useRouter();
+  const [users, setUsers]               = useState<UserRow[]>([]);
+  const [total, setTotal]               = useState(0);
+  const [page, setPage]                 = useState(1);
+  const [loading, setLoading]           = useState(true);
+  const [search, setSearch]             = useState('');
+  const [roleFilter, setRoleFilter]     = useState<number | 'all'>('all');
+  const [sortKey, setSortKey]           = useState<'username' | 'email' | 'exp' | 'streak' | 'createdAt'>('createdAt');
+  const [sortDir, setSortDir]           = useState<'asc' | 'desc'>('desc');
+  const [editTarget, setEditTarget]     = useState<UserRow | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null);
+  const [toast, setToast]               = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+  const PAGE_SIZE = 14;
 
-  const fetchUsers = useCallback(async (p: number) => {
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
+
+  const fetchUsers = useCallback(async () => {
     setLoading(true);
     try {
-      const res  = await fetch(`/api/admin/users?page=${p}&limit=${LIMIT}`);
+      const params = new URLSearchParams({
+        page: String(page), limit: String(PAGE_SIZE),
+        search, role: String(roleFilter), sort: sortKey, sortDir,
+      });
+      const res  = await fetch(`/api/admin/users?${params}`);
       const data = await res.json();
       setUsers(data.users ?? []);
       setTotal(data.total ?? 0);
     } finally { setLoading(false); }
-  }, []);
+  }, [page, search, roleFilter, sortKey, sortDir]);
 
-  useEffect(() => { fetchUsers(page); }, [fetchUsers, page]);
+  useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
-  const totalPages = Math.ceil(total / LIMIT);
+  const totalPages = Math.ceil(total / PAGE_SIZE);
+
+  const toggleSort = (key: typeof sortKey) => {
+    if (sortKey === key) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortKey(key); setSortDir('asc'); }
+    setPage(1);
+  };
+
+  const handleEditSave = async (userId: string, newRole: number) => {
+    const res = await fetch(`/api/admin/users/${userId}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ role: newRole }),
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Cập nhật thất bại');
+    showToast('✅ Đã cập nhật vai trò!');
+    fetchUsers();
+  };
+
+  const handleDelete = async () => {
+    if (!deleteTarget) return;
+    const res  = await fetch(`/api/admin/users/${deleteTarget._id}`, { method: 'DELETE' });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.error || 'Xoá thất bại', 'error'); setDeleteTarget(null); return; }
+    showToast('🗑️ Đã xoá người dùng!', 'error');
+    setDeleteTarget(null);
+    if (users.length === 1 && page > 1) setPage(p => p - 1);
+    else fetchUsers();
+  };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-5">
+      {/* Toast */}
+      {toast && (
+        <div className={`fixed top-5 right-5 z-[99999] px-5 py-3 rounded-[14px] text-sm font-bold
+          shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition-all border
+          ${toast.type === 'success'
+            ? 'bg-[rgba(187,247,208,0.95)] border-emerald-200 text-[#16A34A]'
+            : 'bg-[rgba(254,226,226,0.95)] border-red-200 text-[#DC2626]'
+          }`}>
+          {toast.msg}
+        </div>
+      )}
+
+      {/* Header */}
       <div>
         <h2 className="text-2xl font-black text-[#082F49]">👥 Người dùng</h2>
-        <p className="text-[#94A3B8] text-sm font-semibold mt-0.5">{total} tài khoản</p>
+        <p className="text-[#94A3B8] text-sm font-semibold mt-0.5">
+          {loading ? '...' : `${total} tài khoản`}
+        </p>
       </div>
 
+      {/* Filter + Sort + Search */}
       <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px]
-        shadow-[0_10px_30px_rgba(14,165,233,0.08)] overflow-hidden">
-        {loading ? (
-          <div className="flex items-center justify-center py-16">
-            <FaSpinner className="text-3xl text-cyan-400 animate-spin" />
+        p-4 shadow-[0_10px_30px_rgba(14,165,233,0.08)] space-y-3">
+        {/* Role pills */}
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs font-bold text-[#94A3B8] mr-1">Vai trò:</span>
+          {(['all', 1, 2, 3] as const).map(r => (
+            <button key={r} onClick={() => { setRoleFilter(r); setPage(1); }}
+              className={`px-4 py-1.5 rounded-[9999px] text-sm font-bold border transition-all
+                ${roleFilter === r
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-transparent shadow-md'
+                  : 'bg-slate-50 text-[#334155] border-slate-200 hover:border-cyan-300 hover:text-cyan-600'
+                }`}>
+              {r === 'all' ? 'Tất cả' : ROLE_LABEL[r]?.label}
+            </button>
+          ))}
+        </div>
+        {/* Sort + Search */}
+        <div className="flex flex-wrap gap-2 items-center">
+          <span className="text-xs font-bold text-[#94A3B8]">Sắp xếp:</span>
+          {([
+            ['username', 'Tên'], ['exp', 'EXP'], ['streak', 'Chuỗi'], ['createdAt', 'Ngày tạo']
+          ] as const).map(([k, lbl]) => (
+            <button key={k} onClick={() => toggleSort(k)}
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-[10px] text-xs font-bold
+                border transition-all
+                ${sortKey === k
+                  ? 'bg-cyan-50 border-cyan-300 text-cyan-700'
+                  : 'bg-slate-50 border-slate-200 text-[#334155] hover:border-cyan-200'
+                }`}>
+              {lbl} {sortKey === k && <span>{sortDir === 'asc' ? '↑' : '↓'}</span>}
+            </button>
+          ))}
+          <div className="ml-auto flex items-center gap-2 bg-slate-50 border border-slate-200
+            rounded-[12px] px-3 py-2 focus-within:border-cyan-400 focus-within:ring-2
+            focus-within:ring-cyan-100 transition-all">
+            <FaSearch className="text-[#94A3B8] text-xs shrink-0" />
+            <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
+              placeholder="Tìm theo tên, email..."
+              className="bg-transparent text-sm font-semibold text-[#082F49]
+                placeholder:text-[#94A3B8] outline-none w-36 sm:w-44" />
+            {search && (
+              <button onClick={() => setSearch('')}
+                className="text-[#94A3B8] hover:text-slate-600 transition-colors">
+                <FaTimes className="text-xs" />
+              </button>
+            )}
           </div>
-        ) : (
+        </div>
+      </div>
+
+      {/* Users table */}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <FaSpinner className="text-4xl text-cyan-400 animate-spin" />
+          <p className="text-[#94A3B8] font-semibold text-sm">Đang tải...</p>
+        </div>
+      ) : users.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <div className="w-20 h-20 rounded-[24px] bg-slate-100 flex items-center justify-center text-4xl">👤</div>
+          <p className="text-[#082F49] font-bold text-base">Không tìm thấy người dùng</p>
+        </div>
+      ) : (
+        <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px]
+          shadow-[0_10px_30px_rgba(14,165,233,0.08)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="border-b border-slate-100 bg-slate-50/60">
-                  <th className="text-left px-5 py-3 text-[#94A3B8] font-bold text-xs">Tài khoản</th>
-                  <th className="text-left px-5 py-3 text-[#94A3B8] font-bold text-xs">Email</th>
-                  <th className="text-left px-5 py-3 text-[#94A3B8] font-bold text-xs">Vai trò</th>
-                  <th className="text-left px-5 py-3 text-[#94A3B8] font-bold text-xs">EXP</th>
-                  <th className="text-left px-5 py-3 text-[#94A3B8] font-bold text-xs">Chuỗi 🔥</th>
-                  <th className="text-left px-5 py-3 text-[#94A3B8] font-bold text-xs">Ngày tạo</th>
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs w-[5%]">#</th>
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs">Tài khoản</th>
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden sm:table-cell">Email</th>
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs">Vai trò</th>
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden md:table-cell">EXP</th>
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden md:table-cell">Chuỗi 🔥</th>
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden lg:table-cell">Ngày tạo</th>
+                  <th className="px-5 py-3.5 text-[#94A3B8] font-bold text-xs text-right">Thao tác</th>
                 </tr>
               </thead>
               <tbody>
-                {users.map(u => {
+                {users.map((u, idx) => {
                   const roleInfo = ROLE_LABEL[u.role] ?? { label: '?', cls: 'bg-slate-100 text-slate-500 border-slate-200' };
                   return (
-                    <tr key={u._id} className="border-b border-slate-50 hover:bg-blue-50/30 transition-colors">
+                    <tr key={u._id}
+                      className="border-b border-slate-50 hover:bg-cyan-50/30 transition-colors cursor-pointer group"
+                      onClick={() => router.push(`/admin/users/${u._id}`)}
+                    >
+                      <td className="px-5 py-3 text-[#94A3B8] text-xs font-bold">
+                        {(page - 1) * PAGE_SIZE + idx + 1}
+                      </td>
                       <td className="px-5 py-3">
                         <div className="flex items-center gap-2.5">
-                          <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-cyan-400 to-blue-500
-                            flex items-center justify-center text-white text-xs font-black shrink-0">
-                            {u.username.charAt(0).toUpperCase()}
+                          <div className="w-9 h-9 rounded-[11px] bg-gradient-to-br from-cyan-400 to-blue-500
+                            flex items-center justify-center text-white text-xs font-black shrink-0 overflow-hidden">
+                            {u.avatar
+                              ? <img src={u.avatar} alt="" className="w-full h-full object-cover" />
+                              : u.username.charAt(0).toUpperCase()}
                           </div>
-                          <div>
-                            <p className="font-bold text-[#082F49]">{u.username}</p>
-                            {u.fullName && <p className="text-[#94A3B8] text-xs">{u.fullName}</p>}
+                          <div className="min-w-0">
+                            <p className="font-bold text-[#082F49] group-hover:text-cyan-700 transition-colors">{u.username}</p>
+                            {u.fullName && <p className="text-[#94A3B8] text-xs truncate">{u.fullName}</p>}
                           </div>
                         </div>
                       </td>
-                      <td className="px-5 py-3 text-[#334155]">{u.email ?? '—'}</td>
-                      <td className="px-5 py-3">
-                        <span className={`px-2 py-0.5 rounded-full text-xs font-bold border ${roleInfo.cls}`}>
+                      <td className="px-5 py-3 text-[#334155] text-xs hidden sm:table-cell">{u.email ?? '—'}</td>
+                      <td className="px-5 py-3" onClick={e => e.stopPropagation()}>
+                        <button onClick={() => setEditTarget(u)}
+                          className={`px-2.5 py-1 rounded-full text-xs font-bold border transition-all
+                            hover:opacity-80 ${roleInfo.cls}`}>
                           {roleInfo.label}
-                        </span>
+                        </button>
                       </td>
-                      <td className="px-5 py-3 font-bold text-cyan-600">{u.exp?.toLocaleString() ?? 0}</td>
-                      <td className="px-5 py-3 font-bold text-orange-500">{u.streak ?? 0} ngày</td>
-                      <td className="px-5 py-3 text-[#94A3B8] text-xs">
+                      <td className="px-5 py-3 font-bold text-cyan-600 tabular-nums hidden md:table-cell">
+                        {(u.exp ?? 0).toLocaleString()}
+                      </td>
+                      <td className="px-5 py-3 font-bold text-orange-500 hidden md:table-cell">{u.streak ?? 0} ngày</td>
+                      <td className="px-5 py-3 text-[#94A3B8] text-xs hidden lg:table-cell">
                         {new Date(u.createdAt).toLocaleDateString('vi-VN')}
+                      </td>
+                      <td className="px-5 py-3 text-right" onClick={e => e.stopPropagation()}>
+                        <div className="flex items-center justify-end gap-1">
+                          <button onClick={() => setEditTarget(u)} title="Đổi vai trò"
+                            className="w-7 h-7 rounded-[8px] bg-slate-50 border border-slate-200
+                              flex items-center justify-center text-cyan-600 hover:bg-cyan-50
+                              hover:border-cyan-300 transition-all">
+                            <FaEdit className="text-[10px]" />
+                          </button>
+                          <button onClick={() => setDeleteTarget(u)} title="Xoá tài khoản"
+                            className="w-7 h-7 rounded-[8px] bg-slate-50 border border-slate-200
+                              flex items-center justify-center text-red-400 hover:bg-red-50
+                              hover:border-red-300 transition-all">
+                            <FaTrash className="text-[10px]" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -1616,29 +1864,34 @@ function UsersTab() {
               </tbody>
             </table>
           </div>
-        )}
-
-        {/* Pagination */}
-        {totalPages > 1 && (
-          <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100">
-            <p className="text-[#94A3B8] text-xs font-semibold">
-              Trang {page} / {totalPages}
-            </p>
-            <div className="flex gap-2">
-              <button onClick={() => setPage(p => Math.max(1, p - 1))} disabled={page === 1}
-                className="px-3 py-1.5 rounded-[10px] text-xs font-bold border border-slate-200
-                  text-[#334155] disabled:opacity-40 hover:bg-slate-50 transition-all">
-                ← Trước
-              </button>
-              <button onClick={() => setPage(p => Math.min(totalPages, p + 1))} disabled={page === totalPages}
-                className="px-3 py-1.5 rounded-[10px] text-xs font-bold border border-slate-200
-                  text-[#334155] disabled:opacity-40 hover:bg-slate-50 transition-all">
-                Sau →
-              </button>
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100">
+              <p className="text-[#94A3B8] text-xs font-semibold">
+                {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, total)} / {total} người dùng
+              </p>
+              <Paginator page={page} totalPages={totalPages} onPageChange={setPage} />
             </div>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
+
+      {/* Edit role modal */}
+      {editTarget && (
+        <UserRoleModal
+          user={editTarget}
+          onClose={() => setEditTarget(null)}
+          onSaved={handleEditSave}
+        />
+      )}
+      {/* Delete confirm */}
+      {deleteTarget && (
+        <ConfirmDialog
+          message={`Xoá tài khoản "${deleteTarget.username}"? Thao tác này không thể hoàn tác.`}
+          onConfirm={handleDelete}
+          onCancel={() => setDeleteTarget(null)}
+        />
+      )}
     </div>
   );
 }
