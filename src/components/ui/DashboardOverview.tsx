@@ -28,11 +28,19 @@ interface DashboardOverviewProps {
 type StreakDay = { date: string; active: boolean };
 
 function LiveClock() {
-  const [now, setNow] = useState(new Date());
+  const [now, setNow] = useState<Date | null>(null);
   useEffect(() => {
+    setNow(new Date());
     const t = setInterval(() => setNow(new Date()), 1000);
     return () => clearInterval(t);
   }, []);
+
+  if (!now) return (
+    <div className="text-right shrink-0">
+      <p className="text-[#082F49] font-black text-3xl md:text-4xl tracking-tight tabular-nums opacity-0">00:00:00 ⏳</p>
+      <p className="text-cyan-500 font-bold text-xs md:text-sm mt-1 uppercase tracking-widest opacity-0">ĐANG TẢI</p>
+    </div>
+  );
 
   const timeStr = now.toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
   const dateStr = now.toLocaleDateString('vi-VN', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' }).toUpperCase();

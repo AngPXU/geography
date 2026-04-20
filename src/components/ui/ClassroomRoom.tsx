@@ -7,6 +7,7 @@ import { ChatPanel } from './ChatPanel';
 import { ScorePanel } from './ScorePanel';
 import { QuizCreator } from './QuizCreator';
 import { QuizPanel, IActiveQuiz } from './QuizPanel';
+import { ScreenSharePanel } from './ScreenSharePanel';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -484,6 +485,14 @@ export function ClassroomRoom({
             PHÒNG HỌC · {onlineCount} học sinh online
           </span>
           <div className="flex-1 h-px bg-amber-200" />
+        </div>
+
+        {/* ── Screen Share Panel ──────────────────────────────────────── */}
+        <div className="mx-4 md:mx-8 mb-6">
+          <ScreenSharePanel
+            classroomId={roomId}
+            username={currentUserName}
+          />
         </div>
 
         {/* ── Unseated students notice ─────────────────────────────────── */}
