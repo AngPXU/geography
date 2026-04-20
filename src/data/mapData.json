@@ -1285,5 +1285,29 @@
         ]
       ]
     }
+  ],
+  "vnRegions": [
+    { "id": "vn-rg-1", "subCategory": "vnRegion", "name": "Đồng bằng sông Hồng", "lat": 20.8, "lng": 106.0, "color": "#3B82F6", "desc": "Vùng đồng bằng phù sa màu mỡ, trung tâm kinh tế-chính trị của miền Bắc. Gồm Hà Nội, Hải Phòng, Bắc Giang, Hưng Yên, Thái Bình, Ninh Bình.", "emoji": "🌾", "zone": "Miền Bắc" },
+    { "id": "vn-rg-2", "subCategory": "vnRegion", "name": "Đông Bắc Bộ", "lat": 21.8, "lng": 106.2, "color": "#8B5CF6", "desc": "Vùng núi rừng Đông Bắc với nhiều dân tộc thiểu số và khoáng sản quý. Gồm Quảng Ninh, Lạng Sơn, Cao Bằng, Thái Nguyên, Phú Thọ, Tuyên Quang.", "emoji": "⛰️", "zone": "Miền Bắc" },
+    { "id": "vn-rg-3", "subCategory": "vnRegion", "name": "Tây Bắc Bộ", "lat": 22.0, "lng": 103.8, "color": "#EC4899", "desc": "Vùng núi cao hùng vĩ với đỉnh Fansipan. Gồm Lào Cai, Yên Bái, Sơn La, Điện Biên, Lai Châu, Hòa Bình.", "emoji": "🏔️", "zone": "Miền Bắc" },
+    { "id": "vn-rg-4", "subCategory": "vnRegion", "name": "Bắc Trung Bộ", "lat": 18.2, "lng": 105.8, "color": "#F97316", "desc": "Dải đất hẹp miền Trung, giàu truyền thống lịch sử cách mạng. Gồm Thanh Hóa, Nghệ An, Hà Tĩnh, Quảng Trị.", "emoji": "🌊", "zone": "Miền Trung" },
+    { "id": "vn-rg-5", "subCategory": "vnRegion", "name": "Nam Trung Bộ", "lat": 14.5, "lng": 108.5, "color": "#14B8A6", "desc": "Bờ biển dài và đẹp, trung tâm du lịch biển của Việt Nam. Gồm Đà Nẵng, Quảng Nam, Quảng Ngãi, Phú Yên, Ninh Thuận.", "emoji": "🏖️", "zone": "Miền Trung" },
+    { "id": "vn-rg-6", "subCategory": "vnRegion", "name": "Tây Nguyên", "lat": 13.0, "lng": 107.9, "color": "#84CC16", "desc": "Cao nguyên bạt ngàn, vựa cà phê và hồ tiêu của Việt Nam. Gồm Kon Tum, Gia Lai, Đắk Lắk, Lâm Đồng.", "emoji": "☕", "zone": "Miền Trung" },
+    { "id": "vn-rg-7", "subCategory": "vnRegion", "name": "Đông Nam Bộ", "lat": 11.0, "lng": 106.8, "color": "#F59E0B", "desc": "Đầu tàu kinh tế cả nước, trung tâm công nghiệp-dịch vụ. Gồm TP. Hồ Chí Minh, Đồng Nai.", "emoji": "🏙️", "zone": "Miền Nam" },
+    { "id": "vn-rg-8", "subCategory": "vnRegion", "name": "Đồng bằng sông Cửu Long", "lat": 10.2, "lng": 105.5, "color": "#22C55E", "desc": "Vựa lúa số 1 của Việt Nam, vùng trái cây nhiệt đới phong phú. Gồm Cần Thơ (trung tâm vùng).", "emoji": "🌴", "zone": "Miền Nam" }
+  ],
+  "vnCities": [
+    { "id": "vn-ct-hn",  "subCategory": "vnCity", "name": "Hà Nội",          "lat": 21.0245, "lng": 105.8412, "emoji": "🏛️", "desc": "Thủ đô ngàn năm văn hiến của Việt Nam. Trung tâm chính trị, văn hóa, giáo dục cả nước.", "pop": 8500000 },
+    { "id": "vn-ct-hp",  "subCategory": "vnCity", "name": "Hải Phòng",        "lat": 20.8449, "lng": 106.6882, "emoji": "🚢", "desc": "Thành phố cảng lớn nhất miền Bắc. Cửa ngõ giao thương hàng hải quan trọng.", "pop": 2100000 },
+    { "id": "vn-ct-hcm", "subCategory": "vnCity", "name": "TP. Hồ Chí Minh", "lat": 10.8231, "lng": 106.6297, "emoji": "🌆", "desc": "Thành phố lớn nhất cả nước, trung tâm kinh tế - tài chính hàng đầu Việt Nam.", "pop": 10000000 },
+    { "id": "vn-ct-dn",  "subCategory": "vnCity", "name": "Đà Nẵng",          "lat": 16.0544, "lng": 108.2022, "emoji": "🌉", "desc": "Thành phố đáng sống nhất Việt Nam, trung tâm du lịch miền Trung và bán đảo Sơn Trà.", "pop": 1300000 },
+    { "id": "vn-ct-ct",  "subCategory": "vnCity", "name": "Cần Thơ",           "lat": 10.0341, "lng": 105.7851, "emoji": "🌿", "desc": "Thủ phủ miền Tây Nam Bộ, trung tâm đồng bằng sông Cửu Long. Nổi tiếng chợ nổi Cái Răng.", "pop": 1500000 },
+    { "id": "vn-ct-hn2", "subCategory": "vnCity", "name": "Hội An",            "lat": 15.8800, "lng": 108.3380, "emoji": "🏮", "desc": "Phố cổ di sản UNESCO, điểm đến du lịch nổi tiếng thế giới.", "pop": 130000 },
+    { "id": "vn-ct-hl",  "subCategory": "vnCity", "name": "Hạ Long",           "lat": 20.9599, "lng": 107.0452, "emoji": "⛵", "desc": "Di sản thiên nhiên thế giới UNESCO với hàng nghìn đảo đá vôi hùng vĩ trên vịnh.", "pop": 310000 },
+    { "id": "vn-ct-dl",  "subCategory": "vnCity", "name": "Đà Lạt",            "lat": 11.9465, "lng": 108.4419, "emoji": "🌸", "desc": "Thành phố mộng mơ trên cao nguyên Lâm Viên. Khí hậu mát mẻ quanh năm, nổi tiếng hoa và thông.", "pop": 430000 },
+    { "id": "vn-ct-nb",  "subCategory": "vnCity", "name": "Nha Trang",         "lat": 12.2388, "lng": 109.1967, "emoji": "🐠", "desc": "Thiên đường biển xanh cát trắng, trung tâm du lịch biển nổi tiếng quốc tế.", "pop": 490000 },
+    { "id": "vn-ct-hue", "subCategory": "vnCity", "name": "Huế",               "lat": 16.4637, "lng": 107.5909, "emoji": "👑", "desc": "Cố đô của triều Nguyễn, Di sản văn hóa thế giới. Nổi tiếng ẩm thực cung đình và kiến trúc hoàng thành.", "pop": 700000 },
+    { "id": "vn-ct-bm",  "subCategory": "vnCity", "name": "Buôn Ma Thuột",     "lat": 12.6800, "lng": 108.0500, "emoji": "☕", "desc": "Thủ phủ Tây Nguyên và kinh đô cà phê Việt Nam, trung tâm của Đắk Lắk.", "pop": 450000 },
+    { "id": "vn-ct-vt",  "subCategory": "vnCity", "name": "Vũng Tàu",          "lat": 10.3468, "lng": 107.0843, "emoji": "🛢️", "desc": "Thành phố biển và trung tâm công nghiệp dầu khí của Việt Nam.", "pop": 600000 }
   ]
 }

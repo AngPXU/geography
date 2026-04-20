@@ -8,12 +8,12 @@ import { FaGlobeAsia, FaMapMarkedAlt, FaGamepad, FaUsers, FaBell, FaBook, FaUser
 import { SettingsDrawer } from '@/components/ui/SettingsDrawer';
 
 const NAV_ITEMS = [
-  { href: '/',          label: 'Trang chủ',   icon: '🏠', color: 'text-blue-500',   bg: 'bg-blue-50',   dot: 'bg-blue-500' },
-  { href: '/classroom', label: 'Lớp học',     icon: '🏫', color: 'text-cyan-500',   bg: 'bg-cyan-50',   dot: 'bg-cyan-500' },
-  { href: '/map',       label: 'Bản đồ',      icon: '🗺️', color: 'text-green-500', bg: 'bg-green-50',  dot: 'bg-green-500' },
-  { href: '/arena',     label: 'Đấu trường', icon: '⚔️', color: 'text-rose-500',  bg: 'bg-rose-50',   dot: 'bg-rose-500' },
-  { href: '/books',    label: 'Sách',      icon: '📚', color: 'text-violet-500',  bg: 'bg-violet-50',  dot: 'bg-violet-500' },
-  { href: '/lessons',  label: 'Bài Giảng', icon: '📖', color: 'text-emerald-500', bg: 'bg-emerald-50', dot: 'bg-emerald-500' },
+  { href: '/', label: 'Trang chủ', icon: '🏠', color: 'text-blue-500', bg: 'bg-blue-50', dot: 'bg-blue-500' },
+  { href: '/classroom', label: 'Lớp học', icon: '🏫', color: 'text-cyan-500', bg: 'bg-cyan-50', dot: 'bg-cyan-500' },
+  { href: '/map', label: 'Bản đồ', icon: '🗺️', color: 'text-green-500', bg: 'bg-green-50', dot: 'bg-green-500' },
+  { href: '/arena', label: 'Đấu trường', icon: '⚔️', color: 'text-rose-500', bg: 'bg-rose-50', dot: 'bg-rose-500' },
+  { href: '/books', label: 'Sách', icon: '📚', color: 'text-violet-500', bg: 'bg-violet-50', dot: 'bg-violet-500' },
+  //{ href: '/lessons',  label: 'Bài Giảng', icon: '📖', color: 'text-emerald-500', bg: 'bg-emerald-50', dot: 'bg-emerald-500' },
 ];
 
 export function Navbar({ user }: { user?: { name?: string | null; image?: string | null; role?: number } }) {
@@ -284,7 +284,7 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
                     {user?.name || 'Khách'}
                   </span>
                   <svg className={`w-3 h-3 text-slate-400 group-hover:text-slate-600 transition-all duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                    <polyline points="6 9 12 15 18 9"/>
+                    <polyline points="6 9 12 15 18 9" />
                   </svg>
                 </button>
 

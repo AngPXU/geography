@@ -1,0 +1,175 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-01", "name": "Hà Nội", "region": "Đồng bằng sông Hồng", "regionCode": 1, "capital": true, "pop": 8500000 },
+      "geometry": { "type": "Point", "coordinates": [105.8412, 21.0245] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-02", "name": "Hải Phòng", "region": "Đồng bằng sông Hồng", "regionCode": 1, "pop": 2100000 },
+      "geometry": { "type": "Point", "coordinates": [106.6882, 20.8449] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-03", "name": "Quảng Ninh", "region": "Đông Bắc Bộ", "regionCode": 2, "pop": 1380000 },
+      "geometry": { "type": "Point", "coordinates": [107.3300, 21.0067] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-04", "name": "Lạng Sơn", "region": "Đông Bắc Bộ", "regionCode": 2, "pop": 800000 },
+      "geometry": { "type": "Point", "coordinates": [106.7678, 21.8537] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-05", "name": "Cao Bằng", "region": "Đông Bắc Bộ", "regionCode": 2, "pop": 570000 },
+      "geometry": { "type": "Point", "coordinates": [106.2540, 22.6657] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-06", "name": "Tuyên Quang", "region": "Đông Bắc Bộ", "regionCode": 2, "pop": 800000, "note": "Sáp nhập Hà Giang" },
+      "geometry": { "type": "Point", "coordinates": [105.2141, 22.1473] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-07", "name": "Lào Cai", "region": "Tây Bắc Bộ", "regionCode": 3, "pop": 950000 },
+      "geometry": { "type": "Point", "coordinates": [103.9745, 22.4809] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-08", "name": "Yên Bái", "region": "Tây Bắc Bộ", "regionCode": 3, "pop": 900000 },
+      "geometry": { "type": "Point", "coordinates": [104.8680, 21.7238] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-09", "name": "Sơn La", "region": "Tây Bắc Bộ", "regionCode": 3, "pop": 1300000 },
+      "geometry": { "type": "Point", "coordinates": [103.9145, 21.3274] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-10", "name": "Điện Biên", "region": "Tây Bắc Bộ", "regionCode": 3, "pop": 680000 },
+      "geometry": { "type": "Point", "coordinates": [103.0225, 21.3857] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-11", "name": "Lai Châu", "region": "Tây Bắc Bộ", "regionCode": 3, "pop": 470000 },
+      "geometry": { "type": "Point", "coordinates": [103.4709, 22.3862] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-12", "name": "Hòa Bình", "region": "Tây Bắc Bộ", "regionCode": 3, "pop": 900000 },
+      "geometry": { "type": "Point", "coordinates": [105.3383, 20.8133] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-13", "name": "Thái Nguyên", "region": "Đông Bắc Bộ", "regionCode": 2, "pop": 1400000, "note": "Sáp nhập Bắc Kạn" },
+      "geometry": { "type": "Point", "coordinates": [105.8448, 21.5942] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-14", "name": "Phú Thọ", "region": "Đông Bắc Bộ", "regionCode": 2, "pop": 1500000 },
+      "geometry": { "type": "Point", "coordinates": [105.2286, 21.4282] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-15", "name": "Bắc Giang", "region": "Đồng bằng sông Hồng", "regionCode": 1, "pop": 1900000 },
+      "geometry": { "type": "Point", "coordinates": [106.1942, 21.3097] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-16", "name": "Hưng Yên", "region": "Đồng bằng sông Hồng", "regionCode": 1, "pop": 1300000, "note": "Sáp nhập Hải Dương" },
+      "geometry": { "type": "Point", "coordinates": [106.0514, 20.8523] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-17", "name": "Thái Bình", "region": "Đồng bằng sông Hồng", "regionCode": 1, "pop": 1900000, "note": "Sáp nhập Nam Định" },
+      "geometry": { "type": "Point", "coordinates": [106.3509, 20.4503] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-18", "name": "Ninh Bình", "region": "Đồng bằng sông Hồng", "regionCode": 1, "pop": 1000000, "note": "Sáp nhập Hà Nam" },
+      "geometry": { "type": "Point", "coordinates": [105.9745, 20.2586] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-19", "name": "Thanh Hóa", "region": "Bắc Trung Bộ", "regionCode": 4, "pop": 3700000 },
+      "geometry": { "type": "Point", "coordinates": [105.7769, 19.8071] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-20", "name": "Nghệ An", "region": "Bắc Trung Bộ", "regionCode": 4, "pop": 3400000 },
+      "geometry": { "type": "Point", "coordinates": [105.0000, 19.1000] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-21", "name": "Hà Tĩnh", "region": "Bắc Trung Bộ", "regionCode": 4, "pop": 1300000, "note": "Sáp nhập Quảng Bình" },
+      "geometry": { "type": "Point", "coordinates": [105.9000, 18.0000] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-22", "name": "Quảng Trị", "region": "Bắc Trung Bộ", "regionCode": 4, "pop": 700000, "note": "Sáp nhập Thừa Thiên Huế" },
+      "geometry": { "type": "Point", "coordinates": [106.8000, 16.8000] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-23", "name": "Đà Nẵng", "region": "Nam Trung Bộ", "regionCode": 5, "pop": 1300000 },
+      "geometry": { "type": "Point", "coordinates": [108.2022, 16.0544] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-24", "name": "Quảng Nam", "region": "Nam Trung Bộ", "regionCode": 5, "pop": 1500000 },
+      "geometry": { "type": "Point", "coordinates": [108.1914, 15.5394] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-25", "name": "Quảng Ngãi", "region": "Nam Trung Bộ", "regionCode": 5, "pop": 1400000, "note": "Sáp nhập Bình Định" },
+      "geometry": { "type": "Point", "coordinates": [108.7922, 14.5506] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-26", "name": "Phú Yên", "region": "Nam Trung Bộ", "regionCode": 5, "pop": 1000000, "note": "Sáp nhập Khánh Hòa" },
+      "geometry": { "type": "Point", "coordinates": [109.0925, 12.9500] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-27", "name": "Ninh Thuận", "region": "Nam Trung Bộ", "regionCode": 5, "pop": 800000, "note": "Sáp nhập Bình Thuận" },
+      "geometry": { "type": "Point", "coordinates": [108.7300, 11.5646] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-28", "name": "Kon Tum", "region": "Tây Nguyên", "regionCode": 6, "pop": 600000 },
+      "geometry": { "type": "Point", "coordinates": [107.9903, 14.3545] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-29", "name": "Gia Lai", "region": "Tây Nguyên", "regionCode": 6, "pop": 1600000 },
+      "geometry": { "type": "Point", "coordinates": [108.0000, 13.8000] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-30", "name": "Đắk Lắk", "region": "Tây Nguyên", "regionCode": 6, "pop": 2000000, "note": "Sáp nhập Đắk Nông" },
+      "geometry": { "type": "Point", "coordinates": [107.8000, 12.6500] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-31", "name": "Lâm Đồng", "region": "Tây Nguyên", "regionCode": 6, "pop": 1400000 },
+      "geometry": { "type": "Point", "coordinates": [108.2220, 11.9465] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-32", "name": "TP. Hồ Chí Minh", "region": "Đông Nam Bộ", "regionCode": 7, "pop": 10000000 },
+      "geometry": { "type": "Point", "coordinates": [106.6297, 10.8231] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-33", "name": "Đồng Nai", "region": "Đông Nam Bộ", "regionCode": 7, "pop": 3300000, "note": "Sáp nhập Bình Phước, Bình Dương, Bà Rịa-Vũng Tàu" },
+      "geometry": { "type": "Point", "coordinates": [107.0670, 11.1073] }
+    },
+    {
+      "type": "Feature",
+      "properties": { "id": "vn-34", "name": "Cần Thơ", "region": "Đồng bằng sông Cửu Long", "regionCode": 8, "pop": 1500000, "note": "Sáp nhập An Giang, Kiên Giang, Hậu Giang, Sóc Trăng, Bạc Liêu, Cà Mau, Đồng Tháp, Vĩnh Long, Tiền Giang, Long An, Bến Tre, Trà Vinh" },
+      "geometry": { "type": "Point", "coordinates": [105.7851, 10.0341] }
+    }
+  ]
+}
