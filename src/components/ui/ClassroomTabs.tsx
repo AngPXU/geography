@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ClassroomClient } from './ClassroomClient';
 import { HomeClassClient } from './HomeClassClient';
+import { TestClassroomClient } from './TestClassroomClient';
 
 interface Props {
   user: {
@@ -18,12 +19,17 @@ interface Props {
 }
 
 export function ClassroomTabs({ user }: Props) {
-  const [tab, setTab] = useState<'online' | 'home'>('online');
+  const [tab, setTab] = useState<'online' | 'home' | 'test'>('online');
 
-  const tabs = [
-    { key: 'online' as const, label: 'Lớp học online',  icon: '🏫' },
-    { key: 'home'   as const, label: 'Lớp học ở nhà',   icon: '🏡' },
+  type TabKey = 'online' | 'home' | 'test';
+  
+  const tabs: Array<{ key: TabKey, label: string, icon: string }> = [
+    { key: 'online', label: 'Lớp học online',  icon: '🏫' },
+    { key: 'home',   label: 'Lớp học ở nhà',   icon: '🏡' },
   ];
+  if (user?.role === 1 || user?.role === 2) {
+    tabs.push({ key: 'test', label: 'Kiểm tra bài cũ', icon: '📝' });
+  }
 
   return (
     <div className="flex flex-col gap-6">
@@ -60,6 +66,7 @@ export function ClassroomTabs({ user }: Props) {
       <div>
         {tab === 'online' && <ClassroomClient user={user} />}
         {tab === 'home'   && <HomeClassClient user={user} />}
+        {tab === 'test'   && <TestClassroomClient user={user} />}
       </div>
     </div>
   );
