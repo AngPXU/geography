@@ -21,9 +21,13 @@ export async function POST(
     await ScreenSignal.deleteMany({ classroomId });
   }
 
-  // Avoid duplicating request-offer from same viewer
+  // Cập nhật: Khi learner yêu cầu offer, xoá MỌI tin nhắn rác cũ giữa learner và sharer để bắt đầu lại sạch sẽ
   if (type === 'request-offer') {
-    await ScreenSignal.deleteMany({ classroomId, senderUsername: session.user.name, type: 'request-offer' });
+    await ScreenSignal.deleteMany({ 
+      classroomId, 
+      $or: [ { senderUsername: session.user.name }, { targetUsername: session.user.name } ],
+      type: { $ne: 'announce' } 
+    });
   }
 
   await ScreenSignal.create({

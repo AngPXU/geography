@@ -12,21 +12,7 @@ type ShareState = 'idle' | 'sharing' | 'viewing' | 'connecting';
 
 interface Props { classroomId: string; username: string; }
 
-// ── Wait for ICE gathering to finish (non-trickle approach) ───────────────────
-// By embedding all candidates in SDP, we avoid a separate ICE exchange step.
-function waitForIceGathering(pc: RTCPeerConnection, timeoutMs = 5000): Promise<void> {
-  return new Promise(resolve => {
-    if (pc.iceGatheringState === 'complete') { resolve(); return; }
-    const done = () => {
-      if (pc.iceGatheringState === 'complete') {
-        pc.removeEventListener('icegatheringstatechange', done);
-        resolve();
-      }
-    };
-    pc.addEventListener('icegatheringstatechange', done);
-    setTimeout(resolve, timeoutMs); // fallback: send with whatever candidates we have
-  });
-}
+
 
 export function ScreenSharePanel({ classroomId, username }: Props) {
   const [shareState, setShareState]   = useState<ShareState>('idle');
@@ -41,6 +27,7 @@ export function ScreenSharePanel({ classroomId, username }: Props) {
   const pollRef         = useRef<ReturnType<typeof setInterval> | null>(null);
   const isSharingRef    = useRef(false);
   const seenSignalsRef  = useRef<Set<string>>(new Set());
+  const earlyIceCandidates = useRef<{ [user: string]: any[] }>({});
 
   // ── Signal helper ──────────────────────────────────────────────────────────
   const postSignal = useCallback(async (type: string, payload: any, target?: string) => {
@@ -64,6 +51,10 @@ export function ScreenSharePanel({ classroomId, username }: Props) {
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
     sharePeersRef.current.set(viewerUsername, pc);
 
+    pc.onicecandidate = (e) => {
+      if (e.candidate) postSignal('ice-candidate', e.candidate.toJSON(), viewerUsername);
+    };
+
     pc.onconnectionstatechange = () => {
       if (pc.connectionState === 'failed') {
         try { pc.close(); } catch (_) {}
@@ -79,11 +70,7 @@ export function ScreenSharePanel({ classroomId, username }: Props) {
     const offer = await pc.createOffer();
     await pc.setLocalDescription(offer);
 
-    // Wait for ICE to finish gathering → SDP will contain all candidates
-    await waitForIceGathering(pc, 5000);
-
-    // Send the complete offer (no separate ICE exchange needed)
-    await postSignal('offer', { sdp: pc.localDescription?.sdp, type: 'offer' }, viewerUsername);
+    await postSignal('offer', { sdp: offer.sdp, type: offer.type }, viewerUsername);
   }, [postSignal]);
 
   // ── Viewer: receive complete offer → create complete answer ────────────────
@@ -94,28 +81,38 @@ export function ScreenSharePanel({ classroomId, username }: Props) {
     const pc = new RTCPeerConnection({ iceServers: ICE_SERVERS });
     peerRef.current = pc;
 
+    pc.onicecandidate = (e) => {
+      if (e.candidate) postSignal('ice-candidate', e.candidate.toJSON(), sharerUsername);
+    };
+
     pc.ontrack = (e) => {
       if (remoteVideoRef.current && e.streams[0]) {
         remoteVideoRef.current.srcObject = e.streams[0];
-        setShareState('viewing');
-        setErrMsg('');
       }
     };
 
-    pc.onconnectionstatechange = () => {
-      if (pc.connectionState === 'failed' || pc.connectionState === 'disconnected') {
+    pc.oniceconnectionstatechange = () => {
+      if (pc.iceConnectionState === 'connected') {
+        setShareState('viewing');
+        setErrMsg('');
+      } else if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
         doCleanupViewing();
       }
     };
 
     await pc.setRemoteDescription(new RTCSessionDescription({ type: 'offer', sdp: payload.sdp }));
+    
+    if (earlyIceCandidates.current[sharerUsername]) {
+      for (const cand of earlyIceCandidates.current[sharerUsername]) {
+        try { await pc.addIceCandidate(new RTCIceCandidate(cand)); } catch (_) {}
+      }
+      delete earlyIceCandidates.current[sharerUsername];
+    }
+
     const answer = await pc.createAnswer();
     await pc.setLocalDescription(answer);
 
-    // Wait for ICE to finish → embed all candidates in answer SDP
-    await waitForIceGathering(pc, 5000);
-
-    await postSignal('answer', { sdp: pc.localDescription?.sdp, type: 'answer' }, sharerUsername);
+    await postSignal('answer', { sdp: answer.sdp, type: answer.type }, sharerUsername);
   }, [postSignal]); // eslint-disable-line
 
   // ── Sharer: receive answer → complete handshake ────────────────────────────
@@ -124,6 +121,27 @@ export function ScreenSharePanel({ classroomId, username }: Props) {
     if (!pc) return;
     if (pc.signalingState !== 'have-local-offer') return;
     await pc.setRemoteDescription(new RTCSessionDescription({ type: 'answer', sdp: payload.sdp }));
+    
+    if (earlyIceCandidates.current[viewerUsername]) {
+      for (const cand of earlyIceCandidates.current[viewerUsername]) {
+        try { await pc.addIceCandidate(new RTCIceCandidate(cand)); } catch (_) {}
+      }
+      delete earlyIceCandidates.current[viewerUsername];
+    }
+  }, []);
+
+  // ── Handle incoming ICE candidates ───────────────────────────────────────────
+  const handleIce = useCallback(async (senderUsername: string, payload: any) => {
+    let pc: RTCPeerConnection | null | undefined = null;
+    if (isSharingRef.current) pc = sharePeersRef.current.get(senderUsername);
+    else pc = peerRef.current;
+    
+    if (pc && pc.remoteDescription) {
+      try { await pc.addIceCandidate(new RTCIceCandidate(payload)); } catch (_) {}
+    } else {
+      if (!earlyIceCandidates.current[senderUsername]) earlyIceCandidates.current[senderUsername] = [];
+      earlyIceCandidates.current[senderUsername].push(payload);
+    }
   }, []);
 
   // ── Cleanup viewer ─────────────────────────────────────────────────────────
@@ -172,11 +190,14 @@ export function ScreenSharePanel({ classroomId, username }: Props) {
         else if (type === 'answer') {
           await handleAnswer(senderUsername, payload);
         }
+        else if (type === 'ice-candidate') {
+          await handleIce(senderUsername, payload);
+        }
       }
 
       if (seenSignalsRef.current.size > 300) seenSignalsRef.current.clear();
     } catch (_) {}
-  }, [classroomId, postSignal, handleRequestOffer, handleOffer, handleAnswer, cleanupViewing]);
+  }, [classroomId, postSignal, handleRequestOffer, handleOffer, handleAnswer, handleIce, cleanupViewing]);
 
   useEffect(() => {
     pollRef.current = setInterval(poll, 1500);
@@ -300,7 +321,7 @@ export function ScreenSharePanel({ classroomId, username }: Props) {
         <div className={`relative bg-black group ${shareState === 'connecting' ? 'min-h-[80px]' : ''}`}
           onClick={shareState === 'viewing' ? toggleFullscreen : undefined}
           style={{ cursor: shareState === 'viewing' ? 'pointer' : 'default' }}>
-          <video ref={remoteVideoRef} autoPlay playsInline
+          <video ref={remoteVideoRef} autoPlay playsInline muted
             className={`w-full max-h-[55vh] object-contain transition-opacity duration-500 ${shareState === 'viewing' ? 'opacity-100' : 'opacity-0 absolute'}`} />
           {shareState === 'connecting' && (
             <div className="flex flex-col items-center justify-center py-8 gap-3">
