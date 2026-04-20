@@ -292,7 +292,7 @@ function CoverFront() {
         ))}
       </div>
       <div className="relative z-10 bg-white/10 border border-white/20 rounded-xl px-4 py-1.5">
-        <span className="text-white/70 text-xs font-black uppercase tracking-[0.2em]">GeoExplore</span>
+        <span className="text-white/70 text-xs font-black uppercase tracking-[0.2em]">Vui học Địa Lý</span>
       </div>
       <div className="relative z-10 flex-1 flex items-center justify-center w-full my-4">
         <div className="relative">
@@ -329,7 +329,7 @@ function CoverBack() {
         "Học địa lý không chỉ là ghi nhớ vị trí,<br />mà là hiểu vì sao Trái Đất lại đẹp đến vậy."
       </p>
       <div className="h-px w-10 bg-cyan-400/40 mb-3" />
-      <span className="text-cyan-400/40 text-[10px] tracking-[0.2em] font-bold uppercase">GeoExplore · 2026</span>
+      <span className="text-cyan-400/40 text-[10px] tracking-[0.2em] font-bold uppercase">Vui học Địa Lý · 2026</span>
     </div>
   );
 }

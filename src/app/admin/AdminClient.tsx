@@ -2800,7 +2800,7 @@ export function AdminClient({ currentUser }: {
               <div>
                 <p className="font-black text-[#082F49] text-sm leading-none">Admin Panel</p>
                 <p className="text-[#94A3B8] text-[10px] font-semibold leading-none mt-0.5">
-                  GeoExplore
+                  Vui học Địa Lý
                 </p>
               </div>
             </div>

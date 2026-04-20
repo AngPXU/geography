@@ -1,0 +1,14 @@
+# https://vuihocdialy.edu.vn/robots.txt
+# Thay "vuihocdialy.edu.vn" bằng domain thật của bạn
+
+User-agent: *
+Allow: /
+
+# Không index các route admin, API, auth
+Disallow: /admin/
+Disallow: /api/
+Disallow: /login
+Disallow: /_next/
+
+# Sitemap
+Sitemap: https://vuihocdialy.edu.vn/sitemap.xml

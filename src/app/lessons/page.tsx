@@ -4,7 +4,7 @@ import { Navbar } from '@/layouts/Navbar';
 import LessonsHub from './LessonsHub';
 
 export const metadata = {
-  title: 'Bài Giảng Tương Tác | GeoExplore',
+  title: 'Bài Giảng Tương Tác | Vui học Địa Lý',
   description: 'Khám phá các bài giảng Địa Lý lớp 6–9 theo phong cách Scrollytelling tương tác.',
 };
 

@@ -1,8 +1,20 @@
+import type { Metadata } from 'next';
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { Navbar } from "@/layouts/Navbar";
 import { Footer } from "@/layouts/Footer";
 import { ClassroomTabs } from "@/components/ui/ClassroomTabs";
+
+export const metadata: Metadata = {
+  title: 'Lớp học',
+  description:
+    'Tham gia lớp học Địa lý trực tuyến và tại nhà — giáo viên giao bài, học sinh nộp bài, chấm điểm tự động.',
+  openGraph: {
+    title: 'Lớp học | Khám Phá Địa Lý',
+    description: 'Lớp học Địa lý online & offline — giao bài, nộp bài, chấm điểm.',
+    url: 'https://vuihocdialy.edu.vn/classroom',
+  },
+};
 
 export default async function ClassroomPage() {
   const session = await auth();

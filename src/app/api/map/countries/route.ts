@@ -49,7 +49,7 @@ export async function POST() {
     try {
       const res = await fetch(REST_COUNTRIES_URL, {
         signal: controller.signal,
-        headers: { 'User-Agent': 'GeoExplore-App/1.0' },
+        headers: { 'User-Agent': 'VuiHocDiaLy-App/1.0' },
       });
       clearTimeout(timeoutId);
 

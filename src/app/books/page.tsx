@@ -4,7 +4,7 @@ import { Navbar } from '@/layouts/Navbar';
 import BooksPage from './BooksPage';
 
 export const metadata = {
-  title: 'Thư Viện Sách | GeoExplore',
+  title: 'Thư Viện Sách | Vui học Địa Lý',
   description: 'Đọc Sách Giáo Khoa Địa Lý lớp 6 – 9 trực tuyến.',
 };
 

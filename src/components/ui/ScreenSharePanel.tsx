@@ -4,8 +4,11 @@ import React, { useState, useEffect, useRef, useCallback } from 'react';
 const ICE_SERVERS: RTCIceServer[] = [
   { urls: 'stun:stun.l.google.com:19302' },
   { urls: 'stun:stun1.l.google.com:19302' },
-  { urls: 'turn:openrelay.metered.ca:80',  username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'stun:stun2.l.google.com:19302' },
+  // TURN fallback
+  { urls: 'turn:openrelay.metered.ca:80', username: 'openrelayproject', credential: 'openrelayproject' },
   { urls: 'turn:openrelay.metered.ca:443', username: 'openrelayproject', credential: 'openrelayproject' },
+  { urls: 'turn:openrelay.metered.ca:443?transport=tcp', username: 'openrelayproject', credential: 'openrelayproject' }
 ];
 
 type ShareState = 'idle' | 'sharing' | 'viewing' | 'connecting';
@@ -55,8 +58,8 @@ export function ScreenSharePanel({ classroomId, username }: Props) {
       if (e.candidate) postSignal('ice-candidate', e.candidate.toJSON(), viewerUsername);
     };
 
-    pc.onconnectionstatechange = () => {
-      if (pc.connectionState === 'failed') {
+    pc.oniceconnectionstatechange = () => {
+      if (pc.iceConnectionState === 'failed') {
         try { pc.close(); } catch (_) {}
         sharePeersRef.current.delete(viewerUsername);
       }
@@ -95,8 +98,10 @@ export function ScreenSharePanel({ classroomId, username }: Props) {
       if (pc.iceConnectionState === 'connected') {
         setShareState('viewing');
         setErrMsg('');
-      } else if (pc.iceConnectionState === 'failed' || pc.iceConnectionState === 'disconnected') {
+      } else if (pc.iceConnectionState === 'failed') {
+        // Chỉ cleanup khi thất bại hoàn toàn (failed), trạng thái disconnected có thể tự phục hồi do STUN
         doCleanupViewing();
+        setErrMsg('Mạng chặn P2P. Không thể kết nối xuyên mạng.');
       }
     };
 

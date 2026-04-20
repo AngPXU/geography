@@ -445,7 +445,7 @@ function VietnamClickHandler({ onProvince, onLoading }: {
         // Reverse geocode tại zoom 6 = cấp tỉnh/thành phố
         const res = await fetch(
           `https://nominatim.openstreetmap.org/reverse?lat=${e.latlng.lat}&lon=${e.latlng.lng}&format=json&accept-language=vi&zoom=6`,
-          { headers: { 'User-Agent': 'GeoExplore-Education/1.0' } }
+          { headers: { 'User-Agent': 'VuiHocDiaLy-Education/1.0' } }
         );
         if (!res.ok) throw new Error('Nominatim error');
 
@@ -596,7 +596,7 @@ export default function InteractiveMap({ is3D, onToggle3D, mode, onModeChange }:
       try {
         const res = await fetch(
           `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(q)}&format=json&limit=5&accept-language=vi`,
-          { headers: { 'User-Agent': 'GeoExplore-App/1.0' } }
+          { headers: { 'User-Agent': 'VuiHocDiaLy-App/1.0' } }
         );
         const data = await res.json();
         setSearchResults(data);

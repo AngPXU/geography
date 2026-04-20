@@ -230,8 +230,8 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
                 <FaGlobeAsia />
               </div>
               <div>
-                <p className="font-black text-[#082F49] text-lg leading-none tracking-tight">GeoExplore</p>
-                <p className="text-[9px] text-cyan-600 font-bold tracking-[0.18em] uppercase mt-0.5">Khám phá Thế giới</p>
+                <p className="font-black text-[#082F49] text-lg leading-none tracking-tight">Vui học Địa Lý</p>
+                <p className="text-[9px] text-cyan-600 font-bold tracking-[0.18em] uppercase mt-0.5">Cùng nhau Khám phá Thế Giới</p>
               </div>
             </Link>
 

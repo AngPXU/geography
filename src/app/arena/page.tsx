@@ -1,7 +1,19 @@
 import React from 'react';
 import Link from 'next/link';
 import { Navbar } from '@/layouts/Navbar';
+import type { Metadata } from 'next';
 import { auth } from '@/auth';
+
+export const metadata: Metadata = {
+  title: 'Đấu trường Địa lý',
+  description:
+    'Luyện tập câu hỏi Địa lý theo chủ đề, thi đấu trắc nghiệm, đoán vị trí bản đồ — rèn luyện kiến thức Địa lý nhanh và vui.',
+  openGraph: {
+    title: 'Đấu trường Địa lý | Khám Phá Địa Lý',
+    description: 'Câu hỏi trắc nghiệm, đoán bản đồ, luyện Địa lý mỗi ngày.',
+    url: 'https://vuihocdialy.edu.vn/arena',
+  },
+};
 import MapGuessGateway from '@/components/arena/MapGuessGateway';
 import ArenaHistory from '@/components/arena/ArenaHistory';
 

@@ -1,7 +1,19 @@
+import type { Metadata } from 'next';
 import { auth } from "@/auth";
 import { Navbar } from "@/layouts/Navbar";
 import Link from "next/link";
 import { FaMapMarkedAlt, FaGamepad, FaTrophy, FaTree } from "react-icons/fa";
+
+export const metadata: Metadata = {
+  title: 'Lộ trình học Địa lý',
+  description:
+    'Lộ trình học Địa lý cá nhân hoá từ lớp 6 đến lớp 9 — theo dõi tiến trình, nhận EXP và phần thưởng khi hoàn thành từng bài.',
+  openGraph: {
+    title: 'Lộ trình học Địa lý | Khám Phá Địa Lý',
+    description: 'Kế hoạch học Địa lý cá nhân hoá từ lớp 6 đến lớp 9.',
+    url: 'https://vuihocdialy.edu.vn/roadmap',
+  },
+};
 
 export default async function RoadmapPage() {
   const session = await auth();

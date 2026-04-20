@@ -1,24 +1,75 @@
 {
   "name": "Khám Phá Địa Lý",
   "short_name": "Địa Lý",
-  "description": "Ứng dụng học tập môn Địa lý dành cho học sinh THCS",
+  "description": "Nền tảng học Địa lý số hoá dành cho học sinh THCS Việt Nam — Bản đồ 3D, AI hỏi đáp, lớp học online.",
   "start_url": "/",
+  "scope": "/",
   "display": "standalone",
+  "display_override": ["window-controls-overlay", "standalone", "minimal-ui"],
   "background_color": "#E0F2FE",
   "theme_color": "#06B6D4",
   "orientation": "portrait-primary",
+  "lang": "vi",
+  "dir": "ltr",
+  "categories": ["education", "kids", "lifestyle"],
+  "iarc_rating_id": "",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/icon-192x192.png",
       "sizes": "192x192",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
       "src": "/icon-512x512.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "any"
+    },
+    {
+      "src": "/icon-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/og-image.png",
+      "sizes": "1200x630",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Trang chủ Khám Phá Địa Lý"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Bản đồ thế giới",
+      "short_name": "Bản đồ",
+      "description": "Khám phá bản đồ 3D thế giới",
+      "url": "/map",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Luyện tập",
+      "short_name": "Luyện tập",
+      "description": "Câu hỏi và trắc nghiệm Địa lý",
+      "url": "/arena",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Bài học",
+      "short_name": "Bài học",
+      "description": "Bài học Địa lý theo lớp",
+      "url": "/lessons",
+      "icons": [{ "src": "/icon-192x192.png", "sizes": "192x192" }]
     }
   ]
 }

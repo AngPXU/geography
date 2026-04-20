@@ -7,6 +7,7 @@ import {
   FaArrowLeft, FaEdit, FaTrash, FaShieldAlt, FaSpinner,
   FaTimes, FaExclamationTriangle, FaGraduationCap, FaSchool,
   FaMapMarkerAlt, FaCalendarAlt, FaFire, FaStar,
+  FaEye, FaEyeSlash, FaLock,
 } from 'react-icons/fa';
 
 const ROLE_LABEL: Record<number, { label: string; cls: string }> = {
@@ -61,6 +62,164 @@ function InfoRow({ icon, label, value }: { icon: React.ReactNode; label: string;
         <p className="text-[#334155] font-semibold text-sm mt-0.5 break-words">{value}</p>
       </div>
     </div>
+  );
+}
+
+/* ── Admin Password Confirm Modal ──────────────────────────────── */
+function AdminPasswordModal({ userId, onClose, onRevealed }: {
+  userId: string;
+  onClose: () => void;
+  onRevealed: (hash: string) => void;
+}) {
+  const [pwd, setPwd]       = useState('');
+  const [show, setShow]     = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError]   = useState('');
+
+  const handle = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!pwd.trim()) { setError('Vui lòng nhập mật khẩu của bạn'); return; }
+    setLoading(true); setError('');
+    const res  = await fetch(`/api/admin/users/${userId}/password`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ adminPassword: pwd }),
+    });
+    const data = await res.json();
+    setLoading(false);
+    if (!res.ok) { setError(data.error || 'Xác thực thất bại'); return; }
+    onRevealed(data.passwordHash);
+    onClose();
+  };
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
+      <div className="relative w-full max-w-sm bg-white/90 backdrop-blur-[20px] border border-white
+        rounded-[24px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100
+          bg-gradient-to-r from-amber-50 to-orange-50">
+          <h3 className="font-black text-[#082F49] text-base flex items-center gap-2">
+            <FaLock className="text-amber-500" /> Xác thực Admin
+          </h3>
+          <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200
+            flex items-center justify-center text-slate-500">
+            <FaTimes className="text-xs" />
+          </button>
+        </div>
+        <form onSubmit={handle} className="p-6 space-y-4">
+          <p className="text-sm text-[#334155] font-semibold">
+            Nhập mật khẩu của tài khoản admin đang đăng nhập để xem thông tin nhạy cảm.
+          </p>
+          {error && (
+            <div className="flex items-center gap-2 px-4 py-3 rounded-[12px] bg-red-50 border
+              border-red-200 text-red-600 text-sm font-semibold">
+              <FaExclamationTriangle className="shrink-0 text-xs" /> {error}
+            </div>
+          )}
+          <div className="relative">
+            <input
+              type={show ? 'text' : 'password'}
+              value={pwd}
+              onChange={e => setPwd(e.target.value)}
+              autoFocus
+              placeholder="Mật khẩu của bạn"
+              className="w-full rounded-[14px] border-2 border-slate-200 focus:border-amber-400
+                bg-white/80 px-4 py-2.5 pr-11 text-sm text-[#082F49] font-medium outline-none
+                transition-all placeholder:text-[#94A3B8]"
+            />
+            <button type="button" onClick={() => setShow(v => !v)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-[#94A3B8] hover:text-[#334155]
+                transition-colors">
+              {show ? <FaEyeSlash className="text-sm" /> : <FaEye className="text-sm" />}
+            </button>
+          </div>
+          <div className="flex gap-3 pt-1">
+            <button type="button" onClick={onClose}
+              className="flex-1 py-2.5 rounded-[12px] border border-slate-200 text-sm font-bold
+                text-[#334155] hover:bg-slate-50 transition-all">Huỷ</button>
+            <button type="submit" disabled={loading}
+              className="flex-1 py-2.5 rounded-[12px] bg-gradient-to-r from-amber-500 to-orange-500
+                text-white text-sm font-bold hover:from-amber-400 hover:to-orange-400 transition-all
+                flex items-center justify-center gap-2 disabled:opacity-50">
+              {loading && <FaSpinner className="animate-spin text-xs" />}
+              Xác nhận
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+/* ── Password Reveal Row ────────────────────────────────────────── */
+function PasswordRevealRow({ userId, provider }: { userId: string; provider: string }) {
+  const [revealed, setRevealed]   = useState(false);
+  const [hash, setHash]           = useState('');
+  const [showModal, setShowModal] = useState(false);
+
+  // Only credentials accounts have passwords
+  if (provider !== 'credentials') {
+    return (
+      <div className="flex items-start gap-3 py-2.5 border-b border-slate-50">
+        <span className="text-[#94A3B8] text-sm mt-0.5 shrink-0">🔑</span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[#94A3B8] text-[10px] font-bold uppercase tracking-wide">Mật khẩu</p>
+          <p className="text-[#94A3B8] text-sm font-semibold mt-0.5 italic">
+            Không có (đăng nhập qua {provider})
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <>
+      <div className="flex items-center gap-3 py-2.5 border-b border-slate-50">
+        <span className="text-[#94A3B8] text-sm shrink-0">🔑</span>
+        <div className="min-w-0 flex-1">
+          <p className="text-[#94A3B8] text-[10px] font-bold uppercase tracking-wide">Mật khẩu (DB)</p>
+          <div className="flex items-center gap-2 mt-1">
+            <input
+              readOnly
+              type={revealed ? 'text' : 'password'}
+              value={revealed ? hash : '••••••••••••'}
+              className="flex-1 min-w-0 rounded-[10px] border border-slate-200 bg-slate-50
+                px-3 py-1.5 text-xs font-mono text-[#334155] outline-none tracking-widest
+                overflow-hidden text-ellipsis"
+            />
+            <button
+              title={revealed ? 'Ẩn' : 'Hiện mật khẩu (yêu cầu xác thực)'}
+              onClick={() => {
+                if (revealed) { setRevealed(false); setHash(''); }
+                else { setShowModal(true); }
+              }}
+              className={`shrink-0 w-8 h-8 rounded-[8px] flex items-center justify-center
+                text-sm border transition-all
+                ${ revealed
+                  ? 'bg-amber-50 border-amber-200 text-amber-500 hover:bg-amber-100'
+                  : 'bg-slate-50 border-slate-200 text-[#94A3B8] hover:border-amber-300 hover:text-amber-500'
+                }`}>
+              {revealed ? <FaEyeSlash /> : <FaEye />}
+            </button>
+          </div>
+          {revealed && (
+            <p className="text-[10px] text-[#94A3B8] mt-1.5 font-medium">
+              * Đây là chuỗi hash bcrypt, không phải mật khẩu gốc.
+            </p>
+          )}
+        </div>
+      </div>
+
+      {showModal && (
+        <AdminPasswordModal
+          userId={userId}
+          onClose={() => setShowModal(false)}
+          onRevealed={h => { setHash(h); setRevealed(true); }}
+        />
+      )}
+    </>
   );
 }
 
@@ -417,6 +576,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
               </h2>
               <InfoRow icon="🆔"           label="ID"              value={user._id} />
               <InfoRow icon="👤"           label="Tên đăng nhập"   value={user.username} />
+              <PasswordRevealRow userId={user._id} provider={user.provider} />
               <InfoRow icon="📧"           label="Email"           value={user.email} />
               <InfoRow icon="🔗"           label="Đăng nhập qua"   value={providerInfo.label} />
               <InfoRow icon={<FaCalendarAlt />} label="Ngày tạo"   value={new Date(user.createdAt).toLocaleString('vi-VN')} />

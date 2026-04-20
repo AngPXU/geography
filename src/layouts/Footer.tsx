@@ -6,9 +6,9 @@ import { FaFacebook, FaGithub, FaYoutube, FaMapMarkedAlt } from 'react-icons/fa'
 const MODAL_CONTENT = {
   faq: { title: "❓ Câu hỏi thường gặp (FAQ)", body: "1. Làm sao để mở khóa bài học?\nBạn hãy thường xuyên vào Map để click học bài và làm Quiz.\n\n2. Tôi có thể đổi tên hiển thị không?\nĐược, bạn hãy vào phần Cài đặt ở Avatar góc phải màn hình." },
   guide: { title: "📖 Hướng dẫn sử dụng", body: "- Kéo rê chuột (hoặc vuốt cảm ứng) để xoay Quả địa cầu 3D.\n- Dùng thanh cuộn chuột để Zoom in/out trong Bản đồ.\n- Bấm vào tên các Quốc gia trên Đấu trường để ghi điểm." },
-  contact: { title: "💬 Liên hệ", body: "Tất cả các vấn đề về hệ thống web, lỗi tài khoản hãy báo ngay với Quản trị viên nhà trường qua Email: hotro@geoexplore.edu.vn." },
+  contact: { title: "💬 Liên hệ", body: "Tất cả các vấn đề về hệ thống web, lỗi tài khoản hãy báo ngay với Quản trị viên nhà trường qua Email: nguyenthiman1011dh@gmail.com." },
   terms: { title: "📜 Điều khoản dịch vụ", body: "Tất cả học sinh sử dụng tài khoản hệ thống phải chấp hành nội quy nhà trường. Không sử dụng từ ngữ thiếu văn hóa trên Bảng xếp hạng. Nghiêm cấm chia sẻ tài khoản cho người ngoài." },
-  privacy: { title: "🛡️ Quyền riêng tư", body: "Nền tảng GeoExplore không theo dõi vị trí thực của học sinh. Chúng tôi chỉ lưu trữ điểm số, lộ trình học và thiết lập tùy chọn cá nhân dùng cho ứng dụng." }
+  privacy: { title: "🛡️ Quyền riêng tư", body: "Nền tảng Vui học Địa Lý không theo dõi vị trí thực của học sinh. Chúng tôi chỉ lưu trữ điểm số, lộ trình học và thiết lập tùy chọn cá nhân dùng cho ứng dụng." }
 };
 
 export function Footer() {
@@ -33,7 +33,7 @@ export function Footer() {
                 <FaMapMarkedAlt />
               </div>
               <div>
-                <p className="font-black text-[#082F49] text-2xl leading-none tracking-tight">GeoExplore</p>
+                <p className="font-black text-[#082F49] text-2xl leading-none tracking-tight">Vui học Địa Lý</p>
                 <p className="text-xs text-cyan-600 font-bold tracking-[0.15em] uppercase mt-1">Học Địa Lý Vui Nhộn</p>
               </div>
             </Link>
@@ -82,7 +82,7 @@ export function Footer() {
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-white flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-xs font-bold text-[#94A3B8]">
-            © {new Date().getFullYear()} GeoExplore. Thiết kế bởi trái tim yêu địa lý ❤️
+            © {new Date().getFullYear()} Vui học Địa Lý. Thiết kế bởi trái tim yêu địa lý ❤️
           </p>
           <div className="flex items-center gap-4 text-xs font-bold tracking-wide text-[#94A3B8]">
             <button onClick={() => setActiveModal('terms')} className="hover:text-cyan-600 transition-colors cursor-pointer">Điều khoản dịch vụ</button>

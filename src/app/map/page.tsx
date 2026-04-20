@@ -1,7 +1,19 @@
+import type { Metadata } from 'next';
 import { Navbar } from "@/layouts/Navbar";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
 import { MapWrapper } from "@/components/ui/MapWrapper";
+
+export const metadata: Metadata = {
+  title: 'Bản đồ Thế giới 3D',
+  description:
+    'Khám phá bản đồ thế giới 3D tương tác — xem thông tin địa lý, khí hậu, dân số của hơn 190 quốc gia ngay trên trình duyệt.',
+  openGraph: {
+    title: 'Bản đồ Thế giới 3D | Khám Phá Địa Lý',
+    description: 'Bản đồ thế giới 3D tương tác — thông tin địa lý, khí hậu, dân số hơn 190 quốc gia.',
+    url: 'https://vuihocdialy.edu.vn/map',
+  },
+};
 
 export default async function MapPage() {
   const session = await auth();

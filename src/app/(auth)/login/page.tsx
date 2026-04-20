@@ -360,13 +360,13 @@ export default function LoginPage() {
               <div className="w-16 h-16 mx-auto rounded-[22px] bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-lg shadow-cyan-300/40 mb-3 text-white text-4xl">
                 <FaGlobeAsia />
               </div>
-              <h1 className="text-2xl font-bold text-[#082F49]">GeoExplore</h1>
+              <h1 className="text-2xl font-bold text-[#082F49]">Vui học Địa Lý</h1>
               <p className="text-[#94A3B8] text-sm mt-1">Hành trình bắt đầu từ đây</p>
             </div>
 
             {/* Title Desktop (Only shows on large screens) */}
             <div className="hidden lg:block text-center mb-10">
-               <h1 className="text-3xl font-extrabold text-[#082F49]">GeoExplore</h1>
+               <h1 className="text-3xl font-extrabold text-[#082F49]">Vui học Địa Lý</h1>
                <p className="text-[#94A3B8] font-medium mt-2">Đăng nhập để vào lớp học</p>
             </div>
 
