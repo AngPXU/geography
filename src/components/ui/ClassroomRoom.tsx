@@ -7,7 +7,9 @@ import { ChatPanel } from './ChatPanel';
 import { ScorePanel } from './ScorePanel';
 import { QuizCreator } from './QuizCreator';
 import { QuizPanel, IActiveQuiz } from './QuizPanel';
-import { ScreenSharePanel } from './ScreenSharePanel';
+import { LiveKitPanel } from './LiveKitPanel';
+import { LiveKitQuizPanel } from './LiveKitQuizPanel';
+import { Room, RoomEvent, ConnectionState } from 'livekit-client';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -55,6 +57,9 @@ interface ClassroomData {
   draftQuiz?: { questions: QuizQuestion[]; questionDuration: number };
   scores?: ScoreEntry[];
   totalQuestionsAsked?: number;
+  sessionEndedAt?: string;
+  teacherLastSeen?: string;
+  liveSessionActive?: boolean; // true khi giáo viên đã join LiveKit
 }
 
 interface Props {
@@ -155,15 +160,107 @@ export function ClassroomRoom({
   const [leavingLoading, setLeavingLoading] = useState(false);
   const [movingTo, setMovingTo] = useState<string | null>(null); // "r,c" string
   const [kicked, setKicked] = useState(false);
+  // sessionEnded: KHÔNG khởi tạo từ initial — tránh stale sessionEndedAt của buổi cũ
+  const [sessionEnded, setSessionEnded] = useState(false);
+  // Thời điểm học sinh mở trang — chỉ xét sessionEndedAt nếu MỚI HƠN thời điểm này
+  const joinedAtRef = useRef(Date.now());
   const [showQuizCreator, setShowQuizCreator] = useState(false);
   const [savedQuestions, setSavedQuestions] = useState<QuizQuestion[]>(initial.draftQuiz?.questions ?? []);
   const [savedDuration, setSavedDuration] = useState(initial.draftQuiz?.questionDuration ?? 10);
   const [countdownLeft, setCountdownLeft] = useState<number | null>(null);
   const [startingQuiz, setStartingQuiz] = useState(false);
   const [studentInfoPopup, setStudentInfoPopup] = useState<Participant | null>(null);
+  // LiveKit room instance shared between LiveKitPanel and LiveKitQuizPanel
+  const [liveKitRoom, setLiveKitRoom] = useState<Room | null>(null);
+  // true khi quiz LiveKit đang chạy (hiển thị LiveKitQuizPanel overlay)
+  const [liveKitQuizActive, setLiveKitQuizActive] = useState(false);
   const countdownTimerRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const heartbeatRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  // Tránh double-connect khi effect chạy lại
+  const autoConnectingRef = useRef(false);
+
+  // roomId stable value (classroom state may update but _id never changes)
+  const classroomIdRef = useRef(initial._id);
+
+  // ── Student auto-connect ngay khi vào lớp (không chờ teacher) ────────────
+  // 1 connection dùng chung cho voice/screen + quiz data
+  useEffect(() => {
+    if (isTeacher) return; // teacher dùng nút "Tham gia" trong LiveKitPanel
+    if (liveKitRoom || autoConnectingRef.current) return; // đã có rồi
+
+    autoConnectingRef.current = true;
+    let cancelled = false;
+    let createdRoom: Room | null = null;
+
+    (async () => {
+      try {
+        const res = await fetch(`/api/classroom/${classroomIdRef.current}/livekit-token`, { method: 'POST' });
+        if (!res.ok || cancelled) { autoConnectingRef.current = false; return; }
+        const { token } = await res.json() as { token: string };
+        const wsUrl = process.env.NEXT_PUBLIC_LIVEKIT_WS_URL;
+        if (!wsUrl || cancelled) { autoConnectingRef.current = false; return; }
+
+        createdRoom = new Room({ adaptiveStream: true, dynacast: true });
+        createdRoom.on(RoomEvent.Disconnected, () => {
+          setLiveKitRoom(null);
+          autoConnectingRef.current = false;
+        });
+        await createdRoom.connect(wsUrl, token);
+
+        if (!cancelled) {
+          autoConnectingRef.current = false;
+          setLiveKitRoom(createdRoom);
+        } else {
+          createdRoom.disconnect().catch(() => {});
+        }
+      } catch {
+        autoConnectingRef.current = false;
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      if (createdRoom && createdRoom.state !== ConnectionState.Connected) {
+        createdRoom.disconnect().catch(() => {});
+      }
+      autoConnectingRef.current = false;
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTeacher]); // chỉ chạy 1 lần khi mount
+
+  // Real-time teacher detection qua LiveKit ParticipantConnected ────────────
+  const [liveKitTeacherOnline, setLiveKitTeacherOnline] = useState(false);
+  useEffect(() => {
+    if (!liveKitRoom || isTeacher) return;
+    const teacherId = classroom.teacherId;
+
+    const check = () => {
+      setLiveKitTeacherOnline(liveKitRoom.remoteParticipants.has(teacherId));
+    };
+    check(); // kiểm tra ngay khi room sẵn sàng
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const r2 = liveKitRoom as any;
+    r2.on(RoomEvent.ParticipantConnected, check);
+    r2.on(RoomEvent.ParticipantDisconnected, check);
+    return () => {
+      r2.off(RoomEvent.ParticipantConnected, check);
+      r2.off(RoomEvent.ParticipantDisconnected, check);
+    };
+  }, [liveKitRoom, isTeacher, classroom.teacherId]);
+
+  // Khi detect giáo viên vào phòng qua LiveKit, xóa trạng thái buổi học đã kết thúc
+  useEffect(() => {
+    if (liveKitTeacherOnline) setSessionEnded(false);
+  }, [liveKitTeacherOnline]);
+
+  // Cleanup khi unmount (student rời trang)
+  useEffect(() => {
+    if (isTeacher) return;
+    return () => { liveKitRoom?.disconnect().catch(() => {}); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isTeacher]);
 
   // ── Compute countdown from DB timestamp ─────────────────────────────
   useEffect(() => {
@@ -210,7 +307,7 @@ export function ClassroomRoom({
     await fetchRoom();
   }
 
-  const roomId = classroom._id;
+  const roomId = classroom._id; // alias for convenience in handlers below
 
   // ── Polling ──────────────────────────────────────────────────────────────
   const fetchRoom = useCallback(async () => {
@@ -223,6 +320,15 @@ export function ClassroomRoom({
       // Detect kicked
       if (!isTeacher && d.classroom.kickedIds?.includes(currentUserId)) {
         setKicked(true);
+      }
+      // Detect teacher closed session:
+      // Chỉ trigger nếu sessionEndedAt SAU KHI học sinh mở trang
+      // → tránh stale data từ buổi học cũ (sessionEndedAt của hôm qua, tuần trước, v.v.)
+      if (!isTeacher && d.classroom.sessionEndedAt && !d.classroom.liveSessionActive) {
+        const endedMs = new Date(d.classroom.sessionEndedAt).getTime();
+        if (endedMs > joinedAtRef.current) {
+          setSessionEnded(true);
+        }
       }
     } catch { /* ignore */ }
   }, [roomId]);
@@ -263,7 +369,10 @@ export function ClassroomRoom({
   // ── Leave room ────────────────────────────────────────────────────────────
   async function handleLeave() {
     setLeavingLoading(true);
-    if (!isTeacher) {
+    if (isTeacher) {
+      // Giáo viên đóng buổi học → set flag → học sinh tự động thoát + xóa LiveKit room
+      await fetch(`/api/classroom/${roomId}/close-session`, { method: 'POST' }).catch(() => {});
+    } else {
       await fetch(`/api/classroom/${roomId}/leave`, { method: 'POST' }).catch(() => {});
     }
     if (pollRef.current) clearInterval(pollRef.current);
@@ -296,7 +405,31 @@ export function ClassroomRoom({
 
   const unseatedStudents = classroom.participants.filter((p) => p.seatRow === -1);
 
+  // Khi học sinh đã kết nối LiveKit → tin LiveKit (real-time); chưa kết nối → tin DB (liveSessionActive)
+  const teacherOnline = isTeacher
+    ? true
+    : liveKitRoom
+      ? liveKitTeacherOnline       // LiveKit is source of truth when connected
+      : !!classroom.liveSessionActive; // fall back to DB while connecting
+
   // ── Render ────────────────────────────────────────────────────────────────
+
+  if (sessionEnded) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[calc(100vh-7rem)] gap-6">
+        <div className="flex flex-col items-center gap-4 p-8 rounded-3xl text-center max-w-sm"
+             style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,1)', boxShadow: '0 10px 40px rgba(14,165,233,0.1)' }}>
+          <span className="text-5xl">📚</span>
+          <p className="font-bold text-[#082F49] text-lg">Buổi học đã kết thúc</p>
+          <p className="text-sm text-[#94A3B8]">Giáo viên đã đóng phòng. Hẹn gặp lại buổi sau nhé! 😊</p>
+          <button onClick={onLeave}
+            className="px-6 py-2.5 rounded-2xl bg-[#06B6D4] text-white text-sm font-bold hover:bg-[#22D3EE] transition-all duration-300 shadow-md">
+            Quay lại
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   if (kicked) {
     return (
@@ -461,13 +594,12 @@ export function ClassroomRoom({
                 >
                   ❓ Tạo câu hỏi
                 </button>
-                {savedQuestions.length > 0 && !classroom.quizCountdown && (!classroom.activeQuiz || classroom.activeQuiz.isFinished) && (
+                {savedQuestions.length > 0 && !liveKitQuizActive && (!classroom.activeQuiz || classroom.activeQuiz.isFinished) && (
                   <button
-                    onClick={handleStartCountdown}
-                    disabled={startingQuiz}
-                    className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-[#22C55E] text-white text-xs font-bold hover:bg-[#4ADE80] transition-all duration-300 shadow-md disabled:opacity-60 disabled:cursor-not-allowed"
+                    onClick={() => setLiveKitQuizActive(true)}
+                    className="flex items-center gap-1.5 px-3 py-2 rounded-2xl bg-[#22C55E] text-white text-xs font-bold hover:bg-[#4ADE80] transition-all duration-300 shadow-md"
                   >
-                    <FaPlay size={9} /> {startingQuiz ? 'Đang xử lý...' : `Bắt đầu (${savedQuestions.length} câu)`}
+                    <FaPlay size={9} /> Bắt đầu ({savedQuestions.length} câu)
                   </button>
                 )}
               </div>
@@ -487,11 +619,15 @@ export function ClassroomRoom({
           <div className="flex-1 h-px bg-amber-200" />
         </div>
 
-        {/* ── Screen Share Panel ──────────────────────────────────────── */}
+        {/* ── Screen Share / Voice via LiveKit ───────────────────── */}
         <div className="mx-4 md:mx-8 mb-6">
-          <ScreenSharePanel
+          <LiveKitPanel
             classroomId={roomId}
             username={currentUserName}
+            isTeacher={isTeacher}
+            currentUserId={currentUserId}
+            teacherOnline={isTeacher ? true : teacherOnline}
+            onRoomChange={setLiveKitRoom}
           />
         </div>
 
@@ -562,6 +698,7 @@ export function ClassroomRoom({
               currentUserId={currentUserId}
               currentUserName={currentUserName}
               isTeacher={isTeacher}
+              isQuizActive={!!(classroom.activeQuiz && !classroom.activeQuiz.isFinished) || !!classroom.quizCountdown}
             />
           </div>
 
@@ -589,8 +726,32 @@ export function ClassroomRoom({
       />
     )}
 
-    {/* ── Active quiz panel overlay ────────────────────────────────── */}
-    {classroom.activeQuiz && (
+    {/* ── LiveKit Quiz Panel overlay ────────────────────────────── */}
+    {(liveKitQuizActive || !isTeacher) && (
+      <LiveKitQuizPanel
+        room={liveKitRoom}
+        classroomId={roomId}
+        isTeacher={isTeacher}
+        currentUserId={currentUserId}
+        currentUserName={currentUserName}
+        teacherLiveKitIdentity={isTeacher ? currentUserId : classroom.teacherId}
+        participantCount={onlineCount}
+        questions={savedQuestions}
+        questionDuration={savedDuration}
+        autoStart={isTeacher && liveKitQuizActive}
+        onQuizSaved={(scores, total) => {
+          setLiveKitQuizActive(false);
+          setClassroom((prev) => ({
+            ...prev,
+            totalQuestionsAsked: (prev.totalQuestionsAsked ?? 0) + total,
+            scores: scores,
+          }));
+        }}
+      />
+    )}
+
+    {/* ── Active quiz panel overlay (legacy DB-backed) ─────────── */}
+    {classroom.activeQuiz && !liveKitQuizActive && (
       <QuizPanel
         activeQuiz={classroom.activeQuiz}
         roomId={roomId}

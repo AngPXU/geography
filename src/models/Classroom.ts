@@ -77,7 +77,9 @@ export interface IClassroom extends Document {
   quizCountdown?: IQuizCountdown;
   pendingQuiz?: IPendingQuiz;
   draftQuiz?: IPendingQuiz; // teacher's saved-but-not-started questions
-  teacherLastSeen?: Date;   // for online presence detection
+  teacherLastSeen?: Date;    // for online presence detection
+  sessionEndedAt?: Date;     // set when teacher explicitly closes the live session → students auto-leave
+  liveSessionActive: boolean; // true khi giáo viên đã join LiveKit → học sinh mới được phép join
   createdAt: Date;
   updatedAt: Date;
 }
@@ -187,6 +189,8 @@ const ClassroomSchema = new Schema<IClassroom>(
     pendingQuiz:          { type: PendingQuizSchema, default: null },
     draftQuiz:            { type: PendingQuizSchema, default: null },
     teacherLastSeen:      { type: Date },
+    sessionEndedAt:      { type: Date, default: null },
+    liveSessionActive:   { type: Boolean, default: false },
   },
   { timestamps: true },
 );

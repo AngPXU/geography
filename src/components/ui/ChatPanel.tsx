@@ -24,6 +24,8 @@ interface Props {
   currentUserId: string;
   currentUserName: string;
   isTeacher: boolean;
+  /** Khi quiz đang chạy, chat bị ẩn sau overlay → kéo dài interval để giảm request */
+  isQuizActive?: boolean;
 }
 
 // ─── Time helper ──────────────────────────────────────────────────────────────
@@ -144,7 +146,7 @@ function Bubble({
 
 // ─── ChatPanel ────────────────────────────────────────────────────────────────
 
-export function ChatPanel({ roomId, currentUserId, currentUserName, isTeacher }: Props) {
+export function ChatPanel({ roomId, currentUserId, currentUserName, isTeacher, isQuizActive = false }: Props) {
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [text, setText] = useState('');
   const [sending, setSending] = useState(false);
@@ -173,11 +175,15 @@ export function ChatPanel({ roomId, currentUserId, currentUserName, isTeacher }:
     } catch { /* ignore */ }
   }, [roomId]);
 
+  // Khi quiz đang chạy: học sinh nhìn vào QuizPanel overlay, không cần poll chat nhanh
+  // → 15s thay vì 3s → giảm ~80% request trong lúc quiz
+  const chatPollInterval = isQuizActive ? 15_000 : 3_000;
+
   useEffect(() => {
     fetchMessages();
-    pollRef.current = setInterval(fetchMessages, 3000);
+    pollRef.current = setInterval(fetchMessages, chatPollInterval);
     return () => { if (pollRef.current) clearInterval(pollRef.current); };
-  }, [fetchMessages]);
+  }, [fetchMessages, chatPollInterval]);
 
   // ── Send ─────────────────────────────────────────────────────────────────
   async function handleSend() {
