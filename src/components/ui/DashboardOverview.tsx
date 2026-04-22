@@ -198,10 +198,10 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
         <div
           className="rounded-[24px] p-6 md:p-7 flex flex-col md:flex-row md:items-center justify-between gap-4"
           style={{
-            background: 'rgba(255,255,255,0.75)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,1)',
-            boxShadow: '0 10px 30px rgba(14,165,233,0.08)',
+            background: 'rgba(255, 255, 255, 0.65)',
+            backdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255, 255, 255, 0.8)',
+            boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)',
           }}
         >
           <div className="flex items-center gap-4">
@@ -279,10 +279,10 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
               key={i}
               className={`rounded-[24px] p-5 md:p-6 flex flex-col gap-2 transition-all duration-300 hover:-translate-y-1 ${stat.highlight ? 'bg-gradient-to-br from-amber-50 to-yellow-50 border border-amber-100' : ''}`}
               style={!stat.highlight ? {
-                background: 'rgba(255,255,255,0.75)',
-                backdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255,255,255,1)',
-                boxShadow: '0 10px 30px rgba(14,165,233,0.08)',
+                background: 'rgba(255, 255, 255, 0.65)',
+                backdropFilter: 'blur(24px)',
+                border: '1px solid rgba(255, 255, 255, 0.8)',
+                boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)',
               } : {}}
             >
               <div className="flex items-center justify-between">
@@ -299,10 +299,10 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
         <div
           className="rounded-[24px] p-6 md:p-7"
           style={{
-            background: 'rgba(255,255,255,0.75)',
-            backdropFilter: 'blur(20px)',
-            border: '1px solid rgba(255,255,255,1)',
-            boxShadow: '0 10px 30px rgba(14,165,233,0.08)',
+            background: 'rgba(255, 255, 255, 0.65)',
+            backdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255, 255, 255, 0.8)',
+            boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)',
           }}
         >
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
@@ -425,10 +425,10 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
           <div
             className="rounded-[24px] p-6"
             style={{
-              background: 'rgba(255,255,255,0.75)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,1)',
-              boxShadow: '0 10px 30px rgba(14,165,233,0.08)',
+              background: 'rgba(255, 255, 255, 0.65)',
+              backdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255, 255, 255, 0.8)',
+              boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)',
             }}
           >
             {/* Header */}
@@ -515,10 +515,10 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
           <div
             className="rounded-[24px] p-6"
             style={{
-              background: 'rgba(255,255,255,0.75)',
-              backdropFilter: 'blur(20px)',
-              border: '1px solid rgba(255,255,255,1)',
-              boxShadow: '0 10px 30px rgba(14,165,233,0.08)',
+              background: 'rgba(255, 255, 255, 0.65)',
+              backdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255, 255, 255, 0.8)',
+              boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)',
             }}
           >
             <p className="text-[#082F49] font-black text-base mb-5 flex items-center gap-2">⚡ Truy cập nhanh</p>

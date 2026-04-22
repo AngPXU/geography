@@ -132,19 +132,48 @@ export function GeoFunFacts() {
         <div className="relative w-full mx-auto z-10">
 
           {loading ? (
-            <div className="w-full h-96 rounded-[48px] bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-[40px] border-[3px] border-white/70 shadow-[0_30px_100px_-15px_rgba(14,165,233,0.15)] flex flex-col items-center justify-center animate-pulse">
-              <div className="w-24 h-24 bg-gradient-to-tr from-cyan-300 to-blue-400 rounded-[32px] flex items-center justify-center shadow-inner mb-6 animate-bounce" style={{ animationDuration: '2s'}}>
+            <div 
+              className="w-full h-96 flex flex-col items-center justify-center animate-pulse rounded-[32px]"
+              style={{
+                background: 'rgba(255, 255, 255, 0.65)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                border: '1px solid rgba(255, 255, 255, 0.8)',
+                boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)'
+              }}
+            >
+              <div className="w-24 h-24 bg-gradient-to-tr from-[#06B6D4] to-blue-400 rounded-full flex items-center justify-center shadow-inner mb-6 animate-bounce" style={{ animationDuration: '2s'}}>
                 <span className="text-5xl">🌍</span>
               </div>
               <p className="text-lg font-bold text-[#94A3B8] tracking-widest uppercase">Trí tuệ nhân tạo đang làm việc...</p>
             </div>
           ) : !fact ? (
-            <div className="w-full h-96 rounded-[48px] bg-gradient-to-br from-white/80 to-white/40 backdrop-blur-[40px] border-[3px] border-white/70 shadow-[0_30px_100px_-15px_rgba(14,165,233,0.15)] flex flex-col items-center justify-center">
+            <div 
+              className="w-full h-96 flex flex-col items-center justify-center rounded-[32px]"
+              style={{
+                background: 'rgba(255, 255, 255, 0.65)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                border: '1px solid rgba(255, 255, 255, 0.8)',
+                boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)'
+              }}
+            >
                <span className="text-6xl mb-6 opacity-80">🔍</span>
                <p className="text-lg font-bold text-[#94A3B8] tracking-widest uppercase">Chưa có thông tin thú vị nào.</p>
             </div>
           ) : (
-            <div className="big-card relative w-full bg-gradient-to-br from-white/95 to-white/70 backdrop-blur-[40px] border-[3px] border-white/80 rounded-[48px] p-8 md:p-14 shadow-[0_40px_100px_-20px_rgba(14,165,233,0.25)] overflow-hidden group hover:shadow-[0_40px_120px_-20px_rgba(14,165,233,0.35)] transition-all duration-700">
+            <div 
+              className="big-card relative w-full flex flex-col p-8 md:p-14 overflow-hidden group hover:-translate-y-1 transition-all duration-700 rounded-[32px]"
+              style={{
+                background: 'rgba(255, 255, 255, 0.65)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
+                border: '1px solid rgba(255, 255, 255, 0.8)',
+                boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)'
+              }}
+            >
+              {/* Inner Highlight for Glass Edge */}
+              <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
 
               {/* iOS 26 style vibrant background glowing orbs */}
               <div className="absolute -top-20 -right-10 w-64 h-64 bg-gradient-to-br from-rose-300/60 to-orange-200/60 rounded-full blur-[60px] group-hover:scale-125 group-hover:bg-rose-400/50 transition-all duration-1000 ease-out" />

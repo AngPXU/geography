@@ -114,7 +114,7 @@ function StatCard({ icon, label, value, sub, color }: {
   sub?: string; color: string;
 }) {
   return (
-    <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[24px] p-6
+    <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px] p-6
       shadow-[0_10px_30px_rgba(14,165,233,0.08)] flex items-center gap-5">
       <div className={`w-14 h-14 rounded-[18px] flex items-center justify-center text-2xl ${color}`}>
         {icon}
@@ -314,8 +314,8 @@ function CardModal({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
-      <div className="relative w-full max-w-xl bg-white/90 backdrop-blur-[20px] border border-white
-        rounded-[24px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden">
+      <div className="relative w-full max-w-xl bg-[rgba(255,255,255,0.75)] backdrop-blur-[24px] border border-white/80
+        rounded-[32px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden">
 
         {/* ── Header ── */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100
@@ -325,7 +325,7 @@ function CardModal({
           </h3>
 
           {/* Toggle */}
-          <div className="flex items-center gap-2 mx-auto bg-white/80 border border-slate-200/80 rounded-[12px] p-1">
+          <div className="flex items-center gap-2 mx-auto bg-white/80 border border-slate-200/80 rounded-full p-1">
             <button
               type="button"
               onClick={switchToForm}
@@ -356,7 +356,7 @@ function CardModal({
         {/* ── Body ── */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4 max-h-[72vh] overflow-y-auto">
           {error && (
-            <div className="flex items-start gap-2 px-4 py-3 rounded-[12px] bg-red-50 border
+            <div className="flex items-start gap-2 px-4 py-3 rounded-full bg-red-50 border
               border-red-200 text-red-600 text-sm font-semibold">
               <FaExclamationTriangle className="shrink-0 mt-0.5" /> {error}
             </div>
@@ -369,7 +369,7 @@ function CardModal({
                 <div>
                   <label className="block text-xs font-bold text-[#334155] mb-1">Lớp *</label>
                   <select value={form.grade} onChange={set('grade')}
-                    className="w-full px-3 py-2.5 rounded-[12px] border border-slate-200 bg-slate-50
+                    className="w-full px-3 py-2.5 rounded-full border border-slate-200 bg-slate-50
                       text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400
                       focus:ring-2 focus:ring-cyan-100 transition-all">
                     {[6, 7, 8, 9].map(g => (
@@ -380,7 +380,7 @@ function CardModal({
                 <div>
                   <label className="block text-xs font-bold text-[#334155] mb-1">Icon bài học</label>
                   <input value={form.lessonIcon} onChange={set('lessonIcon')}
-                    className="w-full px-3 py-2.5 rounded-[12px] border border-slate-200 bg-slate-50
+                    className="w-full px-3 py-2.5 rounded-full border border-slate-200 bg-slate-50
                       text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400
                       focus:ring-2 focus:ring-cyan-100 transition-all"
                     placeholder="📚" maxLength={8} />
@@ -388,7 +388,7 @@ function CardModal({
               </div>
 
               {/* Lesson context — readonly info bar */}
-              <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-[12px] bg-slate-50
+              <div className="flex items-center gap-2.5 px-3 py-2.5 rounded-full bg-slate-50
                 border border-slate-200">
                 <span className="text-xl shrink-0">{form.lessonIcon || '📚'}</span>
                 <div className="min-w-0 flex-1">
@@ -406,7 +406,7 @@ function CardModal({
                   Mặt trước (thuật ngữ) *
                 </label>
                 <input value={form.front} onChange={set('front')} required
-                  className="w-full px-3 py-2.5 rounded-[12px] border border-slate-200 bg-slate-50
+                  className="w-full px-3 py-2.5 rounded-full border border-slate-200 bg-slate-50
                     text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400
                     focus:ring-2 focus:ring-cyan-100 transition-all"
                   placeholder="Nhập thuật ngữ..." />
@@ -417,7 +417,7 @@ function CardModal({
                   Mặt sau (định nghĩa) *
                 </label>
                 <textarea value={form.back} onChange={set('back')} required rows={3}
-                  className="w-full px-3 py-2.5 rounded-[12px] border border-slate-200 bg-slate-50
+                  className="w-full px-3 py-2.5 rounded-full border border-slate-200 bg-slate-50
                     text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400
                     focus:ring-2 focus:ring-cyan-100 transition-all resize-none"
                   placeholder="Nhập định nghĩa / giải thích..." />
@@ -426,7 +426,7 @@ function CardModal({
               <div>
                 <label className="block text-xs font-bold text-[#334155] mb-1">Gợi ý (tuỳ chọn)</label>
                 <input value={form.hint} onChange={set('hint')}
-                  className="w-full px-3 py-2.5 rounded-[12px] border border-slate-200 bg-slate-50
+                  className="w-full px-3 py-2.5 rounded-full border border-slate-200 bg-slate-50
                     text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400
                     focus:ring-2 focus:ring-cyan-100 transition-all"
                   placeholder="Gợi ý nhớ bài..." />
@@ -438,7 +438,7 @@ function CardModal({
           {inputMode === 'json' && (
             <>
               {/* Info banner */}
-              <div className="rounded-[14px] bg-[rgba(186,230,253,0.55)] border border-sky-200 px-4 py-3">
+              <div className="rounded-[20px] bg-[rgba(186,230,253,0.55)] border border-sky-200 px-4 py-3">
                 <p className="text-[#0284C7] text-xs font-bold mb-1">
                   {mode === 'add'
                     ? '📋 Dán object JSON hoặc array JSON để thêm nhiều thẻ cùng lúc.'
@@ -457,7 +457,7 @@ function CardModal({
               <div className="flex gap-2">
                 <button type="button"
                   onClick={() => setJsonText(JSON_TEMPLATE_SINGLE)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-xs font-bold
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold
                     bg-slate-100 border border-slate-200 text-[#334155] hover:bg-slate-200
                     transition-all">
                   📄 Template 1 thẻ
@@ -465,7 +465,7 @@ function CardModal({
                 {mode === 'add' && (
                   <button type="button"
                     onClick={() => setJsonText(JSON_TEMPLATE_ARRAY)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-xs font-bold
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-bold
                       bg-violet-50 border border-violet-200 text-violet-600 hover:bg-violet-100
                       transition-all">
                     📄 Template nhiều thẻ
@@ -476,7 +476,7 @@ function CardModal({
                     try { setJsonText(JSON.stringify(JSON.parse(jsonText), null, 2)); }
                     catch { /* ignore */ }
                   }}
-                  className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-[10px] text-xs
+                  className="ml-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs
                     font-bold bg-emerald-50 border border-emerald-200 text-emerald-600
                     hover:bg-emerald-100 transition-all">
                   ✨ Format
@@ -491,7 +491,7 @@ function CardModal({
                   onChange={e => setJsonText(e.target.value)}
                   rows={12}
                   spellCheck={false}
-                  className={`w-full px-4 py-3 rounded-[14px] border bg-slate-900 text-green-300
+                  className={`w-full px-4 py-3 rounded-[20px] border bg-slate-900 text-green-300
                     text-[12px] font-mono leading-relaxed focus:outline-none transition-all resize-y
                     ${jsonPreview.error
                       ? 'border-red-400 focus:ring-2 focus:ring-red-200'
@@ -503,7 +503,7 @@ function CardModal({
 
               {/* Live status */}
               {jsonText.trim() && (
-                <div className={`flex items-center gap-2 px-3 py-2 rounded-[10px] text-xs font-bold
+                <div className={`flex items-center gap-2 px-3 py-2 rounded-full text-xs font-bold
                   ${jsonPreview.error
                     ? 'bg-red-50 border border-red-200 text-red-600'
                     : 'bg-emerald-50 border border-emerald-200 text-emerald-600'
@@ -521,14 +521,14 @@ function CardModal({
           {/* ── Actions ── */}
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose}
-              className="flex-1 py-2.5 rounded-[12px] border border-slate-200 text-sm font-bold
+              className="flex-1 py-2.5 rounded-full border border-slate-200 text-sm font-bold
                 text-[#334155] hover:bg-slate-50 transition-all">
               Huỷ
             </button>
             <button
               type="submit"
               disabled={saving || (inputMode === 'json' && !!jsonPreview.error)}
-              className={`flex-1 py-2.5 rounded-[12px] text-white text-sm font-bold
+              className={`flex-1 py-2.5 rounded-full text-white text-sm font-bold
                 disabled:opacity-50 transition-all flex items-center justify-center gap-2
                 ${inputMode === 'json'
                   ? 'bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-400 hover:to-purple-400'
@@ -551,8 +551,8 @@ function ConfirmDialog({ message, onConfirm, onCancel, danger = true }: {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
-      <div className="relative w-full max-w-sm bg-white/90 backdrop-blur-[20px] border border-white
-        rounded-[24px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] p-6 text-center">
+      <div className="relative w-full max-w-sm bg-[rgba(255,255,255,0.75)] backdrop-blur-[24px] border border-white/80
+        rounded-[32px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] p-6 text-center">
         <div className={`w-14 h-14 rounded-full mx-auto flex items-center justify-center text-2xl mb-4
           ${danger ? 'bg-red-100' : 'bg-amber-100'}`}>
           <FaExclamationTriangle className={danger ? 'text-red-500' : 'text-amber-500'} />
@@ -560,12 +560,12 @@ function ConfirmDialog({ message, onConfirm, onCancel, danger = true }: {
         <p className="text-[#082F49] font-bold text-base mb-6">{message}</p>
         <div className="flex gap-3">
           <button onClick={onCancel}
-            className="flex-1 py-2.5 rounded-[12px] border border-slate-200 text-sm font-bold
+            className="flex-1 py-2.5 rounded-full border border-slate-200 text-sm font-bold
               text-[#334155] hover:bg-slate-50 transition-all">
             Huỷ
           </button>
           <button onClick={onConfirm}
-            className={`flex-1 py-2.5 rounded-[12px] text-white text-sm font-bold transition-all
+            className={`flex-1 py-2.5 rounded-full text-white text-sm font-bold transition-all
               ${danger
                 ? 'bg-gradient-to-r from-red-500 to-rose-500 hover:from-red-400 hover:to-rose-400'
                 : 'bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400'
@@ -651,8 +651,8 @@ function LessonFormModal({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
-      <div className="relative w-full max-w-md bg-white/90 backdrop-blur-[20px] border border-white
-        rounded-[24px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden">
+      <div className="relative w-full max-w-md bg-[rgba(255,255,255,0.75)] backdrop-blur-[24px] border border-white/80
+        rounded-[32px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100
           bg-gradient-to-r from-emerald-50 to-cyan-50">
           <h3 className="font-black text-[#082F49] text-lg">
@@ -666,7 +666,7 @@ function LessonFormModal({
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="flex items-center gap-2 px-4 py-3 rounded-[12px] bg-red-50 border
+            <div className="flex items-center gap-2 px-4 py-3 rounded-full bg-red-50 border
               border-red-200 text-red-600 text-sm font-semibold">
               <FaExclamationTriangle className="shrink-0" /> {error}
             </div>
@@ -676,7 +676,7 @@ function LessonFormModal({
               <label className="block text-xs font-bold text-[#334155] mb-1">Lớp *</label>
               <select value={grade} onChange={e => setGrade(Number(e.target.value))}
                 disabled={mode === 'edit'}
-                className="w-full px-3 py-2.5 rounded-[12px] border border-slate-200 bg-slate-50
+                className="w-full px-3 py-2.5 rounded-full border border-slate-200 bg-slate-50
                   text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400
                   focus:ring-2 focus:ring-cyan-100 transition-all disabled:opacity-60">
                 {[6, 7, 8, 9].map(g => <option key={g} value={g}>Lớp {g}</option>)}
@@ -686,7 +686,7 @@ function LessonFormModal({
               <label className="block text-xs font-bold text-[#334155] mb-1">Icon</label>
               <input value={lessonIcon} onChange={e => setLessonIcon(e.target.value)}
                 maxLength={8} placeholder="📚"
-                className="w-full px-3 py-2.5 rounded-[12px] border border-slate-200 bg-slate-50
+                className="w-full px-3 py-2.5 rounded-full border border-slate-200 bg-slate-50
                   text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400
                   focus:ring-2 focus:ring-cyan-100 transition-all" />
             </div>
@@ -700,11 +700,11 @@ function LessonFormModal({
               </label>
               <div className="flex gap-2">
                 <input value={lessonId} readOnly
-                  className="flex-1 px-3 py-2.5 rounded-[12px] border border-slate-200 bg-slate-100
+                  className="flex-1 px-3 py-2.5 rounded-full border border-slate-200 bg-slate-100
                     text-sm font-mono text-[#334155] cursor-default select-all" />
                 <button type="button" onClick={() => setLessonId(genLessonId())}
                   title="Tạo ID mới"
-                  className="px-3 py-2.5 rounded-[12px] border border-slate-200 bg-slate-50
+                  className="px-3 py-2.5 rounded-full border border-slate-200 bg-slate-50
                     text-base hover:bg-slate-100 transition-all shrink-0">
                   🔄
                 </button>
@@ -715,12 +715,12 @@ function LessonFormModal({
             <label className="block text-xs font-bold text-[#334155] mb-1">Tên bài học *</label>
             <input value={lessonTitle} onChange={e => setLessonTitle(e.target.value)} required
               placeholder="Bài 1: Trái Đất trong Hệ Mặt Trời"
-              className="w-full px-3 py-2.5 rounded-[12px] border border-slate-200 bg-slate-50
+              className="w-full px-3 py-2.5 rounded-full border border-slate-200 bg-slate-50
                 text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400
                 focus:ring-2 focus:ring-cyan-100 transition-all" />
           </div>
           {mode === 'add' && (
-            <div className="rounded-[14px] bg-[rgba(186,230,253,0.4)] border border-sky-200 px-4 py-3">
+            <div className="rounded-[20px] bg-[rgba(186,230,253,0.4)] border border-sky-200 px-4 py-3">
               <p className="text-[#0284C7] text-xs font-semibold">
                 💡 Sau khi tạo, bạn sẽ được chuyển vào trang tạo thẻ ghi nhớ cho bài học này.
               </p>
@@ -728,10 +728,10 @@ function LessonFormModal({
           )}
           <div className="flex gap-3">
             <button type="button" onClick={onClose}
-              className="flex-1 py-2.5 rounded-[12px] border border-slate-200 text-sm font-bold
+              className="flex-1 py-2.5 rounded-full border border-slate-200 text-sm font-bold
                 text-[#334155] hover:bg-slate-50 transition-all">Huỷ</button>
             <button type="submit" disabled={saving}
-              className="flex-1 py-2.5 rounded-[12px] bg-gradient-to-r from-emerald-500 to-cyan-500
+              className="flex-1 py-2.5 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500
                 text-white text-sm font-bold hover:from-emerald-400 hover:to-cyan-400 transition-all
                 flex items-center justify-center gap-2 disabled:opacity-50">
               {saving && <FaSpinner className="animate-spin text-xs" />}
@@ -773,8 +773,8 @@ function DeleteLessonConfirm({
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
-      <div className="relative w-full max-w-sm bg-white/90 backdrop-blur-[20px] border border-white
-        rounded-[24px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden">
+      <div className="relative w-full max-w-sm bg-[rgba(255,255,255,0.75)] backdrop-blur-[24px] border border-white/80
+        rounded-[32px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden">
         <div className="px-6 py-4 border-b border-red-100 bg-red-50 flex items-center gap-3">
           <div className="w-9 h-9 rounded-full bg-red-100 flex items-center justify-center shrink-0">
             <FaExclamationTriangle className="text-red-500 text-sm" />
@@ -783,11 +783,11 @@ function DeleteLessonConfirm({
         </div>
         <div className="p-6 space-y-4">
           {error && (
-            <div className="px-4 py-3 rounded-[12px] bg-red-50 border border-red-200
+            <div className="px-4 py-3 rounded-full bg-red-50 border border-red-200
               text-red-600 text-sm font-semibold">{error}</div>
           )}
           {/* Lesson info */}
-          <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-[14px] border border-slate-200">
+          <div className="flex items-center gap-3 p-4 bg-slate-50 rounded-[20px] border border-slate-200">
             <span className="text-2xl shrink-0">{lesson.lessonIcon}</span>
             <div className="min-w-0">
               <p className="font-black text-[#082F49] text-sm truncate">{lesson.lessonTitle}</p>
@@ -795,7 +795,7 @@ function DeleteLessonConfirm({
             </div>
           </div>
           {/* Warning */}
-          <div className="rounded-[14px] bg-[rgba(254,226,226,0.6)] border border-red-200 px-4 py-3">
+          <div className="rounded-[20px] bg-[rgba(254,226,226,0.6)] border border-red-200 px-4 py-3">
             <p className="text-red-600 text-xs font-bold">
               ⚠️ Xoá bài học này sẽ xoá toàn bộ{' '}
               <span className="font-black">{lesson.cardCount} thẻ ghi nhớ</span>{' '}
@@ -804,10 +804,10 @@ function DeleteLessonConfirm({
           </div>
           <div className="flex gap-3">
             <button onClick={onClose}
-              className="flex-1 py-2.5 rounded-[12px] border border-slate-200 text-sm font-bold
+              className="flex-1 py-2.5 rounded-full border border-slate-200 text-sm font-bold
                 text-[#334155] hover:bg-slate-50 transition-all">Huỷ</button>
             <button onClick={handle} disabled={deleting}
-              className="flex-1 py-2.5 rounded-[12px] bg-gradient-to-r from-red-500 to-rose-500
+              className="flex-1 py-2.5 rounded-full bg-gradient-to-r from-red-500 to-rose-500
                 text-white text-sm font-bold hover:from-red-400 hover:to-rose-400 transition-all
                 flex items-center justify-center gap-2 disabled:opacity-50">
               {deleting && <FaSpinner className="animate-spin text-xs" />}
@@ -837,7 +837,7 @@ function Paginator({ page, totalPages, onPageChange }: {
   return (
     <div className="flex items-center gap-2">
       <button onClick={() => onPageChange(Math.max(1, page - 1))} disabled={page === 1}
-        className="px-3 py-1.5 rounded-[10px] text-xs font-bold border border-slate-200
+        className="px-3 py-1.5 rounded-full text-xs font-bold border border-slate-200
           text-[#334155] disabled:opacity-40 hover:bg-slate-50 transition-all">
         ← Trước
       </button>
@@ -846,7 +846,7 @@ function Paginator({ page, totalPages, onPageChange }: {
           <span key={`d${i}`} className="px-1.5 text-[#94A3B8] text-xs">…</span>
         ) : (
           <button key={p} onClick={() => onPageChange(p as number)}
-            className={`w-8 h-8 rounded-[8px] text-xs font-bold transition-all
+            className={`w-8 h-8 rounded-full text-xs font-bold transition-all
               ${page === p
                 ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-sm'
                 : 'border border-slate-200 text-[#334155] hover:bg-slate-50'
@@ -856,7 +856,7 @@ function Paginator({ page, totalPages, onPageChange }: {
         )
       )}
       <button onClick={() => onPageChange(Math.min(totalPages, page + 1))} disabled={page === totalPages}
-        className="px-3 py-1.5 rounded-[10px] text-xs font-bold border border-slate-200
+        className="px-3 py-1.5 rounded-full text-xs font-bold border border-slate-200
           text-[#334155] disabled:opacity-40 hover:bg-slate-50 transition-all">
         Sau →
       </button>
@@ -930,7 +930,7 @@ function LessonsView({ onSelectLesson, onClearAll }: {
     <div className="space-y-5">
       {/* Toast */}
       {toast && (
-        <div className={`fixed top-5 right-5 z-[99999] px-5 py-3 rounded-[14px] text-sm font-bold
+        <div className={`fixed top-5 right-5 z-[99999] px-5 py-3 rounded-[20px] text-sm font-bold
           shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition-all border
           ${toast.type === 'success'
             ? 'bg-[rgba(187,247,208,0.95)] border-emerald-200 text-[#16A34A]'
@@ -950,21 +950,21 @@ function LessonsView({ onSelectLesson, onClearAll }: {
         </div>
         <div className="sm:ml-auto flex items-center gap-2">
           <button onClick={onClearAll}
-            className="flex items-center gap-2 px-4 py-2 rounded-[12px] bg-red-50 border
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 border
               border-red-200 text-red-600 text-sm font-bold hover:bg-red-100 transition-all">
             <FaTrash className="text-xs" /> Xoá tất cả
           </button>
           <button onClick={() => { setEditTarget(null); setFormMode('add'); }}
-            className="flex items-center gap-2 px-4 py-2 rounded-[12px]
+            className="flex items-center gap-2 px-4 py-2 rounded-full
               bg-gradient-to-r from-emerald-500 to-cyan-500 text-white text-sm font-bold
-              hover:from-emerald-400 hover:to-cyan-400 shadow-md transition-all">
+              hover:from-emerald-400 hover:to-cyan-400 shadow-[0_8px_20px_rgba(6,182,212,0.4)] transition-all">
             <FaPlus className="text-xs" /> Thêm bài học
           </button>
         </div>
       </div>
 
       {/* Filter + Sort + Search */}
-      <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px]
+      <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px]
         p-4 shadow-[0_10px_30px_rgba(14,165,233,0.08)] space-y-3">
         {/* Grade pills */}
         <div className="flex items-center gap-2 flex-wrap">
@@ -972,7 +972,7 @@ function LessonsView({ onSelectLesson, onClearAll }: {
             <button key={g} onClick={() => { setGradeFilter(g); setPage(1); }}
               className={`px-4 py-1.5 rounded-[9999px] text-sm font-bold border transition-all
                 ${gradeFilter === g
-                  ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-transparent shadow-md'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-transparent shadow-[0_8px_20px_rgba(6,182,212,0.4)]'
                   : 'bg-slate-50 text-[#334155] border-slate-200 hover:border-cyan-300 hover:text-cyan-600'
                 }`}>
               {g === 'all' ? 'Tất cả' : `Lớp ${g}`}
@@ -984,7 +984,7 @@ function LessonsView({ onSelectLesson, onClearAll }: {
           <span className="text-xs font-bold text-[#94A3B8]">Sắp xếp:</span>
           {([['grade', 'Lớp'], ['title', 'Tên bài'], ['count', 'Số thẻ']] as const).map(([k, lbl]) => (
             <button key={k} onClick={() => toggleSort(k)}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-[10px] text-xs font-bold
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold
                 border transition-all
                 ${sortKey === k
                   ? 'bg-cyan-50 border-cyan-300 text-cyan-700'
@@ -994,7 +994,7 @@ function LessonsView({ onSelectLesson, onClearAll }: {
             </button>
           ))}
           <div className="ml-auto flex items-center gap-2 bg-slate-50 border border-slate-200
-            rounded-[12px] px-3 py-2 focus-within:border-cyan-400 focus-within:ring-2
+            rounded-full px-3 py-2 focus-within:border-cyan-400 focus-within:ring-2
             focus-within:ring-cyan-100 transition-all">
             <FaSearch className="text-[#94A3B8] text-xs shrink-0" />
             <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
@@ -1019,7 +1019,7 @@ function LessonsView({ onSelectLesson, onClearAll }: {
         </div>
       ) : paginated.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <div className="w-20 h-20 rounded-[24px] bg-slate-100 flex items-center justify-center text-4xl">📭</div>
+          <div className="w-20 h-20 rounded-[32px] bg-slate-100 flex items-center justify-center text-4xl">📭</div>
           <p className="text-[#082F49] font-bold text-base">Chưa có bài học nào</p>
           <p className="text-[#94A3B8] text-sm font-semibold text-center px-4">
             Nhấn &quot;Thêm bài học&quot; để bắt đầu.
@@ -1029,8 +1029,8 @@ function LessonsView({ onSelectLesson, onClearAll }: {
         <div className="flex flex-col gap-2">
           {paginated.map(lesson => (
             <div key={`${lesson.grade}-${lesson.lessonId}`}
-              className="flex items-center gap-3 bg-white/75 backdrop-blur-[20px] border border-white
-                rounded-[16px] px-4 py-3 shadow-[0_4px_16px_rgba(14,165,233,0.07)]
+              className="flex items-center gap-3 bg-white/65 backdrop-blur-[24px] border border-white/80
+                rounded-[24px] px-4 py-3 shadow-[0_4px_16px_rgba(14,165,233,0.07)]
                 hover:shadow-[0_6px_20px_rgba(6,182,212,0.12)] hover:border-cyan-200
                 hover:bg-white/90 transition-all duration-200">
 
@@ -1057,7 +1057,7 @@ function LessonsView({ onSelectLesson, onClearAll }: {
                   <button
                     onClick={() => { setEditTarget(lesson); setFormMode('edit'); }}
                     title="Sửa bài học"
-                    className="w-7 h-7 rounded-[8px] bg-slate-50 border border-slate-200
+                    className="w-7 h-7 rounded-full bg-slate-50 border border-slate-200
                       flex items-center justify-center text-cyan-600 hover:bg-cyan-50
                       hover:border-cyan-300 transition-all">
                     <FaEdit className="text-[10px]" />
@@ -1065,7 +1065,7 @@ function LessonsView({ onSelectLesson, onClearAll }: {
                   <button
                     onClick={() => setDeleteTarget(lesson)}
                     title="Xoá bài học"
-                    className="w-7 h-7 rounded-[8px] bg-slate-50 border border-slate-200
+                    className="w-7 h-7 rounded-full bg-slate-50 border border-slate-200
                       flex items-center justify-center text-red-400 hover:bg-red-50
                       hover:border-red-300 transition-all">
                     <FaTrash className="text-[10px]" />
@@ -1277,7 +1277,7 @@ function CardsView({ lesson, onBack, onRefreshLessons }: {
   return (
     <div className="space-y-5">
       {toast && (
-        <div className={`fixed top-6 right-6 z-[99999] px-5 py-3 rounded-[16px] text-sm font-bold
+        <div className={`fixed top-6 right-6 z-[99999] px-5 py-3 rounded-[24px] text-sm font-bold
           shadow-lg border
           ${toast.type === 'success'
             ? 'bg-[rgba(187,247,208,0.95)] text-[#16A34A] border-green-200'
@@ -1293,7 +1293,7 @@ function CardsView({ lesson, onBack, onRefreshLessons }: {
           <button onClick={onBack}
             className="flex items-center gap-2 text-[#94A3B8] hover:text-[#334155] font-bold
               text-sm transition-colors group">
-            <span className="w-8 h-8 rounded-[10px] bg-slate-100 group-hover:bg-slate-200
+            <span className="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-slate-200
               flex items-center justify-center transition-colors">
               <FaArrowLeft className="text-xs" />
             </span>
@@ -1311,20 +1311,20 @@ function CardsView({ lesson, onBack, onRefreshLessons }: {
           </div>
         </div>
         <button onClick={openAdd}
-          className="sm:ml-auto flex items-center gap-2 px-4 py-2 rounded-[12px]
+          className="sm:ml-auto flex items-center gap-2 px-4 py-2 rounded-full
             bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-sm font-bold
-            hover:from-cyan-400 hover:to-blue-400 shadow-md transition-all">
+            hover:from-cyan-400 hover:to-blue-400 shadow-[0_8px_20px_rgba(6,182,212,0.4)] transition-all">
           <FaPlus className="text-xs" /> Thêm thẻ
         </button>
       </div>
 
       {/* Sort + Search bar */}
-      <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px]
+      <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px]
         p-4 shadow-[0_10px_30px_rgba(14,165,233,0.08)] flex flex-wrap gap-3 items-center">
         <span className="text-xs font-bold text-[#94A3B8]">Sắp xếp:</span>
         {([['order', 'Thứ tự'], ['front', 'A-Z'], ['createdAt', 'Ngày tạo']] as const).map(([k, lbl]) => (
           <button key={k} onClick={() => toggleSort(k)}
-            className={`flex items-center gap-1 px-3 py-1.5 rounded-[10px] text-xs font-bold
+            className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold
               border transition-all
               ${sortKey === k
                 ? 'bg-cyan-50 border-cyan-300 text-cyan-700'
@@ -1334,7 +1334,7 @@ function CardsView({ lesson, onBack, onRefreshLessons }: {
           </button>
         ))}
         <div className="ml-auto flex items-center gap-2 bg-slate-50 border border-slate-200
-          rounded-[12px] px-3 py-2 focus-within:border-cyan-400 focus-within:ring-2
+          rounded-full px-3 py-2 focus-within:border-cyan-400 focus-within:ring-2
           focus-within:ring-cyan-100 transition-all">
           <FaSearch className="text-[#94A3B8] text-xs shrink-0" />
           <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
@@ -1358,21 +1358,21 @@ function CardsView({ lesson, onBack, onRefreshLessons }: {
         </div>
       ) : paginated.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <div className="w-20 h-20 rounded-[24px] bg-slate-100 flex items-center justify-center text-4xl">📭</div>
+          <div className="w-20 h-20 rounded-[32px] bg-slate-100 flex items-center justify-center text-4xl">📭</div>
           <p className="text-[#082F49] font-bold">
             {cards.length === 0 ? 'Bài học chưa có thẻ nào' : 'Không tìm thấy thẻ phù hợp'}
           </p>
           {cards.length === 0 && (
             <button onClick={openAdd}
-              className="flex items-center gap-2 px-4 py-2 rounded-[12px]
+              className="flex items-center gap-2 px-4 py-2 rounded-full
                 bg-gradient-to-r from-cyan-500 to-blue-500 text-white text-sm font-bold
-                hover:from-cyan-400 hover:to-blue-400 shadow-md transition-all">
+                hover:from-cyan-400 hover:to-blue-400 shadow-[0_8px_20px_rgba(6,182,212,0.4)] transition-all">
               <FaPlus className="text-xs" /> Thêm thẻ đầu tiên
             </button>
           )}
         </div>
       ) : (
-        <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px]
+        <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px]
           shadow-[0_10px_30px_rgba(14,165,233,0.08)] overflow-hidden">
           {/* Drag hint */}
           {canDrag && (
@@ -1387,7 +1387,7 @@ function CardsView({ lesson, onBack, onRefreshLessons }: {
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/60">
+                <tr className="border-b border-slate-100 bg-white/40 backdrop-blur-md">
                   {canDrag && <th className="w-8 px-3 py-3" />}
                   <th className="text-left px-5 py-3 text-[#94A3B8] font-bold text-xs w-[5%]">#</th>
                   <th className="text-left px-5 py-3 text-[#94A3B8] font-bold text-xs w-[30%]">Mặt trước</th>
@@ -1434,13 +1434,13 @@ function CardsView({ lesson, onBack, onRefreshLessons }: {
                     <td className="px-5 py-3 text-right">
                       <div className="flex items-center justify-end gap-2">
                         <button onClick={() => openEdit(card)}
-                          className="w-7 h-7 rounded-[8px] bg-cyan-50 border border-cyan-200
+                          className="w-7 h-7 rounded-full bg-cyan-50 border border-cyan-200
                             flex items-center justify-center text-cyan-600 hover:bg-cyan-100
                             transition-colors">
                           <FaEdit className="text-[10px]" />
                         </button>
                         <button onClick={() => setConfirmDelete(card)}
-                          className="w-7 h-7 rounded-[8px] bg-red-50 border border-red-200
+                          className="w-7 h-7 rounded-full bg-red-50 border border-red-200
                             flex items-center justify-center text-red-500 hover:bg-red-100
                             transition-colors">
                           <FaTrash className="text-[10px]" />
@@ -1527,7 +1527,7 @@ function DataTab() {
   return (
     <div>
       {toast && (
-        <div className={`fixed top-6 right-6 z-[99999] px-5 py-3 rounded-[16px] text-sm font-bold
+        <div className={`fixed top-6 right-6 z-[99999] px-5 py-3 rounded-[24px] text-sm font-bold
           shadow-lg border
           ${toast.type === 'success'
             ? 'bg-[rgba(187,247,208,0.95)] text-[#16A34A] border-green-200'
@@ -1591,8 +1591,8 @@ function UserRoleModal({ user, onClose, onSaved }: {
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
-      <div className="relative w-full max-w-sm bg-white/90 backdrop-blur-[20px] border border-white
-        rounded-[24px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden">
+      <div className="relative w-full max-w-sm bg-[rgba(255,255,255,0.75)] backdrop-blur-[24px] border border-white/80
+        rounded-[32px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100
           bg-gradient-to-r from-violet-50 to-purple-50">
           <h3 className="font-black text-[#082F49] text-lg">✏️ Phân quyền</h3>
@@ -1603,17 +1603,17 @@ function UserRoleModal({ user, onClose, onSaved }: {
         </div>
         <form onSubmit={handle} className="p-6 space-y-4">
           {error && (
-            <div className="flex items-center gap-2 px-4 py-3 rounded-[12px] bg-red-50 border
+            <div className="flex items-center gap-2 px-4 py-3 rounded-full bg-red-50 border
               border-red-200 text-red-600 text-sm font-semibold">
               <FaExclamationTriangle className="shrink-0" /> {error}
             </div>
           )}
           {/* User info */}
-          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-[14px] border border-slate-200">
-            <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-cyan-400 to-blue-500
+          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-[20px] border border-slate-200">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500
               flex items-center justify-center text-white font-black text-sm shrink-0 overflow-hidden">
               {user.avatar
-                ? <img src={user.avatar} alt="" className="w-full h-full object-cover rounded-[12px]" />
+                ? <img src={user.avatar} alt="" className="w-full h-full object-cover rounded-full" />
                 : user.username.charAt(0).toUpperCase()}
             </div>
             <div>
@@ -1629,7 +1629,7 @@ function UserRoleModal({ user, onClose, onSaved }: {
                 const info = ROLE_LABEL[r];
                 return (
                   <button key={r} type="button" onClick={() => setRole(r)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-[14px] border-2 text-left
+                    className={`flex items-center gap-3 px-4 py-3 rounded-[20px] border-2 text-left
                       font-bold transition-all text-sm
                       ${role === r
                         ? 'border-violet-400 bg-violet-50 text-violet-700'
@@ -1647,10 +1647,10 @@ function UserRoleModal({ user, onClose, onSaved }: {
           </div>
           <div className="flex gap-3">
             <button type="button" onClick={onClose}
-              className="flex-1 py-2.5 rounded-[12px] border border-slate-200 text-sm font-bold
+              className="flex-1 py-2.5 rounded-full border border-slate-200 text-sm font-bold
                 text-[#334155] hover:bg-slate-50 transition-all">Huỷ</button>
             <button type="submit" disabled={saving || role === user.role}
-              className="flex-1 py-2.5 rounded-[12px] bg-gradient-to-r from-violet-500 to-purple-500
+              className="flex-1 py-2.5 rounded-full bg-gradient-to-r from-violet-500 to-purple-500
                 text-white text-sm font-bold hover:from-violet-400 hover:to-purple-400 transition-all
                 flex items-center justify-center gap-2 disabled:opacity-50">
               {saving && <FaSpinner className="animate-spin text-xs" />}
@@ -1701,7 +1701,7 @@ function AddUserModal({ onClose, onSaved }: {
       .catch(() => {});
   }, [form.province]);
 
-  const fldCls = 'w-full px-3 py-2.5 rounded-[12px] border border-slate-200 bg-slate-50 text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all';
+  const fldCls = 'w-full px-3 py-2.5 rounded-full border border-slate-200 bg-slate-50 text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all';
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => 
     setForm(p => ({ ...p, [k]: k === 'role' ? Number(e.target.value) : e.target.value }));
@@ -1749,8 +1749,8 @@ function AddUserModal({ onClose, onSaved }: {
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
-      <div className="relative w-full max-w-2xl bg-white/90 backdrop-blur-[20px] border border-white
-        rounded-[24px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden flex flex-col max-h-[90vh]">
+      <div className="relative w-full max-w-2xl bg-[rgba(255,255,255,0.75)] backdrop-blur-[24px] border border-white/80
+        rounded-[32px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100
           bg-gradient-to-r from-cyan-50 to-blue-50 shrink-0">
           <h3 className="font-black text-[#082F49] text-lg">✨ Tạo người dùng mới</h3>
@@ -1761,7 +1761,7 @@ function AddUserModal({ onClose, onSaved }: {
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
           {error && (
-            <div className="flex items-center gap-2 px-4 py-3 rounded-[12px] bg-red-50 border
+            <div className="flex items-center gap-2 px-4 py-3 rounded-full bg-red-50 border
               border-red-200 text-red-600 text-sm font-semibold">
               <FaExclamationTriangle className="shrink-0" /> {error}
             </div>
@@ -1849,10 +1849,10 @@ function AddUserModal({ onClose, onSaved }: {
 
           <div className="flex gap-3 pt-2">
             <button type="button" onClick={onClose}
-              className="flex-1 py-3 rounded-[12px] border border-slate-200 text-sm font-bold
+              className="flex-1 py-3 rounded-full border border-slate-200 text-sm font-bold
                 text-[#334155] hover:bg-slate-50 transition-all">Huỷ</button>
             <button type="submit" disabled={saving}
-              className="flex-1 py-3 rounded-[12px] bg-gradient-to-r from-emerald-500 to-cyan-500
+              className="flex-1 py-3 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500
                 text-white text-sm font-bold hover:from-emerald-400 hover:to-cyan-400 transition-all
                 flex items-center justify-center gap-2 disabled:opacity-50">
               {saving && <FaSpinner className="animate-spin text-xs" />}
@@ -1952,7 +1952,7 @@ function UsersTab() {
     <div className="space-y-5">
       {/* Toast */}
       {toast && (
-        <div className={`fixed top-5 right-5 z-[99999] px-5 py-3 rounded-[14px] text-sm font-bold
+        <div className={`fixed top-5 right-5 z-[99999] px-5 py-3 rounded-[20px] text-sm font-bold
           shadow-[0_8px_24px_rgba(0,0,0,0.12)] transition-all border
           ${toast.type === 'success'
             ? 'bg-[rgba(187,247,208,0.95)] border-emerald-200 text-[#16A34A]'
@@ -1971,7 +1971,7 @@ function UsersTab() {
       </div>
 
       {/* Filter + Sort + Search */}
-      <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px]
+      <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px]
         p-4 shadow-[0_10px_30px_rgba(14,165,233,0.08)] space-y-3">
         {/* Role pills */}
         <div className="flex items-center gap-2 flex-wrap">
@@ -1980,7 +1980,7 @@ function UsersTab() {
             <button key={r} onClick={() => { setRoleFilter(r); setPage(1); }}
               className={`px-4 py-1.5 rounded-[9999px] text-sm font-bold border transition-all
                 ${roleFilter === r
-                  ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-transparent shadow-md'
+                  ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-transparent shadow-[0_8px_20px_rgba(6,182,212,0.4)]'
                   : 'bg-slate-50 text-[#334155] border-slate-200 hover:border-cyan-300 hover:text-cyan-600'
                 }`}>
               {r === 'all' ? 'Tất cả' : ROLE_LABEL[r]?.label}
@@ -1994,7 +1994,7 @@ function UsersTab() {
             ['username', 'Tên'], ['exp', 'EXP'], ['streak', 'Chuỗi'], ['createdAt', 'Ngày tạo']
           ] as const).map(([k, lbl]) => (
             <button key={k} onClick={() => toggleSort(k)}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-[10px] text-xs font-bold
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold
                 border transition-all
                 ${sortKey === k
                   ? 'bg-cyan-50 border-cyan-300 text-cyan-700'
@@ -2004,7 +2004,7 @@ function UsersTab() {
             </button>
           ))}
           <div className="ml-auto flex items-center gap-2 bg-slate-50 border border-slate-200
-            rounded-[12px] px-3 py-2 focus-within:border-cyan-400 focus-within:ring-2
+            rounded-full px-3 py-2 focus-within:border-cyan-400 focus-within:ring-2
             focus-within:ring-cyan-100 transition-all">
             <FaSearch className="text-[#94A3B8] text-xs shrink-0" />
             <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
@@ -2019,8 +2019,8 @@ function UsersTab() {
             )}
           </div>
           <button onClick={() => setShowAddUser(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-[12px] bg-gradient-to-r from-emerald-500 to-cyan-500
-              text-white text-sm font-bold hover:from-emerald-400 hover:to-cyan-400 shadow-md transition-all">
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500
+              text-white text-sm font-bold hover:from-emerald-400 hover:to-cyan-400 shadow-[0_8px_20px_rgba(6,182,212,0.4)] transition-all">
             <FaUserPlus className="text-xs" />
             Tạo người dùng
           </button>
@@ -2035,16 +2035,16 @@ function UsersTab() {
         </div>
       ) : users.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <div className="w-20 h-20 rounded-[24px] bg-slate-100 flex items-center justify-center text-4xl">👤</div>
+          <div className="w-20 h-20 rounded-[32px] bg-slate-100 flex items-center justify-center text-4xl">👤</div>
           <p className="text-[#082F49] font-bold text-base">Không tìm thấy người dùng</p>
         </div>
       ) : (
-        <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px]
+        <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px]
           shadow-[0_10px_30px_rgba(14,165,233,0.08)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/60">
+                <tr className="border-b border-slate-100 bg-white/40 backdrop-blur-md">
                   <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs w-[5%]">#</th>
                   <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs">Tài khoản</th>
                   <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden sm:table-cell">Email</th>
@@ -2060,7 +2060,7 @@ function UsersTab() {
                   const roleInfo = ROLE_LABEL[u.role] ?? { label: '?', cls: 'bg-slate-100 text-slate-500 border-slate-200' };
                   return (
                     <tr key={u._id}
-                      className="border-b border-slate-50 hover:bg-cyan-50/30 transition-colors cursor-pointer group"
+                      className="border-b border-white/50 hover:bg-cyan-50/50 transition-colors cursor-pointer group"
                       onClick={() => router.push(`/admin/users/${u._id}`)}
                     >
                       <td className="px-5 py-3 text-[#94A3B8] text-xs font-bold">
@@ -2098,13 +2098,13 @@ function UsersTab() {
                       <td className="px-5 py-3 text-right" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1">
                           <button onClick={() => setEditTarget(u)} title="Đổi vai trò"
-                            className="w-7 h-7 rounded-[8px] bg-slate-50 border border-slate-200
+                            className="w-7 h-7 rounded-full bg-slate-50 border border-slate-200
                               flex items-center justify-center text-cyan-600 hover:bg-cyan-50
                               hover:border-cyan-300 transition-all">
                             <FaEdit className="text-[10px]" />
                           </button>
                           <button onClick={() => setDeleteTarget(u)} title="Xoá tài khoản"
-                            className="w-7 h-7 rounded-[8px] bg-slate-50 border border-slate-200
+                            className="w-7 h-7 rounded-full bg-slate-50 border border-slate-200
                               flex items-center justify-center text-red-400 hover:bg-red-50
                               hover:border-red-300 transition-all">
                             <FaTrash className="text-[10px]" />
@@ -2174,7 +2174,7 @@ function ClassFormModal({
   const [error, setError]             = useState('');
   const [saving, setSaving]           = useState(false);
 
-  const fldCls = 'w-full px-3 py-2.5 rounded-[12px] border border-slate-200 bg-slate-50 text-sm font-semibold text-[#082F49] focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all';
+  const fldCls = 'w-full px-3 py-2.5 rounded-full border border-slate-200 bg-slate-50 text-sm font-semibold text-[#082F49] focus:outline-none focus:border-violet-400 focus:ring-2 focus:ring-violet-100 transition-all';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -2203,8 +2203,8 @@ function ClassFormModal({
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
-      <div className="relative w-full max-w-md bg-white/90 backdrop-blur-[20px] border border-white
-        rounded-[24px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden">
+      <div className="relative w-full max-w-md bg-[rgba(255,255,255,0.75)] backdrop-blur-[24px] border border-white/80
+        rounded-[32px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100
           bg-gradient-to-r from-violet-50 to-purple-50">
           <h3 className="font-black text-[#082F49] text-lg">
@@ -2217,7 +2217,7 @@ function ClassFormModal({
         </div>
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
           {error && (
-            <div className="flex items-start gap-2 px-4 py-3 rounded-[12px] bg-red-50 border
+            <div className="flex items-start gap-2 px-4 py-3 rounded-full bg-red-50 border
               border-red-200 text-red-600 text-sm font-semibold">
               <FaExclamationTriangle className="shrink-0 mt-0.5" /> {error}
             </div>
@@ -2248,10 +2248,10 @@ function ClassFormModal({
           </div>
           <div className="flex gap-3">
             <button type="button" onClick={onClose}
-              className="flex-1 py-2.5 rounded-[12px] border border-slate-200 text-sm font-bold
+              className="flex-1 py-2.5 rounded-full border border-slate-200 text-sm font-bold
                 text-[#334155] hover:bg-slate-50 transition-all">Huỷ</button>
             <button type="submit" disabled={saving}
-              className="flex-1 py-2.5 rounded-[12px] bg-gradient-to-r from-violet-500 to-purple-500
+              className="flex-1 py-2.5 rounded-full bg-gradient-to-r from-violet-500 to-purple-500
                 text-white text-sm font-bold hover:from-violet-400 hover:to-purple-400 transition-all
                 flex items-center justify-center gap-2 disabled:opacity-50">
               {saving && <FaSpinner className="animate-spin text-xs" />}
@@ -2285,7 +2285,7 @@ function ClassDetailView({ cls, onBack }: {
   const dropdownRef                       = useRef<HTMLDivElement>(null);
   const inputAdminRef                     = useRef<HTMLInputElement>(null);
   const [ddPos, setDdPos]                 = useState<{ top: number; left: number; width: number } | null>(null);
-  const inputFldCls = 'w-full px-3 py-2.5 rounded-[12px] border border-slate-200 bg-slate-50 text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all';
+  const inputFldCls = 'w-full px-3 py-2.5 rounded-full border border-slate-200 bg-slate-50 text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all';
 
   const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
     setToast({ msg, type });
@@ -2370,7 +2370,7 @@ function ClassDetailView({ cls, onBack }: {
   return (
     <div className="space-y-5">
       {toast && (
-        <div className={`fixed top-5 right-5 z-[99999] px-5 py-3 rounded-[14px] text-sm font-bold
+        <div className={`fixed top-5 right-5 z-[99999] px-5 py-3 rounded-[20px] text-sm font-bold
           shadow-[0_8px_24px_rgba(0,0,0,0.12)] border
           ${toast.type === 'success'
             ? 'bg-[rgba(187,247,208,0.95)] border-emerald-200 text-[#16A34A]'
@@ -2385,7 +2385,7 @@ function ClassDetailView({ cls, onBack }: {
         <button onClick={onBack}
           className="flex items-center gap-2 text-[#94A3B8] hover:text-[#334155] font-bold
             text-sm transition-colors group">
-          <span className="w-8 h-8 rounded-[10px] bg-slate-100 group-hover:bg-slate-200
+          <span className="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-slate-200
             flex items-center justify-center transition-colors">
             <FaArrowLeft className="text-xs" />
           </span>
@@ -2401,10 +2401,10 @@ function ClassDetailView({ cls, onBack }: {
       </div>
 
       {/* Info card */}
-      <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px] p-5
+      <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px] p-5
         shadow-[0_10px_30px_rgba(14,165,233,0.08)] flex items-center gap-4">
         <div className="w-14 h-14 rounded-[18px] bg-gradient-to-br from-violet-400 to-purple-500
-          flex items-center justify-center text-2xl shadow-md shrink-0">🏡</div>
+          flex items-center justify-center text-2xl shadow-[0_8px_20px_rgba(6,182,212,0.4)] shrink-0">🏡</div>
         <div className="flex-1 min-w-0">
           <h2 className="font-black text-[#082F49] text-lg truncate">{cls.name}</h2>
           <div className="flex items-center gap-2 mt-1 flex-wrap">
@@ -2425,14 +2425,14 @@ function ClassDetailView({ cls, onBack }: {
       </div>
 
       {/* Add member */}
-      <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px] p-5
+      <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px] p-5
         shadow-[0_10px_30px_rgba(14,165,233,0.08)]" style={{ position: 'relative', zIndex: 20 }}>
         <h3 className="font-black text-[#082F49] text-sm mb-3 flex items-center gap-2">
           <FaUserPlus className="text-cyan-500" /> Thêm học sinh
         </h3>
         {addError && (
           <p className="text-red-600 text-xs font-semibold mb-3 px-3 py-2 bg-red-50
-            rounded-[10px] border border-red-200">{addError}</p>
+            rounded-full border border-red-200">{addError}</p>
         )}
         <form onSubmit={handleAddMember}>
           <div ref={dropdownRef} className="relative">
@@ -2450,7 +2450,7 @@ function ClassDetailView({ cls, onBack }: {
                 />
               </div>
               <button type="submit" disabled={addLoading || !addUsername.trim()}
-                className="px-4 py-2 rounded-[12px] bg-gradient-to-r from-cyan-500 to-blue-500
+                className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500
                   text-white text-sm font-bold hover:from-cyan-400 hover:to-blue-400 transition-all
                   flex items-center gap-2 disabled:opacity-50 shrink-0">
                 {addLoading ? <FaSpinner className="animate-spin" /> : <FaUserPlus />}
@@ -2516,7 +2516,7 @@ function ClassDetailView({ cls, onBack }: {
                         <button type="button" onMouseDown={() => { setAddUsername(s.username); setDropdownOpen(false); }}
                           className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-sky-50 transition-all
                             ${i < suggestions.length - 1 ? 'border-b border-slate-50' : ''}`}>
-                          <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-violet-400 to-purple-500
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-purple-500
                             flex items-center justify-center text-white text-xs font-black shrink-0 overflow-hidden">
                             {s.avatar
                               ? <img src={s.avatar} alt="" className="w-full h-full object-cover" />
@@ -2545,17 +2545,17 @@ function ClassDetailView({ cls, onBack }: {
       {/* Members table */}
       {members.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 gap-3
-          bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px]
+          bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px]
           shadow-[0_10px_30px_rgba(14,165,233,0.08)]" style={{ position: 'relative', zIndex: 1 }}>
           <span className="text-4xl">👥</span>
           <p className="font-bold text-[#082F49]">Chưa có học sinh nào</p>
           <p className="text-[#94A3B8] text-sm">Thêm học sinh bằng ô tìm kiếm ở trên.</p>
         </div>
       ) : (
-        <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px]
+        <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px]
           shadow-[0_10px_30px_rgba(14,165,233,0.08)] overflow-hidden"
           style={{ position: 'relative', zIndex: 1 }}>
-          <div className="px-5 py-3 border-b border-slate-100 bg-slate-50/60">
+          <div className="px-5 py-3 border-b border-slate-100 bg-white/40 backdrop-blur-md">
             <p className="text-[#94A3B8] text-xs font-bold uppercase tracking-wide">
               {members.length} học sinh
             </p>
@@ -2576,7 +2576,7 @@ function ClassDetailView({ cls, onBack }: {
                   <td className="px-5 py-3 text-[#94A3B8] text-xs font-bold">{i + 1}</td>
                   <td className="px-5 py-3">
                     <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-violet-400 to-purple-500
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-purple-500
                         flex items-center justify-center text-white text-xs font-black shrink-0 overflow-hidden">
                         {m.avatar
                           ? <img src={m.avatar} alt="" className="w-full h-full object-cover" />
@@ -2595,7 +2595,7 @@ function ClassDetailView({ cls, onBack }: {
                   <td className="px-5 py-3 text-right">
                     <button onClick={() => handleRemoveMember(m.userId)}
                       disabled={removingId === m.userId}
-                      className="w-7 h-7 rounded-[8px] bg-red-50 border border-red-200
+                      className="w-7 h-7 rounded-full bg-red-50 border border-red-200
                         flex items-center justify-center text-red-400 hover:bg-red-100
                         transition-all disabled:opacity-50 ml-auto">
                       {removingId === m.userId
@@ -2669,7 +2669,7 @@ function ClassListView({ onSelectClass }: { onSelectClass: (cls: AdminClass) => 
   return (
     <div className="space-y-5">
       {toast && (
-        <div className={`fixed top-5 right-5 z-[99999] px-5 py-3 rounded-[14px] text-sm font-bold
+        <div className={`fixed top-5 right-5 z-[99999] px-5 py-3 rounded-[20px] text-sm font-bold
           shadow-[0_8px_24px_rgba(0,0,0,0.12)] border transition-all
           ${toast.type === 'success'
             ? 'bg-[rgba(187,247,208,0.95)] border-emerald-200 text-[#16A34A]'
@@ -2688,15 +2688,15 @@ function ClassListView({ onSelectClass }: { onSelectClass: (cls: AdminClass) => 
           </p>
         </div>
         <button onClick={() => { setEditTarget(null); setFormMode('add'); }}
-          className="sm:ml-auto flex items-center gap-2 px-4 py-2 rounded-[12px]
+          className="sm:ml-auto flex items-center gap-2 px-4 py-2 rounded-full
             bg-gradient-to-r from-violet-500 to-purple-500 text-white text-sm font-bold
-            hover:from-violet-400 hover:to-purple-400 shadow-md transition-all">
+            hover:from-violet-400 hover:to-purple-400 shadow-[0_8px_20px_rgba(6,182,212,0.4)] transition-all">
           <FaPlus className="text-xs" /> Tạo lớp mới
         </button>
       </div>
 
       {/* Filter + sort + search */}
-      <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px]
+      <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px]
         p-4 shadow-[0_10px_30px_rgba(14,165,233,0.08)] space-y-3">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs font-bold text-[#94A3B8] mr-1">Khối:</span>
@@ -2704,7 +2704,7 @@ function ClassListView({ onSelectClass }: { onSelectClass: (cls: AdminClass) => 
             <button key={g} onClick={() => { setGradeFilter(g); setPage(1); }}
               className={`px-4 py-1.5 rounded-[9999px] text-sm font-bold border transition-all
                 ${gradeFilter === g
-                  ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white border-transparent shadow-md'
+                  ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white border-transparent shadow-[0_8px_20px_rgba(6,182,212,0.4)]'
                   : 'bg-slate-50 text-[#334155] border-slate-200 hover:border-violet-300 hover:text-violet-600'
                 }`}>
               {g === 'all' ? 'Tất cả' : `Lớp ${g}`}
@@ -2715,7 +2715,7 @@ function ClassListView({ onSelectClass }: { onSelectClass: (cls: AdminClass) => 
           <span className="text-xs font-bold text-[#94A3B8]">Sắp xếp:</span>
           {([['name', 'Tên lớp'], ['grade', 'Khối'], ['members', 'Học sinh'], ['createdAt', 'Ngày tạo']] as const).map(([k, lbl]) => (
             <button key={k} onClick={() => toggleSort(k)}
-              className={`flex items-center gap-1 px-3 py-1.5 rounded-[10px] text-xs font-bold border transition-all
+              className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border transition-all
                 ${sortKey === k
                   ? 'bg-violet-50 border-violet-300 text-violet-700'
                   : 'bg-slate-50 border-slate-200 text-[#334155] hover:border-violet-200'
@@ -2724,7 +2724,7 @@ function ClassListView({ onSelectClass }: { onSelectClass: (cls: AdminClass) => 
             </button>
           ))}
           <div className="ml-auto flex items-center gap-2 bg-slate-50 border border-slate-200
-            rounded-[12px] px-3 py-2 focus-within:border-violet-400 focus-within:ring-2
+            rounded-full px-3 py-2 focus-within:border-violet-400 focus-within:ring-2
             focus-within:ring-violet-100 transition-all">
             <FaSearch className="text-[#94A3B8] text-xs shrink-0" />
             <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
@@ -2749,22 +2749,22 @@ function ClassListView({ onSelectClass }: { onSelectClass: (cls: AdminClass) => 
         </div>
       ) : classes.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <div className="w-20 h-20 rounded-[24px] bg-slate-100 flex items-center justify-center text-4xl">🏡</div>
+          <div className="w-20 h-20 rounded-[32px] bg-slate-100 flex items-center justify-center text-4xl">🏡</div>
           <p className="text-[#082F49] font-bold text-base">Chưa có lớp học nào</p>
           <button onClick={() => setFormMode('add')}
-            className="flex items-center gap-2 px-4 py-2 rounded-[12px] bg-gradient-to-r
+            className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r
               from-violet-500 to-purple-500 text-white text-sm font-bold hover:from-violet-400
-              hover:to-purple-400 shadow-md transition-all">
+              hover:to-purple-400 shadow-[0_8px_20px_rgba(6,182,212,0.4)] transition-all">
             <FaPlus className="text-xs" /> Tạo lớp đầu tiên
           </button>
         </div>
       ) : (
-        <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[20px]
+        <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px]
           shadow-[0_10px_30px_rgba(14,165,233,0.08)] overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-slate-100 bg-slate-50/60">
+                <tr className="border-b border-slate-100 bg-white/40 backdrop-blur-md">
                   <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs w-[4%]">#</th>
                   <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs">Lớp học</th>
                   <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden sm:table-cell">Giáo viên</th>
@@ -2777,7 +2777,7 @@ function ClassListView({ onSelectClass }: { onSelectClass: (cls: AdminClass) => 
               <tbody>
                 {classes.map((cls, idx) => (
                   <tr key={cls._id}
-                    className="border-b border-slate-50 hover:bg-violet-50/30 transition-colors cursor-pointer group"
+                    className="border-b border-white/50 hover:bg-violet-50/50 transition-colors cursor-pointer group"
                     onClick={() => onSelectClass(cls)}>
                     <td className="px-5 py-3.5 text-[#94A3B8] text-xs font-bold">
                       {(page - 1) * PAGE_SIZE + idx + 1}
@@ -2794,7 +2794,7 @@ function ClassListView({ onSelectClass }: { onSelectClass: (cls: AdminClass) => 
                     </td>
                     <td className="px-5 py-3.5 hidden sm:table-cell">
                       <div className="flex items-center gap-2">
-                        <div className="w-6 h-6 rounded-[8px] bg-gradient-to-br from-cyan-400 to-blue-500
+                        <div className="w-6 h-6 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500
                           flex items-center justify-center text-white text-xs font-black shrink-0 overflow-hidden">
                           {cls.teacherAvatar
                             ? <img src={cls.teacherAvatar} alt="" className="w-full h-full object-cover" />
@@ -2819,14 +2819,14 @@ function ClassListView({ onSelectClass }: { onSelectClass: (cls: AdminClass) => 
                       <div className="flex items-center justify-end gap-1">
                         <button onClick={() => { setEditTarget(cls); setFormMode('edit'); }}
                           title="Sửa lớp"
-                          className="w-7 h-7 rounded-[8px] bg-slate-50 border border-slate-200
+                          className="w-7 h-7 rounded-full bg-slate-50 border border-slate-200
                             flex items-center justify-center text-violet-600 hover:bg-violet-50
                             hover:border-violet-300 transition-all">
                           <FaEdit className="text-[10px]" />
                         </button>
                         <button onClick={() => setDeleteTarget(cls)}
                           title="Xoá lớp"
-                          className="w-7 h-7 rounded-[8px] bg-slate-50 border border-slate-200
+                          className="w-7 h-7 rounded-full bg-slate-50 border border-slate-200
                             flex items-center justify-center text-red-400 hover:bg-red-50
                             hover:border-red-300 transition-all">
                           <FaTrash className="text-[10px]" />
@@ -2952,7 +2952,7 @@ function OverviewTab() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {QUICK_LINKS.map(lk => (
             <Link key={lk.href} href={lk.href}
-              className={`flex flex-col items-center gap-3 p-5 rounded-[20px] bg-gradient-to-br
+              className={`flex flex-col items-center gap-3 p-5 rounded-[32px] bg-gradient-to-br
                 ${lk.color} border border-white/80 hover:scale-[1.02] transition-all
                 shadow-[0_4px_16px_rgba(14,165,233,0.08)] group`}>
               <span className="text-3xl group-hover:scale-110 transition-transform">
@@ -2965,7 +2965,7 @@ function OverviewTab() {
       </div>
 
       {/* Info banner */}
-      <div className="bg-[rgba(186,230,253,0.6)] border border-sky-200 rounded-[20px] p-5">
+      <div className="bg-[rgba(186,230,253,0.6)] border border-sky-200 rounded-[32px] p-5">
         <div className="flex items-start gap-3">
           <span className="text-2xl">ℹ️</span>
           <div>
@@ -3022,8 +3022,8 @@ export function AdminClient({ currentUser }: {
             <div className="w-px h-5 bg-slate-200 shrink-0" />
 
             <div className="flex items-center gap-3 flex-1">
-              <div className="w-9 h-9 rounded-[12px] bg-gradient-to-br from-amber-400 to-orange-500
-                flex items-center justify-center text-white shadow-md">
+              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-400 to-orange-500
+                flex items-center justify-center text-white shadow-[0_8px_20px_rgba(6,182,212,0.4)]">
                 <FaShieldAlt className="text-sm" />
               </div>
               <div>
@@ -3036,7 +3036,7 @@ export function AdminClient({ currentUser }: {
 
             {/* Admin avatar */}
             <div className="flex items-center gap-2 shrink-0">
-              <div className="w-8 h-8 rounded-[10px] bg-gradient-to-br from-amber-400 to-orange-500
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-amber-400 to-orange-500
                 flex items-center justify-center text-white text-xs font-black overflow-hidden
                 border-2 border-amber-200 shadow-sm">
                 {currentUser.image
@@ -3054,7 +3054,7 @@ export function AdminClient({ currentUser }: {
             {/* Mobile hamburger */}
             <button
               onClick={() => setMobileMenuOpen(o => !o)}
-              className="lg:hidden w-9 h-9 rounded-[10px] bg-slate-100 flex items-center
+              className="lg:hidden w-9 h-9 rounded-full bg-slate-100 flex items-center
                 justify-center text-slate-500 hover:bg-slate-200 transition-colors">
               <div className="space-y-1">
                 <span className={`block w-4 h-0.5 bg-current transition-all ${mobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`} />
@@ -3066,15 +3066,15 @@ export function AdminClient({ currentUser }: {
 
           {/* Mobile nav - dropdown */}
           {mobileMenuOpen && (
-            <div className="lg:hidden border-t border-slate-100 bg-white/95 px-4 py-3 flex gap-2">
+            <div className="lg:hidden border-t border-white/40 bg-white/65 backdrop-blur-[24px] px-4 py-3 flex gap-2 shadow-lg rounded-b-[24px]">
               {SIDEBAR_ITEMS.map(item => (
                 <button key={item.id}
                   onClick={() => { setActiveTab(item.id); setMobileMenuOpen(false); }}
-                  className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-[12px] text-xs
+                  className={`flex-1 flex flex-col items-center gap-1 py-2 rounded-full text-xs
                     font-bold transition-all
                     ${activeTab === item.id
-                      ? 'bg-gradient-to-br from-cyan-500 to-blue-500 text-white shadow-md'
-                      : 'text-[#334155] bg-slate-50 hover:bg-slate-100'
+                      ? 'bg-gradient-to-br from-cyan-500 to-blue-500 text-white shadow-[0_8px_20px_rgba(6,182,212,0.4)]'
+                      : 'text-[#334155] bg-white/50 hover:bg-white/80 border border-white/80'
                     }`}>
                   {item.icon}
                   <span>{item.label}</span>
@@ -3089,15 +3089,15 @@ export function AdminClient({ currentUser }: {
 
           {/* Sidebar — desktop only */}
           <aside className="hidden lg:flex flex-col gap-1 w-52 shrink-0">
-            <div className="bg-white/75 backdrop-blur-[20px] border border-white rounded-[24px]
+            <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px]
               p-3 shadow-[0_10px_30px_rgba(14,165,233,0.08)] sticky top-24">
               {SIDEBAR_ITEMS.map(item => (
                 <button key={item.id}
                   onClick={() => setActiveTab(item.id)}
-                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-[16px] text-sm
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-[24px] text-sm
                     font-bold transition-all text-left mb-1
                     ${activeTab === item.id
-                      ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-md'
+                      ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white shadow-[0_8px_20px_rgba(6,182,212,0.4)]'
                       : 'text-[#334155] hover:bg-slate-50 hover:text-[#082F49]'
                     }`}>
                   <span className={activeTab === item.id ? 'text-white' : 'text-[#94A3B8]'}>

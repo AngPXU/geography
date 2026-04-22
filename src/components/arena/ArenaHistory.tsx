@@ -70,7 +70,7 @@ export default function ArenaHistory() {
         {history.length > 6 && (
           <button
             onClick={() => setShowAll(!showAll)}
-            className="px-4 py-2 rounded-[14px] bg-white border border-slate-200 text-slate-600 font-bold text-sm hover:bg-slate-50 hover:border-cyan-300 transition-all shadow-sm"
+            className="px-5 py-2.5 rounded-full bg-white/50 backdrop-blur-md border border-white/80 text-slate-600 font-bold text-sm hover:bg-white hover:text-[#082F49] transition-all shadow-sm"
           >
             {showAll ? 'Thu gọn ▲' : `Xem thêm (${history.length - 6}) ▼`}
           </button>
@@ -78,7 +78,9 @@ export default function ArenaHistory() {
       </div>
 
       {history.length === 0 ? (
-        <div className="bg-white/80 backdrop-blur-xl rounded-[24px] border border-white shadow-sm p-12 text-center">
+        <div className="rounded-[32px] p-12 text-center relative"
+             style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+          <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
           <div className="text-5xl mb-4">🗺️</div>
           <p className="font-bold text-slate-400">Chưa có lịch sử thi đấu nào</p>
           <p className="text-sm text-slate-300 mt-1">Hãy tham gia một trận đấu để bắt đầu!</p>
@@ -86,7 +88,9 @@ export default function ArenaHistory() {
       ) : (
         <>
           {/* Table */}
-          <div className="bg-white/80 backdrop-blur-xl rounded-[28px] border border-white shadow-[0_8px_30px_rgba(8,47,73,0.06)] overflow-hidden">
+          <div className="rounded-[32px] overflow-hidden relative"
+               style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+            <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
             {/* Table Header */}
             <div className="grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] gap-0 px-6 py-3 border-b border-slate-100 bg-slate-50/80">
               <p className="text-xs font-black uppercase tracking-widest text-slate-400">Chủ đề</p>
@@ -152,7 +156,7 @@ export default function ArenaHistory() {
               { label: 'Tổng EXP', value: `+${history.reduce((s, m) => s + (m.expEarned || 0), 0)}`, icon: '⚡', color: 'from-amber-50 to-yellow-50 border-amber-100' },
               { label: 'Điểm cao nhất', value: Math.max(...history.map((m: any) => m.score || 0)).toLocaleString('vi-VN'), icon: '🏆', color: 'from-emerald-50 to-teal-50 border-emerald-100' },
             ].map(stat => (
-              <div key={stat.label} className={`bg-gradient-to-br ${stat.color} rounded-[20px] border p-4 text-center`}>
+              <div key={stat.label} className={`bg-gradient-to-br ${stat.color} rounded-[24px] border p-4 text-center shadow-sm`}>
                 <p className="text-2xl mb-1">{stat.icon}</p>
                 <p className="font-black text-[#082F49] text-xl tabular-nums">{stat.value}</p>
                 <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mt-0.5">{stat.label}</p>

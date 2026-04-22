@@ -92,8 +92,8 @@ export default function MapGuessSolo({ topic, dbFeatures, onSummary }: { topic: 
 
       {/* HUD: top question bar */}
       <div className="absolute top-4 left-1/2 -translate-x-1/2 z-[1000] w-full max-w-2xl px-4 pointer-events-none">
-        <div className="rounded-[20px] p-3 md:p-4 flex items-center gap-3 pointer-events-auto" style={{ background: 'rgba(255,255,255,0.93)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,1)', boxShadow: '0 8px 32px rgba(0,0,0,0.18)' }}>
-          <div className="shrink-0 w-12 h-12 rounded-[14px] bg-gradient-to-br from-rose-400 to-orange-400 flex flex-col items-center justify-center text-white shadow-md">
+        <div className="rounded-[32px] p-3 md:p-4 flex items-center gap-3 pointer-events-auto" style={{ background: 'rgba(255, 255, 255, 0.75)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 1)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+          <div className="shrink-0 w-12 h-12 rounded-full bg-gradient-to-br from-rose-400 to-orange-400 flex flex-col items-center justify-center text-white shadow-[0_5px_15px_rgba(244,63,94,0.3)]">
             <span className="font-black text-base leading-none">{currentRound + 1}</span><span className="text-[9px] font-bold opacity-70">/10</span>
           </div>
           <div className="flex-1 min-w-0">
@@ -131,8 +131,8 @@ export default function MapGuessSolo({ topic, dbFeatures, onSummary }: { topic: 
       )}
 
       {roundEnd && (
-        <div className="absolute bottom-0 left-0 right-0 z-[1000] px-3 pb-3 md:px-6 md:pb-4">
-          <div className="rounded-[28px] p-4 md:p-5 max-w-xl mx-auto" style={{ background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(24px)', border: '1.5px solid rgba(255,255,255,1)', boxShadow: '0 -4px 40px rgba(0,0,0,0.18)' }}>
+        <div className="absolute bottom-0 left-0 right-0 z-[1000] px-3 pb-3 md:px-6 md:pb-4 pointer-events-none">
+          <div className="rounded-[32px] p-4 md:p-5 max-w-xl mx-auto pointer-events-auto" style={{ background: 'rgba(255, 255, 255, 0.75)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 1)', boxShadow: '0 -10px 40px rgba(14, 165, 233, 0.15), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
             <div className="flex items-start gap-3 mb-3">
               <div className="shrink-0">
                 <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-black border ${grade.badgeBg} ${grade.textColor} mb-1.5`}>{grade.label}</span>
@@ -150,7 +150,7 @@ export default function MapGuessSolo({ topic, dbFeatures, onSummary }: { topic: 
               <div className={`h-full rounded-full bg-gradient-to-r ${grade.barColor} transition-all duration-1000`} style={{ width: `${(roundScore / 1000) * 100}%` }} />
             </div>
             <div className="mb-3"><TargetInfoGrid target={target} /></div>
-            <button onClick={nextRound} className="w-full py-3.5 rounded-[18px] bg-gradient-to-r from-[#082F49] to-[#0a3d62] text-white font-black text-base shadow-lg hover:-translate-y-0.5 active:scale-95 transition-all duration-300">
+            <button onClick={nextRound} className="w-full py-4 rounded-full bg-[#06B6D4] hover:bg-[#22D3EE] text-white font-black text-base shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:shadow-[0_15px_30px_rgba(34,211,238,0.5)] hover:-translate-y-0.5 active:scale-95 transition-all duration-300 border-[2px] border-[#06B6D4]">
               {currentRound >= 9 ? '🏆 Xem Tổng Kết' : `Câu ${currentRound + 2} →`}
             </button>
           </div>

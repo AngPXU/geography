@@ -103,8 +103,8 @@ export default function AiChatPanel({
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', height: '100%',
-      background: 'rgba(255,255,255,0.97)',
-      borderLeft: '1.5px solid rgba(255,255,255,0.9)',
+      background: 'transparent',
+      borderLeft: 'none',
     }}>
 
       {/* Header */}
@@ -112,10 +112,10 @@ export default function AiChatPanel({
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '14px 16px', flexShrink: 0,
         background: `linear-gradient(135deg, ${color}22, ${color}08)`,
-        borderBottom: '1px solid rgba(226,232,240,0.6)',
+        borderBottom: '1px solid rgba(255, 255, 255, 0.8)',
       }}>
         <div style={{
-          width: 40, height: 40, borderRadius: 14, flexShrink: 0,
+          width: 40, height: 40, borderRadius: 9999, flexShrink: 0,
           background: `linear-gradient(135deg, ${color}, ${color}bb)`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 20, boxShadow: `0 4px 12px ${color}40`,
@@ -125,7 +125,7 @@ export default function AiChatPanel({
           <p style={{ fontSize: 11, color: '#94A3B8', fontWeight: 600 }}>Trang {pageNumber} • Hỏi tôi bất cứ điều gì</p>
         </div>
         <button onClick={onClose} style={{
-          width: 28, height: 28, borderRadius: 9, border: 'none',
+          width: 28, height: 28, borderRadius: 9999, border: 'none',
           background: 'rgba(148,163,184,0.15)', color: '#64748B',
           cursor: 'pointer', fontSize: 16, display: 'flex',
           alignItems: 'center', justifyContent: 'center', fontWeight: 700,
@@ -149,9 +149,9 @@ export default function AiChatPanel({
                 background: `linear-gradient(135deg, ${color}, ${color}cc)`,
                 color: 'white',
               } : {
-                background: 'rgba(248,250,252,0.9)',
+                background: 'rgba(255, 255, 255, 0.8)',
                 color: '#334155',
-                border: '1px solid rgba(226,232,240,0.6)',
+                border: '1px solid rgba(255, 255, 255, 0.9)',
               }),
             }}
               dangerouslySetInnerHTML={{ __html: formatText(msg.text) }}
@@ -167,7 +167,7 @@ export default function AiChatPanel({
           <div style={{ display: 'flex', alignItems: 'flex-start' }}>
             <div style={{
               padding: '10px 16px', borderRadius: '18px 18px 18px 4px',
-              background: 'rgba(248,250,252,0.9)', border: '1px solid rgba(226,232,240,0.6)',
+              background: 'rgba(255, 255, 255, 0.8)', border: '1px solid rgba(255, 255, 255, 0.9)',
               display: 'flex', gap: 5, alignItems: 'center',
             }}>
               {[0, 1, 2].map(i => (
@@ -200,8 +200,8 @@ export default function AiChatPanel({
       <div style={{
         display: 'flex', alignItems: 'flex-end', gap: 8,
         padding: '10px 14px', flexShrink: 0,
-        borderTop: '1px solid rgba(226,232,240,0.6)',
-        background: 'rgba(255,255,255,0.95)',
+        borderTop: '1px solid rgba(255, 255, 255, 0.8)',
+        background: 'rgba(255, 255, 255, 0.5)',
       }}>
         <textarea
           ref={inputRef}
@@ -213,16 +213,16 @@ export default function AiChatPanel({
           style={{
             flex: 1, borderRadius: 16, padding: '8px 14px',
             fontSize: 13, fontWeight: 500, resize: 'none',
-            background: 'rgba(248,250,252,0.9)',
-            border: '1.5px solid rgba(226,232,240,0.7)',
+            background: 'rgba(255, 255, 255, 0.8)',
+            border: '1px solid rgba(255, 255, 255, 0.9)',
             outline: 'none', color: '#334155', lineHeight: 1.5,
             fontFamily: 'inherit',
           }}
         />
         <button onClick={send} disabled={!input.trim() || loading}
           style={{
-            width: 40, height: 40, borderRadius: 14, flexShrink: 0,
-            background: !input.trim() || loading ? 'rgba(226,232,240,0.6)' : `linear-gradient(135deg, ${color}, ${color}bb)`,
+            width: 40, height: 40, borderRadius: 9999, flexShrink: 0,
+            background: !input.trim() || loading ? 'rgba(255, 255, 255, 0.6)' : `linear-gradient(135deg, ${color}, ${color}bb)`,
             border: 'none', cursor: !input.trim() || loading ? 'default' : 'pointer',
             color: 'white', fontSize: 16, fontWeight: 700,
             display: 'flex', alignItems: 'center', justifyContent: 'center',

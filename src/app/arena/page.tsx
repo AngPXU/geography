@@ -21,17 +21,18 @@ export default async function ArenaLobby() {
   const session = await auth();
 
   return (
-    <div className="min-h-screen bg-[#F0F9FF] flex flex-col pt-4">
+    <div className="min-h-screen bg-gradient-to-b from-[#E0F2FE] via-[#FFFFFF] to-[#DCFCE7] flex flex-col pt-4 relative overflow-x-hidden font-sans">
       
       {/* Navbar Component */}
       <div className="fixed top-2 left-0 right-0 z-50 px-4 md:px-8 max-w-[1440px] mx-auto w-full">
         <Navbar user={session?.user} />
       </div>
       
-      {/* Mảng trang trí dạng mây & sương */}
-      <div className="absolute top-0 left-0 w-full h-[400px] overflow-hidden pointer-events-none">
-        <div className="absolute -top-20 -left-20 w-[600px] h-[600px] bg-cyan-300/30 rounded-full blur-[100px]" />
-        <div className="absolute top-10 right-0 w-[500px] h-[500px] bg-rose-300/20 rounded-full blur-[80px]" />
+      {/* Liquid Mesh Gradient Nền (Apple iOS 26 Style) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#06B6D4]/20 rounded-full blur-[120px] animate-[liquid-blob_15s_infinite]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#22C55E]/20 rounded-full blur-[120px] animate-[liquid-blob_20s_infinite_reverse]"></div>
+        <div className="absolute top-[40%] left-[30%] w-[40%] h-[40%] bg-violet-300/20 rounded-full blur-[100px] animate-[liquid-blob_18s_infinite_2s]"></div>
       </div>
 
       <div className="flex-1 max-w-6xl mx-auto px-4 py-8 w-full z-10">

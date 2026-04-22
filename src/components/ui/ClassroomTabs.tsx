@@ -3,7 +3,6 @@
 import { useState } from 'react';
 import { ClassroomClient } from './ClassroomClient';
 import { HomeClassClient } from './HomeClassClient';
-import { TestClassroomClient } from './TestClassroomClient';
 
 interface Props {
   user: {
@@ -27,20 +26,18 @@ export function ClassroomTabs({ user }: Props) {
     { key: 'online', label: 'Lớp học online',  icon: '🏫' },
     { key: 'home',   label: 'Lớp học ở nhà',   icon: '🏡' },
   ];
-  if (user?.role === 1 || user?.role === 2) {
-    tabs.push({ key: 'test', label: 'Kiểm tra bài cũ', icon: '📝' });
-  }
 
   return (
     <div className="flex flex-col gap-6">
       {/* Tab bar */}
       <div
-        className="flex items-center gap-2 p-1.5 rounded-2xl w-fit"
+        className="flex items-center gap-2 p-1.5 rounded-full w-fit relative z-20"
         style={{
-          background: 'rgba(255,255,255,0.75)',
-          backdropFilter: 'blur(20px)',
-          border: '1px solid rgba(255,255,255,1)',
-          boxShadow: '0 10px 30px rgba(14,165,233,0.08)',
+          background: 'rgba(255, 255, 255, 0.65)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border: '1px solid rgba(255, 255, 255, 0.8)',
+          boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)',
         }}
       >
         {tabs.map((t) => (
@@ -48,7 +45,7 @@ export function ClassroomTabs({ user }: Props) {
             key={t.key}
             onClick={() => setTab(t.key)}
             className={`
-              flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-semibold
+              flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-semibold
               transition-all duration-300 ease-in-out
               ${tab === t.key
                 ? 'bg-gradient-to-r from-[#06B6D4] to-[#22C55E] text-white shadow-md'
@@ -66,7 +63,6 @@ export function ClassroomTabs({ user }: Props) {
       <div>
         {tab === 'online' && <ClassroomClient user={user} />}
         {tab === 'home'   && <HomeClassClient user={user} />}
-        {tab === 'test'   && <TestClassroomClient user={user} />}
       </div>
     </div>
   );

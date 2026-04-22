@@ -85,8 +85,8 @@ function CreateModal({ onClose, onCreate }: {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(8,47,73,0.5)', backdropFilter: 'blur(8px)' }}>
-      <div className="w-full max-w-lg rounded-3xl p-7 shadow-2xl"
-           style={{ background: 'rgba(255,255,255,0.93)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,1)' }}>
+      <div className="w-full max-w-lg rounded-[32px] p-7 shadow-2xl"
+           style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
         <h2 className="text-xl font-bold text-[#082F49] mb-5 flex items-center gap-2">
           <span className="w-9 h-9 rounded-xl bg-[#E0F2FE] flex items-center justify-center text-[#06B6D4]"><FaChalkboardTeacher size={16} /></span>
           Tạo lớp học mới
@@ -132,8 +132,8 @@ function CreateModal({ onClose, onCreate }: {
           <p className="text-xs text-[#94A3B8] ml-1">Tổng số chỗ: <strong className="text-[#06B6D4]">{rows * cols}</strong></p>
 
           <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose} className="flex-1 py-3 rounded-2xl font-semibold text-[#94A3B8] border border-gray-200 hover:bg-gray-50 transition-all duration-300">Hủy</button>
-            <button type="submit" disabled={loading} className="flex-1 py-3 rounded-2xl font-bold text-white bg-[#06B6D4] hover:bg-[#22D3EE] disabled:opacity-60 transition-all duration-300 shadow-md">
+            <button type="button" onClick={onClose} className="flex-1 py-3 rounded-full font-semibold text-[#94A3B8] bg-white/50 backdrop-blur-md border border-white/80 hover:bg-white hover:text-[#082F49] transition-all duration-300">Hủy</button>
+            <button type="submit" disabled={loading} className="flex-1 py-3 rounded-full font-bold text-white bg-[#06B6D4] hover:bg-[#22D3EE] disabled:opacity-60 transition-all duration-300 shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:shadow-[0_15px_30px_rgba(34,211,238,0.5)] border-[2px] border-[#06B6D4]">
               {loading ? 'Đang tạo...' : 'Tạo lớp học'}
             </button>
           </div>
@@ -279,13 +279,14 @@ export function ClassroomClient({ user }: ClassroomClientProps) {
       {/* Delete confirm overlay */}
       {deletingId && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(8,47,73,0.4)', backdropFilter: 'blur(6px)' }}>
-          <div className="rounded-3xl p-6 w-full max-w-sm text-center shadow-2xl" style={{ background: 'rgba(255,255,255,0.95)' }}>
+          <div className="rounded-[32px] p-6 w-full max-w-sm text-center shadow-2xl relative" style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+            <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
             <div className="text-4xl mb-3">🗑️</div>
             <h3 className="font-bold text-[#082F49] mb-2">Xóa lớp học này?</h3>
             <p className="text-sm text-[#94A3B8] mb-5">Hành động này không thể hoàn tác.</p>
             <div className="flex gap-3">
-              <button onClick={() => setDeletingId(null)} className="flex-1 py-2.5 rounded-2xl border border-gray-200 text-sm font-semibold text-[#94A3B8] hover:bg-gray-50">Hủy</button>
-              <button onClick={() => handleDelete(deletingId)} className="flex-1 py-2.5 rounded-2xl bg-red-500 text-white text-sm font-bold hover:bg-red-600">Xóa</button>
+              <button onClick={() => setDeletingId(null)} className="flex-1 py-2.5 rounded-full bg-white/50 backdrop-blur-md border border-white/80 text-sm font-semibold text-[#94A3B8] hover:bg-white hover:text-[#082F49] transition-colors">Hủy</button>
+              <button onClick={() => handleDelete(deletingId)} className="flex-1 py-2.5 rounded-full bg-red-500 text-white text-sm font-bold shadow-[0_10px_20px_rgba(239,68,68,0.3)] hover:bg-red-600 hover:shadow-[0_15px_30px_rgba(239,68,68,0.5)] transition-all">Xóa</button>
             </div>
           </div>
         </div>
@@ -306,7 +307,7 @@ export function ClassroomClient({ user }: ClassroomClientProps) {
           {isTeacher && (
             <button
               onClick={() => setShowCreateModal(true)}
-              className="flex items-center gap-2 px-5 py-3 rounded-2xl font-bold text-white bg-[#06B6D4] hover:bg-[#22D3EE] shadow-lg shadow-cyan-200 transition-all duration-300 whitespace-nowrap"
+              className="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-white bg-[#06B6D4] hover:bg-[#22D3EE] shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:shadow-[0_15px_30px_rgba(34,211,238,0.5)] transition-all duration-300 whitespace-nowrap hover:-translate-y-0.5 border-[2px] border-[#06B6D4]"
             >
               <FaPlus size={13} /> Tạo lớp học mới
             </button>
@@ -319,21 +320,23 @@ export function ClassroomClient({ user }: ClassroomClientProps) {
             {listLoading ? (
               <div className="text-center py-16 text-[#94A3B8] text-sm">Đang tải...</div>
             ) : classrooms.length === 0 ? (
-              <div className="text-center py-20 rounded-3xl"
-                   style={{ background: 'rgba(255,255,255,0.7)', border: '2px dashed rgba(6,182,212,0.3)' }}>
+              <div className="text-center py-20 rounded-[32px] relative"
+                   style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px dashed rgba(6,182,212,0.5)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+                <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
                 <div className="text-6xl mb-4">🏫</div>
                 <p className="font-bold text-[#082F49] mb-1">Chưa có lớp học nào</p>
                 <p className="text-sm text-[#94A3B8] mb-5">Tạo lớp học đầu tiên để bắt đầu giảng dạy</p>
                 <button onClick={() => setShowCreateModal(true)}
-                  className="px-6 py-3 rounded-2xl font-bold text-white bg-[#06B6D4] hover:bg-[#22D3EE] transition-all duration-300">
+                  className="px-8 py-3 rounded-full font-bold text-white bg-[#06B6D4] hover:bg-[#22D3EE] transition-all duration-300 shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:-translate-y-0.5 hover:shadow-[0_15px_30px_rgba(34,211,238,0.5)] border-[2px] border-[#06B6D4]">
                   <FaPlus className="inline mr-2" size={12} /> Tạo lớp học
                 </button>
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {classrooms.map((c) => (
-                  <div key={c._id} className="rounded-3xl overflow-hidden transition-all duration-300 hover:-translate-y-1"
-                       style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,1)', boxShadow: '0 8px 24px rgba(14,165,233,0.08)' }}>
+                  <div key={c._id} className="rounded-[32px] overflow-hidden transition-all duration-300 hover:-translate-y-1 relative group"
+                       style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+                    <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
                     
                     {/* Card top banner */}
                     <div className="px-6 py-4 relative overflow-hidden"
@@ -387,7 +390,7 @@ export function ClassroomClient({ user }: ClassroomClientProps) {
                             <FaTrash size={11} />
                           </button>
                           <button onClick={() => handleEnterRoom(c._id)}
-                            className="flex items-center gap-1.5 px-4 py-2 rounded-2xl bg-[#06B6D4] text-white text-xs font-bold hover:bg-[#22D3EE] transition-all duration-300 shadow-sm">
+                            className="flex items-center gap-1.5 px-5 py-2 rounded-full bg-[#06B6D4] text-white text-xs font-bold hover:bg-[#22D3EE] transition-all duration-300 shadow-[0_5px_15px_rgba(6,182,212,0.3)] hover:shadow-[0_8px_20px_rgba(34,211,238,0.4)] border border-[#06B6D4]">
                             Vào lớp <FaArrowRight size={10} />
                           </button>
                         </div>
@@ -404,8 +407,9 @@ export function ClassroomClient({ user }: ClassroomClientProps) {
         {!isTeacher && (
           <div className="space-y-6">
             {/* Join form */}
-            <div className="rounded-3xl p-6"
-                 style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,1)', boxShadow: '0 10px 30px rgba(14,165,233,0.08)' }}>
+            <div className="rounded-[32px] p-6 lg:p-8 relative"
+                 style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+              <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
               <h2 className="font-bold text-[#082F49] mb-4 flex items-center gap-2">
                 <span className="w-8 h-8 rounded-xl bg-[#E0F2FE] flex items-center justify-center text-[#06B6D4]"><FaSignInAlt size={13} /></span>
                 Tham gia lớp học
@@ -435,7 +439,7 @@ export function ClassroomClient({ user }: ClassroomClientProps) {
                   </div>
                 )}
                 <button type="submit" disabled={joinLoading || joinCode.length < 6}
-                  className="w-full py-3 rounded-2xl font-bold text-white bg-[#22C55E] hover:bg-[#4ADE80] disabled:opacity-50 transition-all duration-300 shadow-md flex items-center justify-center gap-2">
+                  className="w-full py-4 rounded-full font-bold text-white bg-[#22C55E] hover:bg-[#4ADE80] disabled:opacity-50 transition-all duration-300 shadow-[0_10px_20px_rgba(34,197,94,0.3)] hover:shadow-[0_15px_30px_rgba(74,222,128,0.5)] flex items-center justify-center gap-2 border-[2px] border-[#22C55E]">
                   <FaSignInAlt size={13} />
                   {joinLoading ? 'Đang tham gia...' : 'Tham gia lớp học'}
                 </button>
@@ -450,9 +454,10 @@ export function ClassroomClient({ user }: ClassroomClientProps) {
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {classrooms.map((c) => (
-                    <div key={c._id} className="rounded-3xl p-5 flex items-center gap-4 cursor-pointer transition-all duration-300 hover:-translate-y-0.5"
+                    <div key={c._id} className="rounded-[32px] p-5 flex items-center gap-4 cursor-pointer transition-all duration-300 hover:-translate-y-1 relative group"
                          onClick={() => handleReEnter(c._id)}
-                         style={{ background: 'rgba(255,255,255,0.8)', backdropFilter: 'blur(12px)', border: '1px solid rgba(255,255,255,1)', boxShadow: '0 6px 20px rgba(14,165,233,0.07)' }}>
+                         style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+                      <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20 transition-all group-hover:border-cyan-300/50"></div>
                       <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-[#06B6D4] to-[#0369A1] flex items-center justify-center text-white text-xl flex-shrink-0">
                         🏫
                       </div>

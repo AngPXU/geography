@@ -53,8 +53,9 @@ function UploadModal({ g, onClose, onDone }: { g: typeof GRADES[number]; onClose
   return (
     <div className="fixed inset-0 z-[300] flex items-center justify-center p-4"
       style={{ background: 'rgba(8,28,52,0.5)', backdropFilter: 'blur(10px)' }}>
-      <div className="w-full max-w-[440px] rounded-[28px] overflow-hidden"
-        style={{ background: 'rgba(255,255,255,0.97)', border: '1.5px solid white', boxShadow: '0 32px 80px rgba(8,28,52,0.22)' }}>
+      <div className="w-full max-w-[440px] rounded-[32px] overflow-hidden relative"
+        style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+        <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
         <div className="p-6 flex items-center gap-4" style={{ background: `linear-gradient(135deg, ${g.gFrom}, ${g.gTo})` }}>
           <div className="w-14 h-14 rounded-[20px] bg-white/20 flex items-center justify-center text-3xl">{g.emoji}</div>
           <div>
@@ -90,12 +91,12 @@ function UploadModal({ g, onClose, onDone }: { g: typeof GRADES[number]; onClose
             </div>
           </label>
           {err && <p className="text-rose-600 text-sm font-bold bg-rose-50 px-4 py-3 rounded-2xl">⚠️ {err}</p>}
-          <div className="flex gap-3 pt-1">
+          <div className="flex gap-3 pt-1 relative z-30">
             <button type="button" onClick={onClose}
-              className="flex-1 py-3 rounded-2xl bg-slate-100 text-[#334155] font-bold text-sm hover:bg-slate-200 transition-all">Hủy</button>
+              className="flex-1 py-3 rounded-full bg-white/50 backdrop-blur-md border border-white/80 text-[#334155] font-bold text-sm hover:bg-white hover:text-[#082F49] transition-all">Hủy</button>
             <button type="submit" disabled={busy}
-              className="flex-1 py-3 rounded-2xl text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-all"
-              style={{ background: `linear-gradient(135deg, ${g.gFrom}, ${g.gTo})`, boxShadow: `0 8px 20px ${g.color}40` }}>
+              className="flex-1 py-3 rounded-full text-white font-black text-sm flex items-center justify-center gap-2 disabled:opacity-60 transition-all border border-white/20"
+              style={{ background: `linear-gradient(135deg, ${g.gFrom}, ${g.gTo})`, boxShadow: `0 10px 20px ${g.color}40` }}>
               {busy ? <><span className="w-4 h-4 border-2 border-white/40 border-t-white rounded-full animate-spin" />Đang tải...</> : '📤 Upload ngay'}
             </button>
           </div>
@@ -114,11 +115,11 @@ function BookCover({ book, g, page, numPages }: { book: BookMeta; g: typeof GRAD
         style={{ boxShadow: `8px 12px 40px ${g.color}40, inset -3px 0 8px rgba(0,0,0,0.08)`, border: `3px solid ${g.color}` }}>
         <div className="absolute inset-0" style={{ background: `linear-gradient(160deg, ${g.gFrom}, ${g.gTo})` }} />
         <div className="absolute inset-0 flex flex-col items-center justify-between p-5 text-white">
-          <div className="w-full"><div className="w-8 h-1 rounded-full bg-white/50 mb-2"/><p className="text-[10px] font-black uppercase tracking-widest opacity-70">Sách Giáo Khoa</p></div>
+          <div className="w-full"><div className="w-8 h-1 rounded-full bg-white/50 mb-2" /><p className="text-[10px] font-black uppercase tracking-widest opacity-70">Sách Giáo Khoa</p></div>
           <p className="text-5xl drop-shadow-lg">{g.emoji}</p>
           <div className="w-full">
             <p className="font-black text-xl leading-tight drop-shadow">{book.title}</p>
-            <div className="mt-3 h-px bg-white/30"/>
+            <div className="mt-3 h-px bg-white/30" />
             <p className="text-[10px] mt-2 opacity-60 font-semibold">{book.publisher}</p>
           </div>
         </div>
@@ -190,8 +191,9 @@ export default function BooksPage({ isAdmin }: { isAdmin?: boolean }) {
 
       {/* ── Page Header ── */}
       <div className="mb-8 text-center">
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-3"
-          style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(16px)', border: '1px solid rgba(255,255,255,0.9)', boxShadow: '0 4px 20px rgba(14,165,233,0.08)' }}>
+        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full mb-3 relative"
+          style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 10px 30px rgba(14, 165, 233, 0.1)' }}>
+          <div className="absolute inset-0 rounded-full border-2 border-white/40 pointer-events-none"></div>
           <span className="text-base">📚</span>
           <span className="text-xs font-black text-[#082F49] uppercase tracking-widest">Thư Viện Địa Lý</span>
         </div>
@@ -205,19 +207,19 @@ export default function BooksPage({ isAdmin }: { isAdmin?: boolean }) {
           const b = books.find(x => x.grade === gr.grade);
           return (
             <button key={gr.grade} onClick={() => { setGrade(gr.grade); setPage(b?.startPage || 1); setNumPages(0); }}
-            className="flex items-center gap-2.5 px-5 py-3 rounded-[18px] font-bold text-sm transition-all duration-300 border-2"
-            style={activeGrade === gr.grade ? {
-              background: `linear-gradient(135deg, ${gr.gFrom}22, ${gr.gTo}11)`,
-              borderColor: gr.color, color: gr.color,
-              boxShadow: `0 4px 20px ${gr.color}25`,
-              transform: 'translateY(-1px)',
-            } : {
-              background: 'rgba(255,255,255,0.65)', borderColor: 'rgba(255,255,255,0.9)',
-              color: '#94A3B8', backdropFilter: 'blur(12px)',
-            }}>
-            <span className="text-lg">{gr.emoji}</span>
-            {gr.label}
-          </button>
+              className="flex items-center gap-2.5 px-5 py-3 rounded-full font-bold text-sm transition-all duration-300 border-2"
+              style={activeGrade === gr.grade ? {
+                background: `linear-gradient(135deg, ${gr.gFrom}22, ${gr.gTo}11)`,
+                borderColor: gr.color, color: gr.color,
+                boxShadow: `0 4px 20px ${gr.color}25`,
+                transform: 'translateY(-1px)',
+              } : {
+                background: 'rgba(255, 255, 255, 0.65)', borderColor: 'rgba(255, 255, 255, 0.8)',
+                color: '#94A3B8', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)'
+              }}>
+              <span className="text-lg">{gr.emoji}</span>
+              {gr.label}
+            </button>
           );
         })}
       </div>
@@ -232,24 +234,27 @@ export default function BooksPage({ isAdmin }: { isAdmin?: boolean }) {
         <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 items-start">
 
           {/* Left: Book info */}
-          <div className="rounded-[28px] p-6"
-            style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(20px)', border: '1.5px solid rgba(255,255,255,1)', boxShadow: '0 10px 30px rgba(14,165,233,0.08)', position: 'sticky', top: 100 }}>
-            <BookCover book={book} g={g} page={page} numPages={numPages} />
-            {isAdmin && (
-              <button onClick={() => setUploadFor(g)}
-                className="mt-4 w-full py-2.5 rounded-2xl text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:opacity-80"
-                style={{ background: `${g.color}18`, color: g.color, border: `1.5px solid ${g.color}40` }}>
-                🔄 Cập nhật PDF
-              </button>
-            )}
+          <div className="rounded-[32px] p-6 relative"
+            style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)', position: 'sticky', top: 100 }}>
+            <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
+            <div className="relative z-30">
+              <BookCover book={book} g={g} page={page} numPages={numPages} />
+              {isAdmin && (
+                <button onClick={() => setUploadFor(g)}
+                  className="mt-4 w-full py-2.5 rounded-full text-xs font-black uppercase tracking-wider flex items-center justify-center gap-2 transition-all hover:opacity-80"
+                  style={{ background: `${g.color}18`, color: g.color, border: `1.5px solid ${g.color}40` }}>
+                  🔄 Cập nhật PDF
+                </button>
+              )}
+            </div>
           </div>
 
           {/* Right: PDF Reader */}
-          <div className="rounded-[28px] overflow-hidden flex flex-col"
+          <div className="rounded-[32px] overflow-hidden flex flex-col relative z-30"
             style={{
-              background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(20px)',
-              border: '1.5px solid rgba(255,255,255,1)', boxShadow: '0 10px 30px rgba(14,165,233,0.08)',
-              height: 'calc(100vh - 210px)',
+              background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)',
+              height: 'calc(200vh - 650px)',
               minHeight: 520,
             }}>
             <PdfViewer
@@ -266,22 +271,23 @@ export default function BooksPage({ isAdmin }: { isAdmin?: boolean }) {
         </div>
       ) : (
         /* ── No Book ── */
-        <div className="rounded-[32px] p-16 flex flex-col items-center gap-6 text-center"
-          style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(20px)', border: '1.5px solid rgba(255,255,255,1)', boxShadow: '0 10px 30px rgba(14,165,233,0.08)' }}>
-          <div className="w-28 h-28 rounded-[32px] flex items-center justify-center text-6xl"
+        <div className="rounded-[32px] p-16 flex flex-col items-center gap-6 text-center relative"
+          style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+          <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
+          <div className="w-28 h-28 rounded-[32px] flex items-center justify-center text-6xl relative z-30"
             style={{ background: `linear-gradient(135deg, ${g.gFrom}, ${g.gTo})`, boxShadow: `0 16px 40px ${g.color}35` }}>
             {g.emoji}
           </div>
-          <div>
+          <div className="relative z-30">
             <h2 className="text-2xl font-black text-[#082F49]">Chưa có sách {g.label}</h2>
-            <p className="text-[#94A3B8] text-sm mt-2 max-w-xs">
+            <p className="text-[#94A3B8] text-sm mt-2 max-w-xs mx-auto">
               {isAdmin ? 'Upload file PDF sách địa lý để học sinh đọc trực tuyến.' : 'Giáo viên chưa upload sách cho lớp này.'}
             </p>
           </div>
           {isAdmin && (
             <button onClick={() => setUploadFor(g)}
-              className="h-12 px-8 rounded-[9999px] text-white font-black text-sm flex items-center gap-2 transition-all hover:-translate-y-1 duration-300"
-              style={{ background: `linear-gradient(135deg, ${g.gFrom}, ${g.gTo})`, boxShadow: `0 8px 24px ${g.color}40` }}>
+              className="h-12 px-8 rounded-full text-white font-black text-sm flex items-center gap-2 transition-all hover:-translate-y-1 duration-300 relative z-30 border border-white/20"
+              style={{ background: `linear-gradient(135deg, ${g.gFrom}, ${g.gTo})`, boxShadow: `0 10px 24px ${g.color}40` }}>
               📤 Upload sách ngay
             </button>
           )}

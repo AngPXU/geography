@@ -110,16 +110,16 @@ export default function PdfViewer({ pdfUrl, title, color, grade = 6, startPage =
   const toolbarStyle: React.CSSProperties = {
     display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap',
     padding: '10px 16px', flexShrink: 0,
-    background: 'rgba(255,255,255,0.95)',
-    borderBottom: '1px solid rgba(226,232,240,0.7)',
+    background: 'transparent',
+    borderBottom: '1px solid rgba(255, 255, 255, 0.8)',
   };
   const groupStyle: React.CSSProperties = {
     display: 'flex', alignItems: 'center', gap: 4,
-    background: 'rgba(248,250,252,0.9)', border: '1.5px solid rgba(226,232,240,0.7)',
-    borderRadius: 14, padding: '3px 8px',
+    background: 'rgba(255, 255, 255, 0.5)', border: '1px solid rgba(255, 255, 255, 0.8)',
+    borderRadius: 9999, padding: '3px 8px',
   };
   const btn = (disabled?: boolean): React.CSSProperties => ({
-    width: 30, height: 30, borderRadius: 9, border: 'none',
+    width: 30, height: 30, borderRadius: 9999, border: 'none',
     background: 'transparent',
     color: disabled ? '#CBD5E1' : '#334155',
     cursor: disabled ? 'default' : 'pointer', fontWeight: 700, fontSize: 16,
@@ -166,7 +166,7 @@ export default function PdfViewer({ pdfUrl, title, color, grade = 6, startPage =
           <button onClick={() => setShowQuiz(true)}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              padding: '6px 14px', borderRadius: 14, border: 'none',
+              padding: '6px 14px', borderRadius: 9999, border: `1px solid ${color}40`,
               background: `linear-gradient(135deg, ${color}20, ${color}10)`,
               color: color, fontSize: 12, fontWeight: 900, cursor: 'pointer',
               transition: 'all 0.25s', flexShrink: 0,
@@ -178,8 +178,8 @@ export default function PdfViewer({ pdfUrl, title, color, grade = 6, startPage =
           <button onClick={() => setShowAi(a => !a)}
             style={{
               display: 'flex', alignItems: 'center', gap: 6,
-              padding: '6px 14px', borderRadius: 14, border: 'none',
-              background: showAi ? `linear-gradient(135deg, ${color}, ${color}bb)` : `${color}15`,
+              padding: '6px 14px', borderRadius: 9999, border: showAi ? 'none' : '1px solid rgba(255,255,255,0.8)',
+              background: showAi ? `linear-gradient(135deg, ${color}, ${color}bb)` : `rgba(255,255,255,0.5)`,
               color: showAi ? 'white' : color,
               fontSize: 12, fontWeight: 900, cursor: 'pointer',
               transition: 'all 0.25s',
@@ -195,7 +195,7 @@ export default function PdfViewer({ pdfUrl, title, color, grade = 6, startPage =
           flex: 1, minHeight: 0, overflowY: 'auto', overflowX: 'auto',
           display: 'flex', flexDirection: 'column', alignItems: 'center',
           padding: '24px 16px', gap: 16,
-          background: 'rgba(248,250,252,0.6)',
+          background: 'transparent',
         }}>
           <Document
             file={pdfUrl}
@@ -232,7 +232,7 @@ export default function PdfViewer({ pdfUrl, title, color, grade = 6, startPage =
         {numPages > 0 && (
           <div style={{
             display: 'flex', alignItems: 'center', gap: 12, padding: '8px 16px', flexShrink: 0,
-            background: 'rgba(255,255,255,0.95)', borderTop: '1px solid rgba(226,232,240,0.7)',
+            background: 'transparent', borderTop: '1px solid rgba(255, 255, 255, 0.8)',
           }}>
             <button onClick={() => goTo(1)}
               style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', background: 'none', border: 'none', cursor: 'pointer', flexShrink: 0 }}>
@@ -254,7 +254,8 @@ export default function PdfViewer({ pdfUrl, title, color, grade = 6, startPage =
         width: showAi ? 340 : 0, flexShrink: 0,
         overflow: 'hidden',
         transition: 'width 0.35s cubic-bezier(0.4, 0, 0.2, 1)',
-        borderLeft: showAi ? '1.5px solid rgba(226,232,240,0.7)' : '0px solid transparent',
+        borderLeft: showAi ? '1px solid rgba(255, 255, 255, 0.8)' : '0px solid transparent',
+        background: 'rgba(255, 255, 255, 0.3)',
       }}>
         {showAi && (
           <AiChatPanel

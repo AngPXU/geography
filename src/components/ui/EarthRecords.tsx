@@ -106,13 +106,13 @@ export function EarthRecords() {
           <div className="shrink-0 flex items-center gap-3">
             <button
               onClick={scrollLeft}
-              className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-500 hover:text-[#082F49] hover:bg-slate-50 hover:border-cyan-200 transition-all shadow-sm active:scale-95"
+              className="w-12 h-12 flex items-center justify-center rounded-full bg-white/50 backdrop-blur-md border-[2px] border-white/80 text-[#082F49] shadow-[0_8px_16px_rgba(0,0,0,0.05)] hover:bg-white hover:border-white hover:shadow-[0_12px_24px_rgba(14,165,233,0.15)] hover:-translate-y-1 transition-all duration-300"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
             </button>
             <button
               onClick={scrollRight}
-              className="w-12 h-12 flex items-center justify-center rounded-2xl bg-white border border-slate-200 text-slate-500 hover:text-[#082F49] hover:bg-slate-50 hover:border-cyan-200 transition-all shadow-sm active:scale-95"
+              className="w-12 h-12 flex items-center justify-center rounded-full bg-white/50 backdrop-blur-md border-[2px] border-white/80 text-[#082F49] shadow-[0_8px_16px_rgba(0,0,0,0.05)] hover:bg-white hover:border-white hover:shadow-[0_12px_24px_rgba(14,165,233,0.15)] hover:-translate-y-1 transition-all duration-300"
             >
               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
             </button>
@@ -154,7 +154,7 @@ export function EarthRecords() {
                     <p className="text-white/90 text-sm font-medium leading-relaxed pb-4">
                       {rec.desc}
                     </p>
-                    <Link href="/map" className="inline-flex items-center justify-center w-full py-3 rounded-xl bg-white/20 backdrop-blur-sm text-white font-bold text-sm hover:bg-white hover:text-[#082F49] transition-colors border border-white/30">
+                    <Link href="/map" className="inline-flex items-center justify-center w-full py-3 rounded-full bg-[#06B6D4] hover:bg-[#22D3EE] text-white font-black text-sm shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:shadow-[0_15px_30px_rgba(34,211,238,0.5)] transition-all duration-300 border-[2px] border-[#06B6D4]">
                       Dịch chuyển đến đây 🚀
                     </Link>
                   </div>

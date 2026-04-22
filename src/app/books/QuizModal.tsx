@@ -121,8 +121,9 @@ export default function QuizModal({
   };
   const modalStyle: React.CSSProperties = {
     width: '100%', maxWidth: 520, borderRadius: 32, overflow: 'hidden',
-    background: 'rgba(255,255,255,0.95)', border: '1.5px solid white',
-    boxShadow: '0 32px 80px rgba(0,0,0,0.2)',
+    background: 'rgba(255, 255, 255, 0.65)', border: '1px solid rgba(255, 255, 255, 0.8)',
+    boxShadow: '0 32px 80px rgba(14, 165, 233, 0.15), inset 0 1px 0 rgba(255, 255, 255, 1)',
+    backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)',
     display: 'flex', flexDirection: 'column',
     position: 'relative'
   };
@@ -159,7 +160,7 @@ export default function QuizModal({
               <>
                 <p style={{ fontSize: 40 }}>⚠️</p>
                 <p style={{ color: '#DC2626', fontWeight: 700, fontSize: 15 }}>{errMsg}</p>
-                <button onClick={onClose} style={{ marginTop: 12, padding: '10px 24px', borderRadius: 99, background: '#F1F5F9', color: '#334155', fontWeight: 700, border: 'none', cursor: 'pointer' }}>Đóng</button>
+                <button onClick={onClose} style={{ marginTop: 12, padding: '10px 24px', borderRadius: 9999, background: '#F1F5F9', color: '#334155', fontWeight: 700, border: 'none', cursor: 'pointer' }}>Đóng</button>
               </>
             ) : (
               <>
@@ -217,8 +218,8 @@ export default function QuizModal({
                 return (
                   <button key={i} onClick={() => handleSelect(i)}
                     style={{
-                      textAlign: 'left', padding: '14px 16px', borderRadius: 16,
-                      background: bColor, border: `1.5px solid ${borderColor}`,
+                      textAlign: 'left', padding: '14px 16px', borderRadius: 9999,
+                      background: bColor, border: `1px solid ${borderColor}`,
                       color: textColor, fontWeight: 700, fontSize: 14, cursor: showExplanation ? 'default' : 'pointer',
                       transition: 'all 0.2s', display: 'flex', gap: 12, alignItems: 'center'
                     }}>
@@ -251,7 +252,7 @@ export default function QuizModal({
                 style={{
                   background: `linear-gradient(135deg, ${color}, ${color}cc)`,
                   border: 'none', color: 'white', fontWeight: 800, fontSize: 15,
-                  padding: '14px 24px', borderRadius: 16, cursor: 'pointer',
+                  padding: '14px 24px', borderRadius: 9999, cursor: 'pointer',
                   marginTop: 12, boxShadow: `0 8px 24px ${color}40`, alignSelf: 'flex-end', transition: 'transform 0.2s'
                 }}>
                 {currentQ < data.questions.length - 1 ? 'Câu tiếp theo ❯' : 'Xem kết quả'}
@@ -275,11 +276,11 @@ export default function QuizModal({
             
             <div style={{ display: 'flex', gap: 12, marginTop: 16, width: '100%' }}>
               <button onClick={() => { setCurrentQ(0); setScore(0); setSelectedIdx(null); setShowExplanation(false); setStatus('quiz'); }}
-                style={{ flex: 1, padding: '14px', borderRadius: 16, background: '#F1F5F9', border: 'none', color: '#475569', fontWeight: 800, fontSize: 14, cursor: 'pointer' }}>
+                style={{ flex: 1, padding: '14px', borderRadius: 9999, background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(255,255,255,0.8)', color: '#475569', fontWeight: 800, fontSize: 14, cursor: 'pointer', backdropFilter: 'blur(12px)' }}>
                 Làm lại
               </button>
               <button onClick={onClose}
-                style={{ flex: 1, padding: '14px', borderRadius: 16, background: color, border: 'none', color: 'white', fontWeight: 800, fontSize: 14, cursor: 'pointer', boxShadow: `0 8px 20px ${color}40` }}>
+                style={{ flex: 1, padding: '14px', borderRadius: 9999, background: color, border: 'none', color: 'white', fontWeight: 800, fontSize: 14, cursor: 'pointer', boxShadow: `0 8px 20px ${color}40` }}>
                 Thoát
               </button>
             </div>

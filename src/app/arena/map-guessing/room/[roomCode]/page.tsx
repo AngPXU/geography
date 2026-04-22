@@ -158,25 +158,32 @@ export default function RoomPage({ params }: { params: Promise<{ roomCode: strin
      }
 
      return (
-      <div className="min-h-screen bg-gradient-to-br from-[#082f49] to-[#0c2340] flex items-center justify-center p-6">
-        <div className={`w-full max-w-2xl bg-white/10 backdrop-blur-2xl rounded-[40px] border border-white/20 p-8 text-center ${myLabel === 'Chiến Thắng!' ? 'shadow-[0_0_50px_rgba(234,179,8,0.2)]' : ''}`}>
-          <div className="text-7xl mb-3 animate-bounce">{myIcon}</div>
-          <p className={`font-black text-4xl mb-2 ${myLabel === 'Chiến Thắng!' ? 'text-yellow-400' : 'text-slate-300'}`}>{myLabel}</p>
-          <p className="text-emerald-300 font-bold mb-8 uppercase tracking-widest text-sm">{expMsg}</p>
+      <div className="min-h-screen bg-gradient-to-b from-[#E0F2FE] via-[#FFFFFF] to-[#DCFCE7] flex items-center justify-center p-6 relative overflow-hidden">
+        {/* Liquid Mesh Gradient Nền */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+          <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#06B6D4]/20 rounded-full blur-[120px] animate-[liquid-blob_15s_infinite]"></div>
+          <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#22C55E]/20 rounded-full blur-[120px] animate-[liquid-blob_20s_infinite_reverse]"></div>
+        </div>
+        <div className={`w-full max-w-2xl rounded-[32px] p-8 text-center relative z-10 ${myLabel === 'Chiến Thắng!' ? 'shadow-[0_0_50px_rgba(234,179,8,0.2)]' : ''}`}
+             style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+          <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
+          <div className="text-7xl mb-3 animate-bounce relative z-30">{myIcon}</div>
+          <p className={`font-black text-4xl mb-2 relative z-30 ${myLabel === 'Chiến Thắng!' ? 'text-amber-500' : 'text-slate-500'}`}>{myLabel}</p>
+          <p className="text-[#06B6D4] font-bold mb-8 uppercase tracking-widest text-sm relative z-30">{expMsg}</p>
           
-          <div className="flex items-center justify-center gap-6 mb-8">
-             <div className={`flex-1 rounded-[24px] p-6 text-center ${myGrad}`}>
-                <p className="text-slate-400 font-bold mb-2 uppercase tracking-widest text-xs">Bạn</p>
-                <p className="text-5xl font-black text-white tabular-nums">{myTotal}</p>
+          <div className="flex items-center justify-center gap-6 mb-8 relative z-30">
+             <div className={`flex-1 rounded-[32px] p-6 text-center ${myGrad}`}>
+                <p className="text-slate-500 font-bold mb-2 uppercase tracking-widest text-xs">Bạn</p>
+                <p className={`text-5xl font-black tabular-nums ${myLabel === 'Chiến Thắng!' ? 'text-amber-600' : 'text-[#082F49]'}`}>{myTotal}</p>
              </div>
-             <div className="text-slate-500 font-black text-3xl italic">VS</div>
-             <div className="flex-1 rounded-[24px] bg-white/5 p-6 text-center">
-                <p className="text-slate-400 font-bold mb-2 uppercase tracking-widest text-xs">Phòng {roomState.guest || roomState.host}</p>
-                <p className="text-5xl font-black text-slate-300 tabular-nums">{oppTotal}</p>
+             <div className="text-slate-400 font-black text-3xl italic">VS</div>
+             <div className="flex-1 rounded-[32px] bg-white/50 p-6 text-center border border-white/80">
+                <p className="text-slate-500 font-bold mb-2 uppercase tracking-widest text-xs">Phòng {roomState.guest || roomState.host}</p>
+                <p className="text-5xl font-black text-[#082F49] tabular-nums">{oppTotal}</p>
              </div>
           </div>
 
-          <button onClick={handleLeave} className="w-full py-4 rounded-[18px] bg-white/10 hover:bg-white/20 text-white font-black transition-all border border-white/10">Trở Về Arena</button>
+          <button onClick={handleLeave} className="w-full py-4 rounded-full bg-white/50 hover:bg-white text-slate-500 font-black transition-all border border-white/80 shadow-sm relative z-30">Trở Về Arena</button>
         </div>
       </div>
      )
@@ -184,8 +191,16 @@ export default function RoomPage({ params }: { params: Promise<{ roomCode: strin
 
   // WAITING (LOBBY UI)
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#E0F2FE] via-white to-[#DCFCE7] p-4 md:p-8 flex items-center justify-center">
-      <div className="w-full max-w-6xl bg-white/80 backdrop-blur-3xl rounded-[40px] shadow-[0_20px_60px_rgba(8,47,73,0.08)] border border-white p-8 md:p-12">
+    <div className="min-h-screen bg-gradient-to-b from-[#E0F2FE] via-[#FFFFFF] to-[#DCFCE7] p-4 md:p-8 flex items-center justify-center relative overflow-hidden">
+      {/* Liquid Mesh Gradient Nền */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#06B6D4]/20 rounded-full blur-[120px] animate-[liquid-blob_15s_infinite]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#22C55E]/20 rounded-full blur-[120px] animate-[liquid-blob_20s_infinite_reverse]"></div>
+      </div>
+      
+      <div className="w-full max-w-6xl rounded-[40px] p-8 md:p-12 relative z-10"
+           style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+        <div className="absolute inset-0 rounded-[40px] border-2 border-white/40 pointer-events-none z-20"></div>
         
         {/* Header */}
         <div className="flex justify-between items-center mb-10">
@@ -199,11 +214,11 @@ export default function RoomPage({ params }: { params: Promise<{ roomCode: strin
                  {roomState.isPrivate && <span className="text-sm px-3 py-1 bg-slate-100 rounded-full border border-slate-200">🔒 Phòng kín</span>}
               </h1>
            </div>
-           <div className="flex gap-3">
-              <button onClick={handleCopy} className="px-4 py-2 bg-slate-100 text-[#082F49] font-bold rounded-xl hover:bg-slate-200 transition border border-slate-200 text-sm flex items-center gap-2">
+           <div className="flex gap-3 relative z-30">
+              <button onClick={handleCopy} className="px-5 py-2.5 bg-white/50 backdrop-blur-md text-[#082F49] font-bold rounded-full hover:bg-white transition border border-white/80 text-sm flex items-center gap-2">
                  📋 <span>Copy Mã</span>
               </button>
-              <button onClick={handleLeave} className="px-4 py-2 bg-rose-50 text-rose-600 font-bold rounded-xl hover:bg-rose-100 transition border border-rose-100 text-sm">
+              <button onClick={handleLeave} className="px-5 py-2.5 bg-rose-50 text-rose-600 font-bold rounded-full hover:bg-rose-100 transition border border-rose-200 text-sm">
                  Rời phòng
               </button>
            </div>
@@ -213,7 +228,9 @@ export default function RoomPage({ params }: { params: Promise<{ roomCode: strin
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
            
            {/* Section 1: Settings */}
-           <div className="bg-white rounded-[28px] border border-slate-100 p-6 shadow-sm">
+           <div className="rounded-[32px] p-6 relative z-30"
+                style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+              <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
               <div className="flex items-center gap-3 mb-6">
                  <div className="w-10 h-10 bg-cyan-100 text-cyan-600 rounded-xl flex items-center justify-center text-lg shadow-sm">⚙️</div>
                  <h2 className="text-xl font-black text-[#082F49]">Cài đặt trận đấu</h2>
@@ -247,15 +264,17 @@ export default function RoomPage({ params }: { params: Promise<{ roomCode: strin
            </div>
 
            {/* Section 2: Players */}
-           <div className="flex flex-col gap-6">
+           <div className="flex flex-col gap-6 relative z-30">
               <div className="flex items-center gap-3 mb-2">
                  <div className="w-10 h-10 bg-rose-100 text-rose-600 rounded-xl flex items-center justify-center text-lg shadow-sm">👥</div>
                  <h2 className="text-xl font-black text-[#082F49]">Người chơi</h2>
               </div>
 
               {/* Host Slot */}
-              <div className="flex items-center gap-4 bg-white rounded-[24px] border border-cyan-100 p-4 shadow-sm relative overflow-hidden">
-                 <div className="absolute top-0 bottom-0 left-0 w-2 bg-cyan-400" />
+              <div className="flex items-center gap-4 rounded-[32px] p-4 relative overflow-hidden"
+                   style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 10px 30px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+                 <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
+                 <div className="absolute top-0 bottom-0 left-0 w-2 bg-[#06B6D4]" />
                  <div className="w-14 h-14 bg-gradient-to-br from-cyan-400 to-blue-500 rounded-full flex items-center justify-center text-white font-black text-xl shadow-lg border-2 border-white">
                     {roomState.host[0]}
                  </div>
@@ -269,7 +288,9 @@ export default function RoomPage({ params }: { params: Promise<{ roomCode: strin
 
               {/* Guest Slot */}
               {roomState.guest ? (
-                <div className="flex items-center gap-4 bg-white rounded-[24px] border border-emerald-100 p-4 shadow-sm relative overflow-hidden">
+                <div className="flex items-center gap-4 rounded-[32px] p-4 relative overflow-hidden"
+                     style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 10px 30px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+                   <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
                    <div className="absolute top-0 bottom-0 left-0 w-2 bg-emerald-400" />
                    <div className="w-14 h-14 bg-gradient-to-br from-emerald-400 to-teal-500 rounded-full flex items-center justify-center text-white font-black text-xl shadow-lg border-2 border-white">
                       {roomState.guest[0]}
@@ -282,7 +303,7 @@ export default function RoomPage({ params }: { params: Promise<{ roomCode: strin
                    </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-4 bg-slate-50/50 rounded-[24px] border-2 border-dashed border-slate-200 p-4 relative overflow-hidden">
+                <div className="flex items-center gap-4 bg-white/30 rounded-[32px] border-2 border-dashed border-white/80 p-4 relative overflow-hidden">
                    <div className="w-14 h-14 bg-slate-200 rounded-full flex items-center justify-center shadow-inner border-2 border-slate-100 animate-pulse">
                       
                    </div>
@@ -298,13 +319,13 @@ export default function RoomPage({ params }: { params: Promise<{ roomCode: strin
                  <button 
                    disabled={!isHost || !roomState.guest} 
                    onClick={handleStart}
-                   className={`w-full py-5 rounded-[22px] font-black text-lg transition-all shadow-xl ${isHost && roomState.guest ? 'bg-gradient-to-r from-rose-500 to-orange-500 hover:from-rose-400 hover:to-orange-400 text-white hover:-translate-y-1 shadow-rose-500/30' : 'bg-slate-200 text-slate-400 shadow-none cursor-not-allowed hidden md:block'}`}
+                   className={`w-full py-5 rounded-full font-black text-lg transition-all shadow-[0_10px_20px_rgba(6,182,212,0.3)] ${isHost && roomState.guest ? 'bg-[#06B6D4] hover:bg-[#22D3EE] text-white hover:-translate-y-1 hover:shadow-[0_15px_30px_rgba(34,211,238,0.5)] border-[2px] border-[#06B6D4]' : 'bg-white/50 text-slate-400 shadow-none cursor-not-allowed hidden md:block border border-white/80'}`}
                  >
                    {isHost ? (roomState.guest ? 'XÁC NHẬN BẮT ĐẦU 🚀' : 'ĐỢI ĐỐI THỦ...') : 'ĐANG ĐỢI CHỦ PHÒNG BẮT ĐẦU... ⏳'}
                  </button>
 
                  {!isHost && (
-                    <div className="w-full py-5 rounded-[22px] font-black text-sm bg-amber-100 text-amber-700 text-center animate-pulse border border-amber-200">
+                    <div className="w-full py-5 rounded-full font-black text-sm bg-amber-50 text-amber-600 text-center animate-pulse border border-amber-200 shadow-sm mt-3">
                        Vui lòng đợi 👑 {roomState.host} bắt đầu trận đấu!
                     </div>
                  )}

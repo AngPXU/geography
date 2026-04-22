@@ -36,45 +36,76 @@ export default async function HomePage() {
     <div className="bg-gradient-to-b from-[#E0F2FE] via-[#FFFFFF] to-[#DCFCE7] relative overflow-x-hidden font-sans">
       <Navbar user={session.user} />
 
-      {/* Decorative blurred circles behind the UI */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-[-10%] w-[40%] h-[40%] bg-blue-300/30 rounded-full blur-[100px]"></div>
-        <div className="absolute top-[80%] right-[-10%] w-[40%] h-[40%] bg-green-300/30 rounded-full blur-[100px]"></div>
+      {/* Liquid Mesh Gradient Nền (Apple iOS 26 Style) */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#06B6D4]/20 rounded-full blur-[120px] animate-[liquid-blob_15s_infinite]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#22C55E]/20 rounded-full blur-[120px] animate-[liquid-blob_20s_infinite_reverse]"></div>
+        <div className="absolute top-[40%] left-[30%] w-[40%] h-[40%] bg-violet-300/20 rounded-full blur-[100px] animate-[liquid-blob_18s_infinite_2s]"></div>
       </div>
 
-      <main className="w-[90%] max-w-[1400px] mx-auto px-4 xl:px-8 pt-32 pb-24 min-h-[90vh] flex flex-col lg:flex-row items-center justify-center gap-16 relative z-10">
+      <main className="w-[95%] max-w-[1300px] mx-auto px-4 sm:px-6 xl:px-8 pt-32 pb-24 min-h-[90vh] flex flex-col items-center justify-center relative z-10">
+        
+        {/* The Grand Glass Panel - iOS 26 Inspired */}
+        <div 
+          className="w-full flex flex-col lg:flex-row items-center justify-between gap-10 p-8 lg:p-12 rounded-[32px] overflow-hidden relative"
+          style={{
+            background: 'rgba(255, 255, 255, 0.65)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255, 255, 255, 0.8)',
+            boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)'
+          }}
+        >
+          {/* Inner Highlight for Glass Edge */}
+          <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
 
-        {/* Left Column: Text & CTA */}
-        <div className="flex-1 w-full text-center lg:text-left flex flex-col items-center lg:items-start gap-8 relative z-20">
+          {/* Left Column: Text & CTA */}
+          <div className="lg:w-5/12 w-full text-center lg:text-left flex flex-col items-center lg:items-start gap-6 relative z-30 shrink-0">
+            {/* New Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-md border border-white/80 shadow-[0_4px_12px_rgba(14,165,233,0.1)] mb-2">
+              <span className="text-xl">✨</span>
+              <span className="text-[#06B6D4] font-black text-xs uppercase tracking-wider">Khám phá thế giới 3D</span>
+            </div>
 
-          <h1 className="text-5xl md:text-7xl lg:text-[5.5rem] font-black text-[#082F49] leading-[1.1] tracking-tight relative">
-            Chinh phục<br />
-            <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-fuchsia-500 via-pink-500 to-rose-400 drop-shadow-sm">
-              ĐỊA LÝ.
-            </span>
-            <div className="absolute -bottom-4 left-0 right-0 h-4 bg-gradient-to-r from-fuchsia-500/20 to-transparent blur-md -z-10"></div>
-          </h1>
+            <h1 className="text-5xl md:text-6xl lg:text-[4.5rem] font-black text-[#082F49] leading-[1.15] tracking-tight relative">
+              Chinh phục<br />
+              <span className="block mt-2 text-transparent bg-clip-text bg-gradient-to-r from-cyan-500 via-blue-500 to-[#06B6D4] drop-shadow-sm">
+                ĐỊA LÝ.
+              </span>
+            </h1>
 
-          <p className="text-[#334155] text-lg lg:text-xl max-w-xl leading-relaxed mt-2 font-medium">
-            Giáo trình Địa Lý số hoá đầu tiên tại Việt Nam được trợ lực bởi <strong className="font-extrabold text-[#082F49] border-b-[2px] border-cyan-400">AI Nhận Diện</strong>, Bản đồ 3D thực tế ảo và cá nhân hóa lộ trình. Học mượt, nhớ sâu!
-          </p>
+            <div className="relative w-full">
+              <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-gradient-to-b from-cyan-400 to-emerald-400 rounded-full hidden lg:block" />
+              <p className="text-[#334155] text-lg max-w-[28rem] mx-auto lg:mx-0 leading-relaxed font-medium lg:pl-6">
+                Giáo trình Địa Lý số hoá đầu tiên tại Việt Nam được trợ lực bởi <strong className="font-extrabold text-[#082F49] border-b-[2px] border-[#06B6D4]">AI Nhận Diện</strong>, Bản đồ 3D thực tế ảo và cá nhân hóa lộ trình. Học mượt, nhớ sâu!
+              </p>
+            </div>
 
-          <div className="flex flex-col sm:flex-row items-center gap-5 mt-4">
-            <Link href="/map" className="group h-[60px] px-10 rounded-[24px] bg-gradient-to-r from-cyan-400 to-blue-500 text-white font-black text-lg shadow-[0_15px_30px_-5px_rgba(6,182,212,0.4)] hover:shadow-[0_20px_40px_-5px_rgba(6,182,212,0.5)] hover:-translate-y-1 transition-all flex items-center gap-3">
-              Bắt đầu hành trình <FaRocket className="text-xl group-hover:scale-125 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform" />
-            </Link>
-            <Link href="/roadmap" className="h-[60px] px-10 rounded-[24px] bg-white/70 backdrop-blur-xl border-[2px] border-white text-[#082F49] font-black text-lg shadow-[0_10px_20px_rgba(0,0,0,0.05)] hover:bg-white hover:shadow-[0_15px_30px_rgba(14,165,233,0.1)] hover:-translate-y-1 transition-all flex items-center gap-3">
-              Xem lộ trình <FaMap className="text-xl text-blue-500" />
-            </Link>
+            <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 mt-2 w-full">
+              {/* Primary Button: Pill-shape (9999px) - chuẩn AGENTS.md */}
+              <Link href="/map" className="group h-14 px-8 rounded-full bg-[#06B6D4] hover:bg-[#22D3EE] text-white font-black text-base shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:shadow-[0_15px_30px_rgba(34,211,238,0.5)] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2">
+                Bắt đầu hành trình <FaRocket className="text-lg group-hover:scale-125 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
+              </Link>
+              
+              {/* Secondary Button */}
+              <Link href="/roadmap" className="h-14 px-8 rounded-full bg-white/50 backdrop-blur-md border-[2px] border-white/80 text-[#082F49] font-black text-base shadow-[0_8px_16px_rgba(0,0,0,0.05)] hover:bg-white hover:border-white hover:shadow-[0_12px_24px_rgba(14,165,233,0.15)] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2">
+                Xem lộ trình <FaMap className="text-lg text-[#06B6D4]" />
+              </Link>
+            </div>
           </div>
-        </div>
 
-        {/* Right Column: 3D Earth Globe */}
-        <div className="flex-1 w-full relative z-10 flex items-center justify-center pointer-events-auto">
-          <div className="absolute inset-0 bg-gradient-to-tr from-cyan-200/20 to-transparent rounded-full blur-3xl scale-75"></div>
-          <EarthGlobe userRole={userRole} />
-        </div>
+          {/* Right Column: 3D Earth Globe */}
+          <div className="lg:w-1/2 w-full relative z-30 flex items-center justify-center pointer-events-auto min-h-[350px] lg:min-h-[500px]">
+            {/* Glowing orb behind earth */}
+            <div className="absolute inset-10 bg-gradient-to-tr from-[#06B6D4]/30 to-[#22C55E]/20 rounded-full blur-[80px]"></div>
+            
+            {/* Wrapper to control max size of the earth to avoid overwhelming the view */}
+            <div className="w-full max-w-[500px] aspect-square relative hover:scale-[1.02] transition-transform duration-700">
+              <EarthGlobe userRole={userRole} />
+            </div>
+          </div>
 
+        </div>
       </main>
 
       {/* Bảng điều khiển tổng quan */}

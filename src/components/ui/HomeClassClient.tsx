@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -104,10 +104,11 @@ function timeUntil(dateStr: string): { label: string; urgent: boolean } {
 }
 
 const GLASS = {
-  background: 'rgba(255,255,255,0.75)',
-  backdropFilter: 'blur(20px)',
-  border: '1px solid rgba(255,255,255,1)',
-  boxShadow: '0 10px 30px rgba(14,165,233,0.08)',
+  background: 'rgba(255, 255, 255, 0.65)',
+  backdropFilter: 'blur(24px)',
+  WebkitBackdropFilter: 'blur(24px)',
+  border: '1px solid rgba(255, 255, 255, 0.8)',
+  boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)',
 };
 
 const inputCls = 'w-full px-4 py-2.5 rounded-[16px] text-sm text-[#082F49] placeholder-[#94A3B8] bg-white/80 border border-[#BAE6FD] focus:outline-none focus:border-[#06B6D4] focus:shadow-[0_0_0_3px_rgba(6,182,212,0.12)] transition-all duration-300';
@@ -266,8 +267,8 @@ function CreateClassModal({ onClose, onCreate }: {
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
-      <div className="relative w-full max-w-md rounded-[24px] overflow-hidden"
-        style={{ background: 'rgba(255,255,255,0.93)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,1)' }}>
+      <div className="relative w-full max-w-md rounded-[32px] overflow-hidden"
+        style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100
           bg-gradient-to-r from-sky-50 to-cyan-50">
           <h2 className="font-black text-[#082F49] text-lg">🏫 Tạo lớp học mới</h2>
@@ -300,9 +301,9 @@ function CreateClassModal({ onClose, onCreate }: {
           </div>
           <div className="flex gap-3 pt-1">
             <button type="button" onClick={onClose}
-              className="flex-1 py-2.5 rounded-[14px] border border-slate-200 text-sm font-bold text-[#334155] hover:bg-slate-50">Huỷ</button>
+              className="flex-1 py-2.5 rounded-full bg-white/50 backdrop-blur-md border border-white/80 text-sm font-bold text-[#334155] hover:bg-white hover:text-[#082F49] transition-colors">Huỷ</button>
             <button type="submit" disabled={saving}
-              className="flex-1 py-2.5 rounded-[14px] bg-gradient-to-r from-sky-500 to-cyan-500 text-white text-sm font-bold hover:from-sky-400 hover:to-cyan-400 transition-all flex items-center justify-center gap-2 disabled:opacity-50">
+              className="flex-1 py-2.5 rounded-full bg-[#06B6D4] text-white text-sm font-bold hover:bg-[#22D3EE] transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:shadow-[0_15px_30px_rgba(34,211,238,0.5)] border border-[#06B6D4]">
               {saving && <FaSpinner className="animate-spin text-xs" />} Tạo lớp
             </button>
           </div>
@@ -488,8 +489,8 @@ function EditAssignmentModal({ assignment, classId, onClose, onSaved }: {
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
-      <div className="relative w-full max-w-xl rounded-[24px] overflow-hidden max-h-[92vh] flex flex-col"
-        style={{ background: 'rgba(255,255,255,0.93)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,1)' }}>
+      <div className="relative w-full max-w-xl rounded-[32px] overflow-hidden max-h-[92vh] flex flex-col"
+        style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100
           bg-gradient-to-r from-amber-50 to-orange-50 shrink-0">
           <h2 className="font-black text-[#082F49] text-lg">✏️ Chỉnh sửa bài tập</h2>
@@ -523,11 +524,9 @@ function EditAssignmentModal({ assignment, classId, onClose, onSaved }: {
           </div>
           <div className="flex gap-3">
             <button type="button" onClick={onClose}
-              className="flex-1 py-2.5 rounded-[14px] border border-slate-200 text-sm font-bold text-[#334155] hover:bg-slate-50 transition-all">Huỷ</button>
+              className="flex-1 py-2.5 rounded-full bg-white/50 backdrop-blur-md border border-white/80 text-sm font-bold text-[#334155] hover:bg-white hover:text-[#082F49] transition-colors">Huỷ</button>
             <button type="submit" disabled={saving}
-              className="flex-1 py-2.5 rounded-[14px] bg-gradient-to-r from-amber-500 to-orange-500
-                text-white text-sm font-bold hover:from-amber-400 hover:to-orange-400 transition-all
-                flex items-center justify-center gap-2 disabled:opacity-50">
+              className="flex-1 py-2.5 rounded-full bg-[#06B6D4] text-white text-sm font-bold hover:bg-[#22D3EE] transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:shadow-[0_15px_30px_rgba(34,211,238,0.5)] border border-[#06B6D4]">
               {saving && <FaSpinner className="animate-spin text-xs" />} Lưu thay đổi
             </button>
           </div>
@@ -590,8 +589,8 @@ function CreateAssignmentModal({ classId, onClose, onCreate }: {
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
-      <div className="relative w-full max-w-xl rounded-[24px] overflow-hidden max-h-[92vh] flex flex-col"
-        style={{ background: 'rgba(255,255,255,0.93)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,1)' }}>
+      <div className="relative w-full max-w-xl rounded-[32px] overflow-hidden max-h-[92vh] flex flex-col"
+        style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
         <div className="flex items-start justify-between px-6 py-4 border-b border-slate-100
           bg-gradient-to-r from-emerald-50 to-cyan-50 shrink-0 gap-3">
           <div>
@@ -636,11 +635,9 @@ function CreateAssignmentModal({ classId, onClose, onCreate }: {
           </div>
           <div className="flex gap-3">
             <button type="button" onClick={onClose}
-              className="flex-1 py-2.5 rounded-[14px] border border-slate-200 text-sm font-bold text-[#334155] hover:bg-slate-50 transition-all">Huỷ</button>
+              className="flex-1 py-2.5 rounded-full bg-white/50 backdrop-blur-md border border-white/80 text-sm font-bold text-[#334155] hover:bg-white hover:text-[#082F49] transition-colors">Huỷ</button>
             <button type="submit" disabled={saving}
-              className="flex-1 py-2.5 rounded-[14px] bg-gradient-to-r from-emerald-500 to-cyan-500
-                text-white text-sm font-bold hover:from-emerald-400 hover:to-cyan-400 transition-all
-                flex items-center justify-center gap-2 disabled:opacity-50">
+              className="flex-1 py-2.5 rounded-full bg-[#06B6D4] text-white text-sm font-bold hover:bg-[#22D3EE] transition-all flex items-center justify-center gap-2 disabled:opacity-50 shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:shadow-[0_15px_30px_rgba(34,211,238,0.5)] border border-[#06B6D4]">
               {saving && <FaSpinner className="animate-spin text-xs" />}
               Giao bài tập
             </button>

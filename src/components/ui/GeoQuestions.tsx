@@ -134,9 +134,21 @@ export function GeoQuestions() {
       <div className="flex flex-col xl:flex-row gap-10 items-stretch">
 
       {/* ── AI Chat Panel (Left) ── */}
-      <div className="flex-1 w-full bg-gradient-to-br from-white/95 to-white/70 backdrop-blur-[40px] border-[3px] border-white/80 rounded-[48px] shadow-[0_40px_100px_-20px_rgba(14,165,233,0.25)] overflow-hidden flex flex-col min-h-[600px] h-[75vh] max-h-[850px] relative z-10 group">
+      <div 
+        className="flex-1 w-full flex flex-col min-h-[600px] h-[75vh] max-h-[850px] relative z-10 group overflow-hidden rounded-[32px]"
+        style={{
+          background: 'rgba(255, 255, 255, 0.65)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border: '1px solid rgba(255, 255, 255, 0.8)',
+          boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)'
+        }}
+      >
+          {/* Inner Highlight for Glass Edge */}
+          <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
+
           {/* Panel header */}
-          <div className="flex items-center gap-4 px-8 py-5 border-b-[2px] border-white/60 bg-white/40">
+          <div className="flex items-center gap-4 px-8 py-5 border-b border-white/60 bg-white/40 relative z-30">
             <div className="w-12 h-12 rounded-[18px] bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-[0_10px_20px_-5px_rgba(6,182,212,0.5)]">
               <span className="text-white text-2xl drop-shadow-md">🌍</span>
             </div>
@@ -229,9 +241,8 @@ export function GeoQuestions() {
             <div ref={qaBottomRef} />
           </div>
 
-          {/* Input area */}
-          <div className="px-6 py-6 border-t-[2px] border-white/80 bg-white/40">
-            <div className="flex gap-4 items-end bg-white/70 backdrop-blur-xl border-[2px] border-white shadow-[0_10px_30px_rgba(14,165,233,0.1)] rounded-[32px] p-3 transition-all focus-within:bg-white focus-within:shadow-[0_15px_40px_rgba(14,165,233,0.2)]">
+          <div className="px-6 py-6 border-t border-white/80 bg-white/40 relative z-30">
+            <div className="flex gap-4 items-end bg-white/50 backdrop-blur-md border border-white/80 shadow-[0_8px_16px_rgba(0,0,0,0.05)] rounded-[32px] p-3 transition-all focus-within:bg-white focus-within:shadow-[0_12px_24px_rgba(14,165,233,0.15)]">
               <textarea
                 ref={qaInputRef}
                 value={qaInput}
@@ -255,7 +266,7 @@ export function GeoQuestions() {
               <button
                 onClick={handleAsk}
                 disabled={!qaInput.trim() || qaLoading}
-                className="h-[46px] px-6 rounded-[22px] bg-gradient-to-r from-cyan-400 to-blue-500 text-white text-sm font-black uppercase tracking-widest shadow-[0_10px_20px_-5px_rgba(6,182,212,0.5)] hover:scale-105 hover:shadow-[0_15px_30px_-5px_rgba(6,182,212,0.6)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:scale-100 shrink-0"
+                className="h-[46px] px-6 rounded-full bg-[#06B6D4] hover:bg-[#22D3EE] text-white text-sm font-black uppercase tracking-widest shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:-translate-y-0.5 hover:shadow-[0_15px_30px_rgba(34,211,238,0.5)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:-translate-y-0 disabled:hover:shadow-[0_10px_20px_rgba(6,182,212,0.3)] shrink-0 border-[2px] border-[#06B6D4]"
               >
                 {qaLoading ? '...' : 'Gửi 🚀'}
               </button>

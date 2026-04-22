@@ -29,7 +29,9 @@ function PasswordModal({ roomCode, onConfirm, onCancel }: { roomCode: string; on
   return (
     <div className="fixed inset-0 z-[99998] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={onCancel} />
-      <div className="relative w-full max-w-xs bg-white/90 backdrop-blur-2xl rounded-[32px] p-7 shadow-2xl border border-white text-center">
+      <div className="relative w-full max-w-xs rounded-[32px] p-7 shadow-2xl text-center"
+        style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+        <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
         <div className="w-14 h-14 bg-gradient-to-br from-amber-400 to-orange-500 rounded-full flex items-center justify-center mx-auto mb-4 shadow-lg shadow-orange-200 text-2xl">🔒</div>
         <h3 className="text-lg font-black text-[#082F49] mb-1">Phòng Kín</h3>
         <p className="text-slate-500 text-sm font-medium mb-5">Phòng <span className="font-black text-[#082F49]">{roomCode}</span> yêu cầu mật khẩu</p>
@@ -42,9 +44,9 @@ function PasswordModal({ roomCode, onConfirm, onCancel }: { roomCode: string; on
           onKeyDown={e => e.key === 'Enter' && val && onConfirm(val)}
           className="w-full bg-white border-2 border-amber-100 rounded-xl px-4 py-3 text-sm font-bold text-amber-700 focus:outline-none focus:border-amber-400 focus:ring-4 focus:ring-amber-50 transition-all placeholder:text-slate-300 mb-5"
         />
-        <div className="grid grid-cols-2 gap-3">
-          <button onClick={onCancel} className="py-3 rounded-[14px] text-slate-500 font-bold bg-white border border-slate-200 hover:bg-slate-50 transition">Hủy</button>
-          <button disabled={!val} onClick={() => onConfirm(val)} className="py-3 rounded-[14px] bg-gradient-to-r from-amber-400 to-orange-400 text-white font-black shadow-lg shadow-orange-200 hover:-translate-y-0.5 transition-all disabled:opacity-40">Vào phòng</button>
+        <div className="grid grid-cols-2 gap-3 relative z-30">
+          <button onClick={onCancel} className="py-3 rounded-full text-slate-500 font-bold bg-white/50 backdrop-blur-md border border-white/80 hover:bg-white hover:text-[#082F49] transition-colors">Hủy</button>
+          <button disabled={!val} onClick={() => onConfirm(val)} className="py-3 rounded-full bg-[#06B6D4] text-white font-black shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:-translate-y-0.5 hover:bg-[#22D3EE] transition-all disabled:opacity-40 border border-[#06B6D4]">Vào phòng</button>
         </div>
       </div>
     </div>
@@ -140,7 +142,9 @@ export default function MapGuessGateway() {
         />
       )}
 
-      <div className="relative h-full p-1 rounded-[32px] bg-gradient-to-b from-white to-slate-50/50 shadow-[0_20px_40px_rgba(8,47,73,0.06)] hover:shadow-[0_20px_40px_rgba(244,63,94,0.15)] transition-all duration-300 border border-white flex flex-col group">
+      <div className="relative h-full p-2 rounded-[32px] transition-all duration-300 flex flex-col group hover:-translate-y-1"
+        style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+        <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20 transition-all group-hover:border-cyan-300/50"></div>
         
         {/* Hình Cover */}
         <Link href="/arena/map-guessing" className="block relative h-48 rounded-[28px] bg-slate-200 overflow-hidden border border-slate-100 cursor-pointer">
@@ -168,11 +172,11 @@ export default function MapGuessGateway() {
             </p>
           </Link>
           
-          <div className="mt-auto grid grid-cols-2 gap-3">
-            <Link href="/arena/map-guessing" className="flex items-center justify-center py-3 bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-white font-black rounded-2xl shadow-lg shadow-cyan-200 transition-all hover:-translate-y-0.5 active:scale-95 text-sm">
+          <div className="mt-auto grid grid-cols-2 gap-3 relative z-30">
+            <Link href="/arena/map-guessing" className="flex items-center justify-center py-3 bg-[#22C55E] hover:bg-[#4ADE80] text-white font-black rounded-full shadow-[0_10px_20px_rgba(34,197,94,0.3)] transition-all hover:-translate-y-0.5 active:scale-95 text-sm border border-[#22C55E]">
               🎮 Chơi Đơn
             </Link>
-            <button onClick={() => setShowPopup(true)} className="flex items-center justify-center py-3 bg-gradient-to-r from-rose-400 to-orange-400 hover:from-rose-300 hover:to-orange-300 text-white font-black rounded-2xl shadow-lg shadow-rose-200 transition-all hover:-translate-y-0.5 active:scale-95 text-sm">
+            <button onClick={() => setShowPopup(true)} className="flex items-center justify-center py-3 bg-[#06B6D4] hover:bg-[#22D3EE] text-white font-black rounded-full shadow-[0_10px_20px_rgba(6,182,212,0.3)] transition-all hover:-translate-y-0.5 active:scale-95 text-sm border border-[#06B6D4]">
               🚀 Tạo/Vào Phòng
             </button>
           </div>
@@ -185,9 +189,9 @@ export default function MapGuessGateway() {
               value={joinCode}
               onChange={e => setJoinCode(e.target.value.toUpperCase())}
               onKeyDown={e => e.key === 'Enter' && joinCode && !loading && handleJoin()}
-              className="flex-1 bg-slate-50 border border-slate-200 rounded-xl px-3 text-sm font-bold text-slate-600 focus:outline-none focus:border-rose-300 focus:ring-2 focus:ring-rose-50 uppercase placeholder:normal-case h-10"
+              className="flex-1 bg-white/80 border border-[#BAE6FD] rounded-full px-4 text-sm font-bold text-[#082F49] focus:outline-none focus:border-[#06B6D4] focus:ring-4 focus:ring-cyan-50 uppercase placeholder:normal-case placeholder:text-[#94A3B8] h-11 transition-all"
             />
-            <button disabled={!joinCode || loading} onClick={() => handleJoin()} className="bg-slate-800 text-white font-bold text-xs px-4 rounded-xl hover:bg-slate-700 transition disabled:opacity-50 h-10">
+            <button disabled={!joinCode || loading} onClick={() => handleJoin()} className="bg-[#082F49] text-white font-bold text-xs px-5 rounded-full hover:bg-[#0F172A] transition-all shadow-[0_5px_15px_rgba(8,47,73,0.3)] disabled:opacity-50 h-11 border border-[#082F49]">
               {loading ? '...' : 'VÀO'}
             </button>
           </div>
@@ -198,7 +202,10 @@ export default function MapGuessGateway() {
       {showPopup && (
         <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => !loading && setShowPopup(false)} />
-          <div className="relative w-full max-w-sm bg-white/90 backdrop-blur-2xl rounded-[32px] p-6 shadow-2xl border border-white">
+          <div className="relative w-full max-w-sm rounded-[32px] p-6 shadow-2xl"
+            style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', WebkitBackdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)' }}>
+            <div className="absolute inset-0 rounded-[32px] border-2 border-white/40 pointer-events-none z-20"></div>
+            
             {/* Header */}
             <div className="text-center mb-6">
               <div className="w-14 h-14 bg-gradient-to-br from-rose-400 to-pink-500 rounded-full flex items-center justify-center shadow-lg shadow-rose-200 mx-auto mb-3 text-2xl">
@@ -216,13 +223,13 @@ export default function MapGuessGateway() {
 
             <div className="space-y-4">
               <div>
-                <label className="text-xs font-black uppercase tracking-widest text-[#082F49] mb-2 block">Chủ đề</label>
-                <select value={topic} onChange={e => setTopic(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-sm font-bold text-[#082F49] outline-none hover:border-cyan-200 focus:border-cyan-400 focus:ring-4 focus:ring-cyan-50 transition-all cursor-pointer">
+                <label className="text-xs font-black uppercase tracking-widest text-[#082F49] mb-2 block relative z-30">Chủ đề</label>
+                <select value={topic} onChange={e => setTopic(e.target.value)} className="w-full bg-white/80 border border-[#BAE6FD] rounded-full px-4 py-3.5 text-sm font-bold text-[#082F49] outline-none hover:border-[#06B6D4] focus:border-[#06B6D4] focus:ring-4 focus:ring-cyan-50 transition-all cursor-pointer relative z-30 appearance-none">
                   {TOPIC_MODES.map(m => <option key={m.key} value={m.key}>{m.icon} {m.label}</option>)}
                 </select>
               </div>
 
-              <div className="bg-slate-50 rounded-xl px-4 py-3 border border-slate-100 flex items-center justify-between cursor-pointer" onClick={() => setIsPrivate(!isPrivate)}>
+              <div className="bg-white/80 rounded-full px-5 py-3.5 border border-[#BAE6FD] flex items-center justify-between cursor-pointer relative z-30" onClick={() => setIsPrivate(!isPrivate)}>
                 <span className="font-bold text-sm text-[#082F49]">Phòng kín (Cần mật khẩu)</span>
                 <div className={`w-10 h-6 rounded-full p-1 transition-colors ${isPrivate ? 'bg-emerald-400' : 'bg-slate-200'}`}>
                   <div className={`w-4 h-4 bg-white rounded-full shadow-sm transition-transform ${isPrivate ? 'translate-x-4' : 'translate-x-0'}`} />
@@ -240,11 +247,11 @@ export default function MapGuessGateway() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-3 mt-8">
-              <button disabled={loading} onClick={() => setShowPopup(false)} className="py-3.5 rounded-[16px] text-slate-500 font-bold bg-white border border-slate-200 hover:bg-slate-50 transition">
+            <div className="grid grid-cols-2 gap-3 mt-8 relative z-30">
+              <button disabled={loading} onClick={() => setShowPopup(false)} className="py-3.5 rounded-full text-slate-500 font-bold bg-white/50 backdrop-blur-md border border-white/80 hover:bg-white hover:text-[#082F49] transition-colors">
                 Hủy bỏ
               </button>
-              <button disabled={loading} onClick={handleCreateRoom} className="py-3.5 rounded-[16px] bg-gradient-to-r from-rose-500 to-pink-500 text-white font-black shadow-lg shadow-rose-200 hover:-translate-y-0.5 active:scale-95 transition-all">
+              <button disabled={loading} onClick={handleCreateRoom} className="py-3.5 rounded-full bg-[#06B6D4] text-white font-black shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:-translate-y-0.5 active:scale-95 transition-all border border-[#06B6D4] hover:bg-[#22D3EE]">
                 {loading ? '⏳ Đang tạo...' : 'Xác nhận'}
               </button>
             </div>
