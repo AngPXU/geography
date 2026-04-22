@@ -7,6 +7,7 @@ import { claimMission, claimMissionWithExp } from '@/utils/missionTracker';
 import { useStudyTimer } from '@/utils/useStudyTimer';
 import type { MissionId, IMissionSlot } from '@/models/DailyMission';
 import { FlashcardPanel } from '@/components/ui/FlashcardPanel';
+import { BadgeSummaryCard } from '@/components/ui/BadgesPanel';
 
 type ActiveTab = 'overview' | 'flashcard';
 
@@ -294,6 +295,9 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
             </div>
           ))}
         </div>
+
+        {/* ── Badge Summary Card ── */}
+        <BadgeSummaryCard exp={totalExp} streak={streak} />
 
         {/* ── Daily Missions ── */}
         <div

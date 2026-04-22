@@ -7,6 +7,7 @@ import {
   FaMapMarkerAlt, FaGraduationCap, FaUser, FaLock, FaGlobe,
   FaChevronDown, FaEye, FaEyeSlash, FaCheckCircle, FaCompass,
 } from 'react-icons/fa';
+import { BadgesPanel } from '@/components/ui/BadgesPanel';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -24,6 +25,8 @@ type ProfileData = {
   ward?: AdminUnit;
   address?: string;
   createdAt: string;
+  exp?: number;
+  streak?: number;
 };
 
 type FormState = {
@@ -868,6 +871,11 @@ export function ProfileClient() {
       </SectionCard>
 
         </div>
+      </div>
+
+      {/* ── Badges Collection ─────────────────────────────────────────────── */}
+      <div className="mt-8">
+        <BadgesPanel exp={profile.exp || 0} streak={profile.streak || 0} />
       </div>
 
       {/* ── Footer ────────────────────────────────────────────────────────── */}

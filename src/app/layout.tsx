@@ -3,6 +3,7 @@ import { Be_Vietnam_Pro } from "next/font/google";
 import "./globals.css";
 import PwaRegister from "@/components/PwaRegister";
 import { OnlineTimer } from "@/components/OnlineTimer";
+import { BadgeUnlockWatcher } from "@/components/ui/BadgeUnlockWatcher";
 
 const beVietnamPro = Be_Vietnam_Pro({
   weight: ["400", "500", "600", "700", "800", "900"],
@@ -201,6 +202,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         <PwaRegister />
         <OnlineTimer />
+        <BadgeUnlockWatcher />
         {children}
       </body>
     </html>
