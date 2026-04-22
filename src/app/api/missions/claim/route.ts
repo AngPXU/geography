@@ -49,7 +49,8 @@ export async function POST(req: NextRequest) {
   const streakLastDate: string = (dbUser as any).streakLastDate ?? '';
 
   let newStreak = currentStreak;
-  const userUpdate: Record<string, unknown> = { $inc: { exp: slot.exp } };
+  // Thưởng Xu tương đương với số EXP nhận được
+  const userUpdate: Record<string, unknown> = { $inc: { exp: slot.exp, coins: slot.exp } };
 
   if (!wasAnyClaimedBefore) {
     if (streakLastDate === today) {

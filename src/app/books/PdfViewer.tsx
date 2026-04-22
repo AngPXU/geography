@@ -263,7 +263,6 @@ export default function PdfViewer({ pdfUrl, title, color, grade = 6, startPage =
             pageNumber={page}
             bookTitle={title}
             grade={grade}
-            color={color}
             getPageText={getPageText}
             getPageImage={getPageImage}
             onClose={() => setShowAi(false)}

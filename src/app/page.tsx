@@ -24,10 +24,13 @@ export default async function HomePage() {
   const dbUser = await User.findOne({ username: session.user.name }).lean() as {
     role?: number; exp?: number; streak?: number;
     studyTimeToday?: number; studyTimeDate?: string;
+    petExp?: number; coins?: number;
   } | null;
   const userRole: number = dbUser?.role ?? 3;
   const userExp: number = dbUser?.exp ?? 0;
   const userStreak: number = dbUser?.streak ?? 0;
+  const petExp: number = dbUser?.petExp ?? 0;
+  const coins: number = dbUser?.coins ?? 50;
   const today = getVietnamDateStr();
   const userStudySeconds: number =
     dbUser?.studyTimeDate === today ? (dbUser.studyTimeToday ?? 0) : 0;
@@ -109,7 +112,7 @@ export default async function HomePage() {
       </main>
 
       {/* Bảng điều khiển tổng quan */}
-      <DashboardOverview username={session.user.name ?? 'Bạn'} avatar={session.user.image ?? undefined} initialExp={userExp} initialStreak={userStreak} initialStudySeconds={userStudySeconds} />
+      <DashboardOverview username={session.user.name ?? 'Bạn'} avatar={session.user.image ?? undefined} initialExp={userExp} initialStreak={userStreak} initialStudySeconds={userStudySeconds} initialPetExp={petExp} initialCoins={coins} />
 
       {/* Kỷ Lục Trái Đất */}
       <EarthRecords />

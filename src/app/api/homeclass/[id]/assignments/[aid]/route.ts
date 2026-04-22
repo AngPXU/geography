@@ -94,7 +94,7 @@ export async function POST(req: NextRequest, { params }: Params) {
     await assignment.save();
 
     if (assignment.expReward > 0) {
-      await User.findByIdAndUpdate(userId, { $inc: { exp: assignment.expReward } });
+      await User.findByIdAndUpdate(userId, { $inc: { exp: assignment.expReward, coins: assignment.expReward } });
     }
 
     // Notify teacher

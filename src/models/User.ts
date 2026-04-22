@@ -19,6 +19,8 @@ export interface IUser extends Document {
   studyTimeToday: number;  // accumulated seconds today
   studyTimeDate: string;  // YYYY-MM-DD (VN) of last study session
   ipAddress?: string; // IPv4/IPv6 used to locate the user on map
+  petExp: number;
+  coins: number;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -67,6 +69,8 @@ const UserSchema: Schema<IUser> = new mongoose.Schema(
     studyTimeToday:  { type: Number, default: 0 },
     studyTimeDate:   { type: String, default: '' },
     ipAddress:       { type: String },
+    petExp:          { type: Number, default: 0 },
+    coins:           { type: Number, default: 50 }, // Cho người mới 50 coins để thử cho ăn
   },
   {
     timestamps: true,

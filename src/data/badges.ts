@@ -1,4 +1,4 @@
-export type BadgeCategory = 'exp' | 'streak' | 'books' | 'arena' | 'other';
+export type BadgeCategory = 'exp' | 'streak' | 'books' | 'arena' | 'other' | 'pet';
 
 export interface Badge {
   id: string;
@@ -45,6 +45,11 @@ export const BADGES: Badge[] = [
   { id: 'other_3', name: 'Diện Mạo Mới', description: 'Đổi ảnh đại diện', icon: '📸', color: 'from-fuchsia-400 to-purple-500', category: 'other', conditionValue: 1 },
   { id: 'other_4', name: 'Nhà Sưu Tầm', description: 'Mở khoá 10 huy hiệu', icon: '💎', color: 'from-cyan-300 to-blue-400', category: 'other', conditionValue: 10 },
   { id: 'other_5', name: 'Siêu Nhân Địa Lý', description: 'Hoàn thành 50 nhiệm vụ', icon: '🦸', color: 'from-rose-400 to-pink-500', category: 'other', conditionValue: 50 },
+
+  // ── THÚ CƯNG (PET) ──
+  { id: 'pet_1', name: 'Người Nuôi Thú', description: 'Thú cưng đạt Level 4', icon: '🐾', color: 'from-emerald-400 to-green-500', category: 'pet', conditionValue: 4 },
+  { id: 'pet_2', name: 'Người Dạy Thú', description: 'Thú cưng đạt Level 7', icon: '🦊', color: 'from-cyan-400 to-blue-500', category: 'pet', conditionValue: 7 },
+  { id: 'pet_3', name: 'Bậc Thầy Thần Thú', description: 'Thú cưng đạt Level 10', icon: '🐉', color: 'from-amber-400 to-yellow-500', category: 'pet', conditionValue: 10 },
 ];
 
 /**
@@ -61,6 +66,7 @@ export function checkUnlocked(
   mapsGuessed = 0,
   arenaWins = 0,
   tasksCompleted = 0,
+  petLevel = 1,
 ): boolean {
   switch (badge.category) {
     case 'exp':    return exp >= badge.conditionValue;
@@ -74,6 +80,8 @@ export function checkUnlocked(
       // other_1 (Cú Mèo), other_2 (Lớp Trưởng), other_3 (Diện Mạo Mới),
       // other_4 (Nhà Sưu Tầm) — cần dữ liệu backend → tạm false
       return false;
+    case 'pet':
+      return petLevel >= badge.conditionValue;
     default:       return false;
   }
 }

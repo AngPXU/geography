@@ -12,6 +12,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { BADGES, Badge, checkUnlocked as checkBadgeUnlocked } from '@/data/badges';
+import { getPetInfo } from '@/utils/petSystem';
 
 // ─── localStorage helpers ──────────────────────────────────────────────────────
 const SEEN_KEY = 'geo_seen_badges';
@@ -185,6 +186,7 @@ export function BadgeUnlockModal({ badge, onConfirm }: { badge: Badge; onConfirm
 interface UserStats {
   exp: number;
   streak: number;
+  petLevel: number;
 }
 
 export function BadgeUnlockWatcher() {
@@ -195,7 +197,7 @@ export function BadgeUnlockWatcher() {
 
   const detectNew = useCallback((s: UserStats) => {
     const seen = getSeenBadgeIds();
-    const unlocked = BADGES.filter((b) => checkBadgeUnlocked(b, s.exp, s.streak));
+    const unlocked = BADGES.filter((b) => checkBadgeUnlocked(b, s.exp, s.streak, 0, 0, 0, 0, s.petLevel));
     const fresh = unlocked.filter((b) => !seen.has(b.id));
     if (fresh.length === 0) return;
     markBadgesSeen(fresh.map((b) => b.id));
@@ -207,8 +209,10 @@ export function BadgeUnlockWatcher() {
     try {
       const res = await fetch('/api/user/profile');
       if (!res.ok) return;
-      const data = await res.json() as { user?: { exp?: number; streak?: number } };
-      const s: UserStats = { exp: data.user?.exp ?? 0, streak: data.user?.streak ?? 0 };
+      const data = await res.json() as { user?: { exp?: number; streak?: number; petExp?: number } };
+      const petExp = data.user?.petExp ?? 0;
+      const { currentLevel } = getPetInfo(petExp);
+      const s: UserStats = { exp: data.user?.exp ?? 0, streak: data.user?.streak ?? 0, petLevel: currentLevel.level };
       setStats(s);
       detectNew(s);
     } catch {}

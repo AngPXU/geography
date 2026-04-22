@@ -17,15 +17,16 @@ interface BadgesProps {
   mapsGuessed?: number;
   arenaWins?: number;
   tasksCompleted?: number;
+  petLevel?: number;
 }
 
 // ─── Full Badge Grid Modal ─────────────────────────────────────────────────────
 function BadgesModal({ onClose, ...props }: BadgesProps & { onClose: () => void }) {
-  const { exp, streak, booksRead = 0, mapsGuessed = 0, arenaWins = 0, tasksCompleted = 0 } = props;
+  const { exp, streak, booksRead = 0, mapsGuessed = 0, arenaWins = 0, tasksCompleted = 0, petLevel = 1 } = props;
 
   const check = useCallback((b: Parameters<typeof checkUnlocked>[0]) =>
-    checkUnlocked(b, exp, streak, booksRead, mapsGuessed, arenaWins, tasksCompleted),
-    [exp, streak, booksRead, mapsGuessed, arenaWins, tasksCompleted]
+    checkUnlocked(b, exp, streak, booksRead, mapsGuessed, arenaWins, tasksCompleted, petLevel),
+    [exp, streak, booksRead, mapsGuessed, arenaWins, tasksCompleted, petLevel]
   );
 
   const totalUnlocked = BADGES.filter(check).length;
@@ -76,10 +77,10 @@ function BadgesModal({ onClose, ...props }: BadgesProps & { onClose: () => void 
           <div style={{ marginBottom:'16px' }}>
             <div style={{ display:'flex', justifyContent:'space-between', fontSize:'12px', fontWeight:700, color:'#94A3B8', marginBottom:'6px' }}>
               <span>Tiến độ</span>
-              <span style={{ color:'#082F49' }}>{totalUnlocked}<span style={{ color:'#94A3B8' }}>/25</span></span>
+              <span style={{ color:'#082F49' }}>{totalUnlocked}<span style={{ color:'#94A3B8' }}>/{BADGES.length}</span></span>
             </div>
             <div style={{ height:'10px', background:'#F1F5F9', borderRadius:'99px', overflow:'hidden' }}>
-              <div style={{ height:'100%', width:`${(totalUnlocked/25)*100}%`, background:'linear-gradient(90deg,#06B6D4,#3B82F6)', borderRadius:'99px', transition:'width 1s ease' }} />
+              <div style={{ height:'100%', width:`${(totalUnlocked/BADGES.length)*100}%`, background:'linear-gradient(90deg,#06B6D4,#3B82F6)', borderRadius:'99px', transition:'width 1s ease' }} />
             </div>
           </div>
 
@@ -137,15 +138,15 @@ function BadgesModal({ onClose, ...props }: BadgesProps & { onClose: () => void 
 // ─── Small Summary Card (for Overview Tab) ─────────────────────────────────────
 export function BadgeSummaryCard(props: BadgesProps) {
   const [open, setOpen] = useState(false);
-  const { exp, streak, booksRead = 0, mapsGuessed = 0, arenaWins = 0, tasksCompleted = 0 } = props;
+  const { exp, streak, booksRead = 0, mapsGuessed = 0, arenaWins = 0, tasksCompleted = 0, petLevel = 1 } = props;
 
   const totalUnlocked = BADGES.filter((b) =>
-    checkUnlocked(b, exp, streak, booksRead, mapsGuessed, arenaWins, tasksCompleted)
+    checkUnlocked(b, exp, streak, booksRead, mapsGuessed, arenaWins, tasksCompleted, petLevel)
   ).length;
 
   // Lấy 3 huy hiệu gần nhất đã mở khoá để preview
   const previewBadges = BADGES
-    .filter((b) => checkUnlocked(b, exp, streak, booksRead, mapsGuessed, arenaWins, tasksCompleted))
+    .filter((b) => checkUnlocked(b, exp, streak, booksRead, mapsGuessed, arenaWins, tasksCompleted, petLevel))
     .slice(-3);
 
   return (
@@ -153,7 +154,7 @@ export function BadgeSummaryCard(props: BadgesProps) {
       {open && <BadgesModal {...props} onClose={() => setOpen(false)} />}
       <button
         onClick={() => setOpen(true)}
-        className="w-full text-left rounded-[24px] p-5 flex items-center justify-between gap-4 transition-all duration-300 hover:-translate-y-1 group"
+        className="w-full h-full text-left rounded-[24px] p-5 flex flex-col items-center justify-center transition-all duration-300 hover:-translate-y-1 group"
         style={{
           background: 'rgba(255, 255, 255, 0.65)',
           backdropFilter: 'blur(24px)',
@@ -161,39 +162,39 @@ export function BadgeSummaryCard(props: BadgesProps) {
           boxShadow: '0 8px 24px rgba(14, 165, 233, 0.08), inset 0 1px 0 rgba(255,255,255,1)',
         }}
       >
-        {/* Left: Icon + text */}
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-br from-yellow-300 to-orange-400 flex items-center justify-center text-2xl shadow-[0_4px_12px_rgba(251,146,60,0.4)] border-2 border-white shrink-0">
-            🏅
+        {/* Top: Icon + text */}
+        <div className="flex flex-col items-center text-center">
+          <div className="w-14 h-14 rounded-full bg-gradient-to-br from-yellow-300 to-orange-400 flex items-center justify-center text-3xl shadow-[0_4px_16px_rgba(251,146,60,0.4)] border-2 border-white mb-3">
+            🏆
           </div>
-          <div className="min-w-0">
-            <p className="text-[#082F49] font-black text-sm leading-tight">Huy Hiệu</p>
-            <p className="text-[#06B6D4] font-black text-xl leading-tight tabular-nums">
-              {totalUnlocked}<span className="text-xs text-slate-400 font-bold">/25</span>
-            </p>
+          <div>
+            <h4 className="font-black text-[#082F49] text-lg leading-tight mb-1">Huy Hiệu</h4>
+            <div className="text-sm font-black text-cyan-500">
+              <span className="text-xl">{totalUnlocked}</span>
+              <span className="text-slate-400">/{BADGES.length}</span>
+            </div>
           </div>
         </div>
 
-        {/* Center: preview icons */}
+        {/* Middle: Preview bubbles */}
         {previewBadges.length > 0 && (
-          <div className="flex items-center -space-x-2 shrink-0">
-            {previewBadges.map((b) => (
-              <div
-                key={b.id}
-                className="w-9 h-9 rounded-full border-2 border-white flex items-center justify-center text-lg shadow-sm"
-                style={{ background: `linear-gradient(135deg, #06B6D4, #3B82F6)` }}
-                title={b.name}
+          <div className="flex -space-x-2 my-2">
+            {previewBadges.map((pb) => (
+              <div 
+                key={pb.id} 
+                className={`w-10 h-10 rounded-full flex items-center justify-center text-lg border-2 border-white bg-gradient-to-br ${pb.color} shadow-sm z-10`}
+                title={pb.name}
               >
-                {b.icon}
+                {pb.icon}
               </div>
             ))}
           </div>
         )}
 
-        {/* Right: Arrow */}
-        <div className="shrink-0 w-8 h-8 rounded-full bg-slate-100 group-hover:bg-cyan-100 flex items-center justify-center transition-colors">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#06B6D4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 18l6-6-6-6" />
+        {/* Bottom: Arrow */}
+        <div className="w-10 h-10 rounded-full bg-slate-100 group-hover:bg-cyan-100 flex items-center justify-center transition-colors mt-auto">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#06B6D4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 12h14M12 5l7 7-7 7" />
           </svg>
         </div>
       </button>
@@ -204,10 +205,10 @@ export function BadgeSummaryCard(props: BadgesProps) {
 // ─── Full Panel (for Profile page) ────────────────────────────────────────────
 export function BadgesPanel(props: BadgesProps) {
   const [open, setOpen] = useState(false);
-  const { exp, streak, booksRead = 0, mapsGuessed = 0, arenaWins = 0, tasksCompleted = 0 } = props;
+  const { exp, streak, booksRead = 0, mapsGuessed = 0, arenaWins = 0, tasksCompleted = 0, petLevel = 1 } = props;
 
   const totalUnlocked = BADGES.filter((b) =>
-    checkUnlocked(b, exp, streak, booksRead, mapsGuessed, arenaWins, tasksCompleted)
+    checkUnlocked(b, exp, streak, booksRead, mapsGuessed, arenaWins, tasksCompleted, petLevel)
   ).length;
 
   return (
@@ -226,7 +227,7 @@ export function BadgesPanel(props: BadgesProps) {
             <div className="w-14 h-14 rounded-full bg-gradient-to-br from-yellow-300 to-orange-400 flex items-center justify-center text-3xl shadow-[0_4px_16px_rgba(251,146,60,0.4)] border-2 border-white">🏆</div>
             <div>
               <h3 className="text-xl font-black text-[#082F49]">Bộ Sưu Tập Huy Hiệu</h3>
-              <p className="text-sm font-semibold text-slate-500 mt-0.5">Đã mở khoá <strong className="text-cyan-500">{totalUnlocked}</strong>/25 danh hiệu</p>
+              <p className="text-sm font-semibold text-slate-500 mt-0.5">Đã mở khoá <strong className="text-cyan-500">{totalUnlocked}</strong>/{BADGES.length} danh hiệu</p>
             </div>
           </div>
           <button
@@ -240,7 +241,7 @@ export function BadgesPanel(props: BadgesProps) {
         {/* Mini grid preview (6 badges) */}
         <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
           {BADGES.slice(0, 6).map((badge) => {
-            const isUnlocked = checkUnlocked(badge, exp, streak, booksRead, mapsGuessed, arenaWins, tasksCompleted);
+            const isUnlocked = checkUnlocked(badge, exp, streak, booksRead, mapsGuessed, arenaWins, tasksCompleted, petLevel);
             return (
               <div
                 key={badge.id}

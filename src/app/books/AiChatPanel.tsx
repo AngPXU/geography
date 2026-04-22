@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
+import { AI_PERSONAS } from '@/data/tutors';
 
 interface Message {
   role: 'user' | 'ai';
@@ -13,7 +14,6 @@ interface Props {
   pageNumber: number;
   bookTitle: string;
   grade: number;
-  color: string;
   /** Gọi để lấy text trang hiện tại */
   getPageText: () => Promise<string>;
   /** Gọi để lấy ảnh canvas trang hiện tại (base64) */
@@ -22,33 +22,32 @@ interface Props {
 }
 
 export default function AiChatPanel({
-  pageNumber, bookTitle, grade, color,
+  pageNumber, bookTitle, grade,
   getPageText, getPageImage, onClose,
 }: Props) {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      role: 'ai',
-      text: `Xin chào! Mình là **GeoBot** 🌍✨\n\nMình đang xem **trang ${pageNumber}** cùng bạn. Hỏi mình bất cứ điều gì về nội dung trang này nhé — mình sẽ giải thích dễ hiểu nhất có thể! 🎓`,
-      timestamp: new Date(),
-    },
-  ]);
+  const [selectedPersonaId, setSelectedPersonaId] = useState(AI_PERSONAS[0].id);
+  const activePersona = AI_PERSONAS.find(p => p.id === selectedPersonaId) || AI_PERSONAS[0];
+  const color = activePersona.color;
+
+  const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput]   = useState('');
   const [loading, setLoad]  = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef  = useRef<HTMLTextAreaElement>(null);
 
+  // Khởi tạo câu chào khi đổi persona hoặc trang
+  useEffect(() => {
+    const welcome = activePersona.welcomeMessage.replace('{{page}}', String(pageNumber));
+    setMessages([{
+      role: 'ai',
+      text: welcome,
+      timestamp: new Date(),
+    }]);
+  }, [selectedPersonaId, pageNumber]);
+
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
-
-  // Cập nhật welcome message khi chuyển trang
-  useEffect(() => {
-    setMessages([{
-      role: 'ai',
-      text: `Mình đang xem **trang ${pageNumber}** cùng bạn 📖\nHỏi mình bất cứ điều gì về nội dung này nhé!`,
-      timestamp: new Date(),
-    }]);
-  }, [pageNumber]);
 
   const send = async () => {
     const q = input.trim();
@@ -74,6 +73,7 @@ export default function AiChatPanel({
           grade,
           pageText,
           imageBase64,
+          personaId: selectedPersonaId
         }),
       });
 
@@ -103,8 +103,7 @@ export default function AiChatPanel({
   return (
     <div style={{
       display: 'flex', flexDirection: 'column', height: '100%',
-      background: 'transparent',
-      borderLeft: 'none',
+      background: 'transparent', borderLeft: 'none',
     }}>
 
       {/* Header */}
@@ -119,10 +118,16 @@ export default function AiChatPanel({
           background: `linear-gradient(135deg, ${color}, ${color}bb)`,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           fontSize: 20, boxShadow: `0 4px 12px ${color}40`,
-        }}>🤖</div>
+        }}>
+          {activePersona.icon}
+        </div>
         <div style={{ flex: 1 }}>
-          <p style={{ fontWeight: 900, fontSize: 14, color: '#082F49', lineHeight: 1.2 }}>GeoBot AI</p>
-          <p style={{ fontSize: 11, color: '#94A3B8', fontWeight: 600 }}>Trang {pageNumber} • Hỏi tôi bất cứ điều gì</p>
+          <p style={{ fontWeight: 900, fontSize: 14, color: '#082F49', lineHeight: 1.2 }}>
+            {activePersona.name}
+          </p>
+          <p style={{ fontSize: 11, color: '#94A3B8', fontWeight: 600 }}>
+            {activePersona.shortDesc}
+          </p>
         </div>
         <button onClick={onClose} style={{
           width: 28, height: 28, borderRadius: 9999, border: 'none',
@@ -130,6 +135,33 @@ export default function AiChatPanel({
           cursor: 'pointer', fontSize: 16, display: 'flex',
           alignItems: 'center', justifyContent: 'center', fontWeight: 700,
         }}>✕</button>
+      </div>
+
+      {/* Persona Selector Bar */}
+      <div style={{
+        display: 'flex', gap: 8, padding: '10px 14px', overflowX: 'auto',
+        background: 'rgba(255, 255, 255, 0.4)', borderBottom: '1px solid rgba(255, 255, 255, 0.6)',
+        scrollbarWidth: 'none', msOverflowStyle: 'none'
+      }}>
+        <style>{`div::-webkit-scrollbar { display: none; }`}</style>
+        {AI_PERSONAS.map(p => (
+          <button
+            key={p.id}
+            onClick={() => setSelectedPersonaId(p.id)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 6,
+              padding: '6px 12px', borderRadius: 9999, border: 'none',
+              background: selectedPersonaId === p.id ? `${p.color}22` : 'rgba(255, 255, 255, 0.6)',
+              boxShadow: selectedPersonaId === p.id ? `inset 0 0 0 1px ${p.color}` : '0 1px 3px rgba(0,0,0,0.05)',
+              color: selectedPersonaId === p.id ? '#082F49' : '#64748B',
+              fontWeight: 700, fontSize: 12, cursor: 'pointer',
+              transition: 'all 0.2s ease', whiteSpace: 'nowrap'
+            }}
+          >
+            <span style={{ fontSize: 14 }}>{p.icon}</span>
+            <span>{p.name}</span>
+          </button>
+        ))}
       </div>
 
       {/* Messages */}
@@ -208,7 +240,7 @@ export default function AiChatPanel({
           value={input}
           onChange={e => setInput(e.target.value)}
           onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); send(); } }}
-          placeholder="Hỏi GeoBot về nội dung trang này..."
+          placeholder={`Hỏi ${activePersona.name} về nội dung...`}
           rows={2}
           style={{
             flex: 1, borderRadius: 16, padding: '8px 14px',
