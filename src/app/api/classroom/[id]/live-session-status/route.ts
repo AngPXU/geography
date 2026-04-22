@@ -3,6 +3,8 @@ import { auth } from '@/auth';
 import dbConnect from '@/utils/db';
 import User from '@/models/User';
 import Classroom from '@/models/Classroom';
+import HomeClass from '@/models/HomeClass';
+import { notify } from '@/utils/notificationService';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -30,8 +32,33 @@ export async function POST(req: NextRequest, { params }: Params) {
 
   const { active } = await req.json() as { active: boolean };
   classroom.liveSessionActive = !!active;
-  // Giáo viên bắt đầu buổi học mới → xóa sessionEndedAt của buổi cũ
-  if (active) classroom.sessionEndedAt = undefined;
+
+  if (active) {
+    classroom.sessionEndedAt = undefined;
+    // Notify all students of this teacher across all their HomeClasses
+    try {
+      const classes = await HomeClass.find({ teacherId: classroom.teacherId }).lean();
+      const studentIds = new Set<string>();
+      classes.forEach(c => {
+        if (c.members) {
+          c.members.forEach((m: any) => studentIds.add(m.userId.toString()));
+        }
+      });
+      if (studentIds.size > 0) {
+        await notify(
+          Array.from(studentIds),
+          'LIVE_CLASS_STARTED',
+          '🔴 Lớp học trực tuyến đang diễn ra',
+          `Giáo viên ${classroom.teacherName} đã mở phòng học "${classroom.name}". Bấm vào để tham gia ngay!`,
+          `/classroom/${classroom.code}`,
+          classroom.teacherId
+        );
+      }
+    } catch (err) {
+      console.error('Failed to notify live class start', err);
+    }
+  }
+
   await classroom.save();
 
   return NextResponse.json({ ok: true, liveSessionActive: classroom.liveSessionActive });

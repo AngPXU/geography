@@ -3,6 +3,7 @@
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
 import { signOut } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 
 import { FaGlobeAsia, FaMapMarkedAlt, FaGamepad, FaUsers, FaBell, FaBook, FaUserCircle, FaSignOutAlt, FaCog, FaShieldAlt } from 'react-icons/fa';
 import { SettingsDrawer } from '@/components/ui/SettingsDrawer';
@@ -19,11 +20,66 @@ const NAV_ITEMS = [
 export function Navbar({ user }: { user?: { name?: string | null; image?: string | null; role?: number } }) {
   const roleName = user?.role === 1 ? 'Quản trị viên' : user?.role === 2 ? 'Giáo viên' : 'Học sinh';
 
+  const router = useRouter();
   const [scrolled, setScrolled] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const dropdownRef1 = useRef<HTMLDivElement>(null);
   const dropdownRef2 = useRef<HTMLDivElement>(null);
+
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [loadingNotifs, setLoadingNotifs] = useState(false);
+  const dropdownRefNotif = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!user?.name) return;
+    const poll = async () => {
+      try {
+        const res = await fetch('/api/notifications?poll=1');
+        if (res.ok) {
+          const data = await res.json();
+          setUnreadCount(data.unreadCount || 0);
+        }
+      } catch (e) {}
+    };
+    poll();
+    const intv = setInterval(poll, 5000);
+    return () => clearInterval(intv);
+  }, [user]);
+
+  const toggleNotif = async () => {
+    setNotifOpen(v => !v);
+    if (!notifOpen) {
+      setDropdownOpen(false);
+      setLoadingNotifs(true);
+      try {
+        const res = await fetch('/api/notifications');
+        const data = await res.json();
+        setNotifications(data.notifications || []);
+        setUnreadCount(data.unreadCount || 0);
+      } catch (e) {}
+      setLoadingNotifs(false);
+    }
+  };
+
+  const markAsRead = async (id?: string) => {
+    setNotifications(prev => prev.map(n => (!id || n._id === id) ? { ...n, isRead: true } : n));
+    if (!id) setUnreadCount(0);
+    else setUnreadCount(p => Math.max(0, p - 1));
+    await fetch('/api/notifications', {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(id ? { id } : {})
+    });
+  };
+
+  const handleNotifClick = async (n: any) => {
+    if (!n.isRead) await markAsRead(n._id);
+    setNotifOpen(false);
+    if (n.link) router.push(n.link);
+  };
 
   useEffect(() => {
     const onScroll = () => {
@@ -44,10 +100,41 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
       ) {
         setDropdownOpen(false);
       }
+      if (!dropdownRefNotif.current?.contains(target)) {
+        setNotifOpen(false);
+      }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  const NotifMenu = () => (
+    <div className="absolute right-0 top-[calc(100%+8px)] w-80 max-h-96 flex flex-col bg-white/95 backdrop-blur-xl border border-white/80 rounded-[20px] shadow-[0_16px_40px_rgba(8,47,73,0.15)] overflow-hidden z-[9999] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
+      <div className="px-4 py-3 bg-slate-50 border-b border-slate-100 flex items-center justify-between shrink-0">
+        <h3 className="font-extrabold text-[#082F49] text-sm">Thông báo</h3>
+        {unreadCount > 0 && (
+          <button onClick={() => markAsRead()} className="text-xs text-[#06b6d4] hover:text-[#082F49] font-medium">
+            Đánh dấu tất cả đã đọc
+          </button>
+        )}
+      </div>
+      <div className="flex-1 overflow-y-auto p-2 space-y-1">
+        {loadingNotifs ? (
+          <div className="p-4 text-center text-sm text-slate-400">Đang tải...</div>
+        ) : notifications.length === 0 ? (
+          <div className="p-4 text-center text-sm text-slate-400">Chưa có thông báo nào</div>
+        ) : (
+          notifications.map(n => (
+            <div key={n._id} onClick={() => handleNotifClick(n)} className={`p-3 rounded-xl cursor-pointer transition-colors ${n.isRead ? 'opacity-80 hover:bg-slate-50' : 'bg-cyan-50/50 hover:bg-cyan-50'}`}>
+               <p className={`text-sm ${n.isRead ? 'font-semibold text-[#334155]' : 'font-extrabold text-[#082F49]'}`}>{n.title}</p>
+               <p className="text-xs text-slate-500 mt-1 leading-relaxed">{n.message}</p>
+               <p className="text-[10px] text-slate-400 mt-1.5">{new Date(n.createdAt).toLocaleString('vi-VN')}</p>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
 
   const DropdownMenu = () => (
     <div className="absolute right-0 top-[calc(100%+8px)] w-56 bg-white/95 backdrop-blur-xl border border-white/80 rounded-[20px] shadow-[0_16px_40px_rgba(8,47,73,0.15)] overflow-hidden z-[9999] animate-in fade-in zoom-in-95 duration-200 origin-top-right">
@@ -262,10 +349,18 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
               )}
 
               {/* Notification */}
-              <button className="relative w-10 h-10 rounded-[14px] bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 hover:bg-white hover:text-slate-700 hover:shadow-md transition-all duration-200 group">
-                <FaBell className="text-[15px] group-hover:scale-110 transition-transform" />
-                <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-[1.5px] border-white animate-pulse" />
-              </button>
+              <div className="relative" ref={dropdownRefNotif}>
+                <button
+                  onClick={toggleNotif}
+                  className="relative w-10 h-10 rounded-[14px] bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 hover:bg-white hover:text-slate-700 hover:shadow-md transition-all duration-200 group"
+                >
+                  <FaBell className="text-[15px] group-hover:scale-110 transition-transform" />
+                  {unreadCount > 0 && (
+                    <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-[1.5px] border-white animate-pulse" />
+                  )}
+                </button>
+                {!scrolled && notifOpen && <NotifMenu />}
+              </div>
 
               {/* User pill + dropdown */}
               <div className="relative" ref={dropdownRef1}>
@@ -328,9 +423,16 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
           )}
 
           {/* Bell */}
-          <div className="island-icon relative" title="Thông báo">
-            <FaBell style={{ fontSize: 14 }} />
-            <span className="island-notif-dot" />
+          <div className="relative" ref={dropdownRefNotif}>
+            <div className="island-icon relative" title="Thông báo" onClick={toggleNotif}>
+              <FaBell style={{ fontSize: 14 }} />
+              {unreadCount > 0 && <span className="island-notif-dot" />}
+            </div>
+            {scrolled && notifOpen && (
+              <div className="absolute top-[100%] right-0 pt-3">
+                <NotifMenu />
+              </div>
+            )}
           </div>
 
           {/* Avatar Area inside Island */}

@@ -1663,6 +1663,208 @@ function UserRoleModal({ user, onClose, onSaved }: {
   );
 }
 
+/* ═══════════════════════ ADD USER MODAL ════════════════════════════ */
+
+function AddUserModal({ onClose, onSaved }: {
+  onClose: () => void;
+  onSaved: (user: any) => Promise<void>;
+}) {
+  const [form, setForm] = useState({
+    username: '', password: '', confirmPassword: '', role: 3, email: '', fullName: '',
+    className: '', school: '', province: '', ward: '', address: ''
+  });
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+
+  const [provinces, setProvinces] = useState<{code: number, name: string}[]>([]);
+  const [wards, setWards] = useState<{code: number, name: string}[]>([]);
+
+  useEffect(() => {
+    fetch('https://provinces.open-api.vn/api/v2/p/')
+      .then((r) => r.json())
+      .then((data) => setProvinces(data))
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (!form.province) {
+      setWards([]);
+      setForm(p => ({ ...p, ward: '' }));
+      return;
+    }
+    fetch(`https://provinces.open-api.vn/api/v2/p/${form.province}?depth=2`)
+      .then((r) => r.json())
+      .then((data) => {
+        setWards(data.wards ?? []);
+        setForm(p => ({ ...p, ward: '' }));
+      })
+      .catch(() => {});
+  }, [form.province]);
+
+  const fldCls = 'w-full px-3 py-2.5 rounded-[12px] border border-slate-200 bg-slate-50 text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all';
+
+  const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => 
+    setForm(p => ({ ...p, [k]: k === 'role' ? Number(e.target.value) : e.target.value }));
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.username.trim() || !form.password.trim()) {
+      setError('Tên đăng nhập và mật khẩu là bắt buộc');
+      return;
+    }
+    if (form.password !== form.confirmPassword) {
+      setError('Mật khẩu xác nhận không khớp');
+      return;
+    }
+    
+    setSaving(true);
+    setError('');
+    
+    const provinceObj = form.province ? provinces.find((p) => String(p.code) === form.province) : undefined;
+    const wardObj = form.ward ? wards.find((w) => String(w.code) === form.ward) : undefined;
+
+    const payload = {
+      username: form.username,
+      password: form.password,
+      role: form.role,
+      fullName: form.fullName,
+      email: form.email,
+      className: form.className,
+      school: form.school,
+      address: form.address,
+      province: provinceObj,
+      ward: wardObj
+    };
+
+    try {
+      await onSaved(payload);
+      onClose();
+    } catch (err: unknown) {
+      setError(err instanceof Error ? err.message : 'Lỗi không xác định');
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
+      <div className="relative w-full max-w-2xl bg-white/90 backdrop-blur-[20px] border border-white
+        rounded-[24px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100
+          bg-gradient-to-r from-cyan-50 to-blue-50 shrink-0">
+          <h3 className="font-black text-[#082F49] text-lg">✨ Tạo người dùng mới</h3>
+          <button type="button" onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200
+            flex items-center justify-center text-slate-500 transition-colors">
+            <FaTimes className="text-xs" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
+          {error && (
+            <div className="flex items-center gap-2 px-4 py-3 rounded-[12px] bg-red-50 border
+              border-red-200 text-red-600 text-sm font-semibold">
+              <FaExclamationTriangle className="shrink-0" /> {error}
+            </div>
+          )}
+          
+          <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-3">
+            <h4 className="text-xs font-black text-[#94A3B8] uppercase tracking-wide">1. Thông tin đăng nhập</h4>
+            
+            <div>
+              <label className="block text-xs font-bold text-[#334155] mb-1">Vai trò *</label>
+              <select value={form.role} onChange={set('role')} className={fldCls}>
+                <option value={1}>Admin</option>
+                <option value={2}>Giáo viên</option>
+                <option value={3}>Học sinh</option>
+              </select>
+            </div>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-[#334155] mb-1">Tên đăng nhập *</label>
+                <input value={form.username} onChange={set('username')} required className={fldCls} />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[#334155] mb-1">Email <span className="text-slate-400 font-normal">(tuỳ chọn)</span></label>
+                <input value={form.email} onChange={set('email')} type="email" className={fldCls} placeholder="example@email.com" />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-[#334155] mb-1">Mật khẩu *</label>
+                <input value={form.password} onChange={set('password')} required type="password" className={fldCls} />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[#334155] mb-1">Xác nhận mật khẩu *</label>
+                <input value={form.confirmPassword} onChange={set('confirmPassword')} required type="password" className={fldCls} />
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-3">
+            <h4 className="text-xs font-black text-[#94A3B8] uppercase tracking-wide">2. Nhận diện cá nhân</h4>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <div className="col-span-2">
+                <label className="block text-xs font-bold text-[#334155] mb-1">Họ và tên *</label>
+                <input value={form.fullName} onChange={set('fullName')} required className={fldCls} placeholder="Nguyễn Văn An" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[#334155] mb-1">Lớp *</label>
+                <input value={form.className} onChange={set('className')} required className={fldCls} placeholder="Ví dụ: 8A1" />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[#334155] mb-1">Trường *</label>
+                <input value={form.school} onChange={set('school')} required className={fldCls} placeholder="Tên trường..." />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="block text-xs font-bold text-[#334155] mb-1">Tỉnh / Thành phố</label>
+                <select value={form.province} onChange={set('province')} className={fldCls}>
+                  <option value="">-- Chọn tỉnh / thành phố --</option>
+                  {provinces.map((p) => (
+                    <option key={p.code} value={String(p.code)}>{p.name}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-[#334155] mb-1">Xã / Phường</label>
+                <select value={form.ward} onChange={set('ward')} className={fldCls} disabled={!form.province || wards.length === 0}>
+                  <option value="">-- Chọn xã / phường --</option>
+                  {wards.map((w) => (
+                    <option key={w.code} value={String(w.code)}>{w.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-[#334155] mb-1">Địa chỉ hiện tại <span className="text-slate-400 font-normal">(tuỳ chọn)</span></label>
+              <input value={form.address} onChange={set('address')} className={fldCls} placeholder="Số nhà, tên đường, khu vực..." />
+            </div>
+          </div>
+
+          <div className="flex gap-3 pt-2">
+            <button type="button" onClick={onClose}
+              className="flex-1 py-3 rounded-[12px] border border-slate-200 text-sm font-bold
+                text-[#334155] hover:bg-slate-50 transition-all">Huỷ</button>
+            <button type="submit" disabled={saving}
+              className="flex-1 py-3 rounded-[12px] bg-gradient-to-r from-emerald-500 to-cyan-500
+                text-white text-sm font-bold hover:from-emerald-400 hover:to-cyan-400 transition-all
+                flex items-center justify-center gap-2 disabled:opacity-50">
+              {saving && <FaSpinner className="animate-spin text-xs" />}
+              Hoàn tất tạo mới
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
 /* ═══════════════════════ USERS TAB ════════════════════════════════ */
 
 function UsersTab() {
@@ -1675,6 +1877,7 @@ function UsersTab() {
   const [roleFilter, setRoleFilter]     = useState<number | 'all'>('all');
   const [sortKey, setSortKey]           = useState<'username' | 'email' | 'exp' | 'streak' | 'createdAt'>('createdAt');
   const [sortDir, setSortDir]           = useState<'asc' | 'desc'>('desc');
+  const [showAddUser, setShowAddUser]   = useState(false);
   const [editTarget, setEditTarget]     = useState<UserRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null);
   const [toast, setToast]               = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
@@ -1730,6 +1933,19 @@ function UsersTab() {
     setDeleteTarget(null);
     if (users.length === 1 && page > 1) setPage(p => p - 1);
     else fetchUsers();
+  };
+
+  const handleAddUserSave = async (form: any) => {
+    const res = await fetch('/api/admin/users', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form)
+    });
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Tạo người dùng thất bại');
+    showToast('✨ Đã tạo người dùng thành công!');
+    setPage(1);
+    fetchUsers();
   };
 
   return (
@@ -1802,6 +2018,12 @@ function UsersTab() {
               </button>
             )}
           </div>
+          <button onClick={() => setShowAddUser(true)}
+            className="flex items-center gap-2 px-4 py-2 rounded-[12px] bg-gradient-to-r from-emerald-500 to-cyan-500
+              text-white text-sm font-bold hover:from-emerald-400 hover:to-cyan-400 shadow-md transition-all">
+            <FaUserPlus className="text-xs" />
+            Tạo người dùng
+          </button>
         </div>
       </div>
 
@@ -1907,6 +2129,13 @@ function UsersTab() {
         </div>
       )}
 
+      {/* Add user modal */}
+      {showAddUser && (
+        <AddUserModal
+          onClose={() => setShowAddUser(false)}
+          onSaved={handleAddUserSave}
+        />
+      )}
       {/* Edit role modal */}
       {editTarget && (
         <UserRoleModal

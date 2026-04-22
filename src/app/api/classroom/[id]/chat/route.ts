@@ -15,10 +15,10 @@ export async function GET(_req: Request, { params }: Params) {
   const { id } = await params;
   await dbConnect();
 
-  const user = await User.findOne({ username: session.user.name });
+  const user = await User.findOne({ username: session.user.name }).lean();
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-  const classroom = await Classroom.findById(id);
+  const classroom = await Classroom.findById(id).lean();
   if (!classroom) return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
 
   const userId = user._id.toString();
@@ -55,10 +55,10 @@ export async function POST(req: Request, { params }: Params) {
   }
 
   await dbConnect();
-  const user = await User.findOne({ username: session.user.name });
+  const user = await User.findOne({ username: session.user.name }).lean();
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
-  const classroom = await Classroom.findById(id);
+  const classroom = await Classroom.findById(id).lean();
   if (!classroom) return NextResponse.json({ error: 'Classroom not found' }, { status: 404 });
 
   const userId = user._id.toString();

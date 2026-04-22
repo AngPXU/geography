@@ -1,10 +1,11 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import dbConnect from '@/utils/db';
 import HomeClass from '@/models/HomeClass';
 import Assignment, { computeAssignmentScore, IQuestion } from '@/models/Assignment';
 import User from '@/models/User';
 import mongoose from 'mongoose';
+import { notify } from '@/utils/notificationService';
 
 type Params = { params: Promise<{ id: string; aid: string }> };
 
@@ -96,6 +97,17 @@ export async function POST(req: NextRequest, { params }: Params) {
       await User.findByIdAndUpdate(userId, { $inc: { exp: assignment.expReward } });
     }
 
+    // Notify teacher
+    if (assignment.createdBy) {
+      await notify(
+        assignment.createdBy.toString(),
+        'SUBMITTED_ASSIGNMENT',
+        '📩 Học sinh nộp bài',
+        `Học sinh ${username} vừa nộp bài tập "${assignment.title}".`,
+        `/admin` // Hoặc link dẫn đến dashboard chấm điểm
+      );
+    }
+
     return NextResponse.json({ success: true, expAwarded: assignment.expReward });
   } catch (err) {
     console.error('[assignments/[aid] POST]', err);
@@ -158,6 +170,16 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     if (fullyGraded) sub.gradedAt = new Date();
 
     await assignment.save();
+
+    // Notify student
+    await notify(
+      userId,
+      'GRADED_ASSIGNMENT',
+      '✅ Có điểm bài tập',
+      `Giáo viên vừa chấm điểm phần tự luận cho bài tập "${assignment.title}".`,
+      `/assignments`
+    );
+
     return NextResponse.json({ success: true, totalScore, fullyGraded });
   } catch (err) {
     console.error('[assignments/[aid] PATCH]', err);

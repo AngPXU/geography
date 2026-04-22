@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0] || req.headers.get('x-real-ip') || 'Unknown';
     const { username, password, email, fullName, className, school, province, ward, address, role } = await req.json();
 
     if (!username || !password) {
@@ -56,6 +57,7 @@ export async function POST(req: Request) {
       ...(province  && { province }),
       ...(ward      && { ward }),
       ...(address   && { address }),
+      ipAddress: ip,
     });
 
     return NextResponse.json(

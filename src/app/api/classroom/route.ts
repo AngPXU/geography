@@ -18,7 +18,7 @@ export async function GET() {
   if (!session?.user?.name) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   await dbConnect();
-  const user = await User.findOne({ username: session.user.name });
+  const user = await User.findOne({ username: session.user.name }).lean();
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
 
   const userId = user._id.toString();
@@ -26,17 +26,17 @@ export async function GET() {
   let classrooms;
   if (user.role === 2 || user.role === 1) {
     // Teacher: their own classrooms
-    classrooms = await Classroom.find({ teacherId: userId, isActive: true }).sort({ updatedAt: -1 });
+    classrooms = await Classroom.find({ teacherId: userId, isActive: true }).sort({ updatedAt: -1 }).lean();
   } else {
     // Student: classrooms they're in
     classrooms = await Classroom.find({
       'participants.studentId': userId,
       isActive: true,
-    }).sort({ updatedAt: -1 });
+    }).sort({ updatedAt: -1 }).lean();
   }
 
   return NextResponse.json({
-    classrooms: classrooms.map((c) => {
+    classrooms: classrooms.map((c: any) => {
       const onlineThreshold = new Date(Date.now() - 2 * 60 * 1000); // 2 min window
       const onlineCount = c.participants.filter(
         (p: { lastSeen: Date }) => new Date(p.lastSeen) > onlineThreshold,
@@ -44,7 +44,7 @@ export async function GET() {
       const teacherOnline = c.teacherLastSeen
         ? new Date(c.teacherLastSeen) > onlineThreshold
         : false;
-      return { ...c.toObject(), onlineCount, teacherOnline };
+      return { ...c, onlineCount, teacherOnline };
     }),
   });
 }
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
   if (!session?.user?.name) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
   await dbConnect();
-  const user = await User.findOne({ username: session.user.name });
+  const user = await User.findOne({ username: session.user.name }).lean();
   if (!user) return NextResponse.json({ error: 'User not found' }, { status: 404 });
   if (user.role !== 2 && user.role !== 1) {
     return NextResponse.json({ error: 'Chỉ giáo viên mới có thể tạo lớp học' }, { status: 403 });

@@ -4,6 +4,7 @@ import dbConnect from '@/utils/db';
 import HomeClass from '@/models/HomeClass';
 import User from '@/models/User';
 import mongoose from 'mongoose';
+import { notify } from '@/utils/notificationService';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -42,6 +43,14 @@ export async function POST(req: NextRequest, { params }: Params) {
       joinedAt: new Date(),
     });
     await cls.save();
+
+    await notify(
+      student._id.toString(),
+      'CLASS_JOIN',
+      '🏫 Lớp học mới',
+      `Bạn đã được thêm vào lớp học "${cls.name}".`,
+      `/homeclass/${cls._id}`
+    );
 
     return NextResponse.json({ member: cls.members[cls.members.length - 1] });
   } catch (err) {

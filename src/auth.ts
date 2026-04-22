@@ -4,6 +4,7 @@ import CredentialsProvider from 'next-auth/providers/credentials';
 import dbConnect from './utils/db';
 import User from './models/User';
 import bcrypt from 'bcryptjs';
+import { headers } from 'next/headers';
 
 export const { auth, signIn, signOut, handlers: { GET, POST } } = NextAuth({
   ...authConfig,
@@ -34,6 +35,16 @@ export const { auth, signIn, signOut, handlers: { GET, POST } } = NextAuth({
 
         if (!isPasswordMatch) {
           throw new Error('Invalid password.');
+        }
+
+        try {
+          const headersList = await headers();
+          const ip = headersList.get('x-forwarded-for')?.split(',')[0] || headersList.get('x-real-ip') || 'Unknown';
+          if (ip !== 'Unknown') {
+            await User.findByIdAndUpdate(user._id, { ipAddress: ip });
+          }
+        } catch (error) {
+          console.error("Lỗi khi cập nhật IP lúc đăng nhập:", error);
         }
 
         return {

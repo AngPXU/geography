@@ -1,9 +1,10 @@
-﻿import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import dbConnect from '@/utils/db';
 import HomeClass from '@/models/HomeClass';
 import Assignment from '@/models/Assignment';
 import mongoose from 'mongoose';
+import { notify } from '@/utils/notificationService';
 
 type Params = { params: Promise<{ id: string }> };
 
@@ -51,6 +52,19 @@ export async function POST(req: NextRequest, { params }: Params) {
       submissions: [],
       createdBy:   userId,
     });
+
+    // Notify all students in this class
+    if (cls.members && cls.members.length > 0) {
+      const studentIds = cls.members.map((m: any) => m.userId.toString());
+      await notify(
+        studentIds,
+        'NEW_ASSIGNMENT',
+        '📝 Bài tập mới!',
+        `Giáo viên ${cls.teacherName} vừa giao bài tập: "${title.trim()}" cho lớp ${cls.name}.`,
+        `/assignments`,
+        userId
+      );
+    }
 
     return NextResponse.json({ assignment }, { status: 201 });
   } catch (err) {

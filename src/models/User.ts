@@ -18,6 +18,7 @@ export interface IUser extends Document {
   streakLastDate: string;
   studyTimeToday: number;  // accumulated seconds today
   studyTimeDate: string;  // YYYY-MM-DD (VN) of last study session
+  ipAddress?: string; // IPv4/IPv6 used to locate the user on map
   createdAt: Date;
   updatedAt: Date;
 }
@@ -65,6 +66,7 @@ const UserSchema: Schema<IUser> = new mongoose.Schema(
     streakLastDate:  { type: String, default: '' },
     studyTimeToday:  { type: Number, default: 0 },
     studyTimeDate:   { type: String, default: '' },
+    ipAddress:       { type: String },
   },
   {
     timestamps: true,
