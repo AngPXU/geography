@@ -3,12 +3,14 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import { ALL_MISSIONS } from '@/utils/missions';
+import { STREAK_MILESTONES } from '@/utils/streakSystem';
 import { claimMission, claimMissionWithExp } from '@/utils/missionTracker';
 import { useStudyTimer } from '@/utils/useStudyTimer';
 import type { MissionId, IMissionSlot } from '@/models/DailyMission';
 import { FlashcardPanel } from '@/components/ui/FlashcardPanel';
 import { BadgeSummaryCard } from '@/components/ui/BadgesPanel';
 import { PetGarden } from '@/components/pet/PetGarden';
+import { StreakModal } from '@/components/ui/StreakModal';
 
 type ActiveTab = 'overview' | 'flashcard';
 
@@ -94,6 +96,7 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
   const [totalExp, setTotalExp] = useState(initialExp);
   const [streak, setStreak] = useState(initialStreak);
   const [last7Days, setLast7Days] = useState<StreakDay[]>([]);
+  const [showStreakModal, setShowStreakModal] = useState(false);
 
   const fetchMissions = useCallback(async () => {
     try {
@@ -369,10 +372,14 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
                             <p className="text-slate-400 text-xs font-medium mt-0.5">{def.sub}</p>
                           </div>
                         </div>
-                        <span className={`shrink-0 font-black text-sm px-2.5 py-1 rounded-full border ${isClaimed ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : 'text-cyan-500 bg-cyan-50 border-cyan-100'
-                          }`}>
-                          +{slot.exp} EXP
-                        </span>
+                        <div className="flex flex-col items-end gap-1 shrink-0">
+                          <span className={`font-black text-sm px-2.5 py-1 rounded-full border ${isClaimed ? 'text-emerald-600 bg-emerald-50 border-emerald-200' : 'text-cyan-500 bg-cyan-50 border-cyan-100'}`}>
+                            +{slot.exp} EXP
+                          </span>
+                          <span className={`font-black text-xs px-2.5 py-0.5 rounded-full border ${isClaimed ? 'text-amber-600 bg-amber-50 border-amber-200' : 'text-amber-500 bg-amber-50/50 border-amber-100'}`}>
+                            +{def.coins} Xu
+                          </span>
+                        </div>
                       </div>
 
                       {/* Progress */}
@@ -433,9 +440,10 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
           {/* ── Bottom Row: Streak + Quick Nav ── */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
-            {/* Streak Calendar */}
+            {/* Streak Calendar — clickable */}
             <div
-              className="rounded-[24px] p-6"
+              onClick={() => setShowStreakModal(true)}
+              className="rounded-[24px] p-6 cursor-pointer hover:-translate-y-1 transition-all duration-300 group"
               style={{
                 background: 'rgba(255, 255, 255, 0.65)',
                 backdropFilter: 'blur(24px)',
@@ -445,7 +453,9 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
             >
               {/* Header */}
               <div className="flex items-center justify-between mb-5">
-                <p className="text-[#082F49] font-black text-base flex items-center gap-2">🔥 Chuỗi ngày học</p>
+                <p className="text-[#082F49] font-black text-base flex items-center gap-2">🔥 Chuỗi ngày học
+                  <span className="text-[10px] font-bold text-slate-400 bg-slate-100 group-hover:bg-orange-100 group-hover:text-orange-500 px-2 py-0.5 rounded-full transition-colors">Nhấn để xem mốc thưởng →</span>
+                </p>
                 {last7Days[0]?.active ? (
                   <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">✅ Hôm nay đã tính</span>
                 ) : (
@@ -469,17 +479,18 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
                   {streak >= 7 && streak < 30 && <p className="text-orange-500 font-bold text-xs mt-0.5">⚡ Quá xuất sắc!</p>}
                 </div>
 
-                {/* Milestone progress */}
+                {/* Milestone progress — dùng STREAK_MILESTONES */}
                 {(() => {
-                  const MILESTONES = [3, 7, 14, 30, 60, 100];
-                  const next = MILESTONES.find(m => m > streak) ?? 100;
-                  const prev = [...MILESTONES].reverse().find(m => m <= streak) ?? 0;
+                  const nextM = STREAK_MILESTONES.find(m => m.days > streak);
+                  const prevM = [...STREAK_MILESTONES].reverse().find(m => m.days <= streak);
+                  const next = nextM?.days ?? STREAK_MILESTONES[STREAK_MILESTONES.length - 1].days;
+                  const prev = prevM?.days ?? 0;
                   const pct = next === prev ? 100 : Math.round(((streak - prev) / (next - prev)) * 100);
                   return (
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between text-xs font-bold text-slate-400 mb-1.5">
                         <span>Mục tiêu tiếp theo</span>
-                        <span className="text-orange-500 font-black">{next} ngày 🏆</span>
+                        <span className="text-orange-500 font-black">{next} ngày 🪙 +{nextM?.reward ?? 0} Xu</span>
                       </div>
                       <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden">
                         <div
@@ -559,6 +570,11 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
         }
 
       </div>
+
+      {/* ── Streak Modal ── */}
+      {showStreakModal && (
+        <StreakModal streak={streak} onClose={() => setShowStreakModal(false)} />
+      )}
     </section>
   );
 }

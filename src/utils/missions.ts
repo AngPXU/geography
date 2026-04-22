@@ -6,8 +6,9 @@ export interface MissionDef {
   sub: string;
   icon: string;
   exp: number;
+  coins: number;
   target: number;
-  unit: string; // 'phút' | 'địa danh' | 'trò chơi' | 'lớp' | 'trang'
+  unit: string; // 'phút' | 'địa danh' | 'trò chơi' | 'lớp' | 'trang' | 'lần'
 }
 
 export const ALL_MISSIONS: MissionDef[] = [
@@ -17,6 +18,7 @@ export const ALL_MISSIONS: MissionDef[] = [
     sub: "Online trên trang web 20 phút",
     icon: "⏱️",
     exp: 60,
+    coins: 10,
     target: 20,
     unit: "phút",
   },
@@ -26,6 +28,7 @@ export const ALL_MISSIONS: MissionDef[] = [
     sub: "Khám phá 1 địa danh trên bản đồ",
     icon: "🗺️",
     exp: 80,
+    coins: 15,
     target: 1,
     unit: "địa danh",
   },
@@ -35,6 +38,7 @@ export const ALL_MISSIONS: MissionDef[] = [
     sub: "Chơi 1 trò chơi trong Đấu trường",
     icon: "⚔️",
     exp: 100,
+    coins: 20,
     target: 1,
     unit: "trò chơi",
   },
@@ -44,6 +48,7 @@ export const ALL_MISSIONS: MissionDef[] = [
     sub: "Tham gia 1 lớp học",
     icon: "🏫",
     exp: 90,
+    coins: 15,
     target: 1,
     unit: "lớp",
   },
@@ -53,8 +58,19 @@ export const ALL_MISSIONS: MissionDef[] = [
     sub: "Đọc ít nhất 1 trang sách",
     icon: "📖",
     exp: 70,
+    coins: 10,
     target: 1,
     unit: "trang",
+  },
+  {
+    id: "feed-pet",
+    label: "Người Nuôi Thú",
+    sub: "Cho thú cưng ăn 1 lần",
+    icon: "🍖",
+    exp: 50,
+    coins: 10,
+    target: 1,
+    unit: "lần",
   },
 ];
 

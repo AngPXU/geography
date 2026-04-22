@@ -3,7 +3,8 @@ import { auth } from "@/auth";
 import dbConnect from "@/utils/db";
 import DailyMission from "@/models/DailyMission";
 import User from "@/models/User";
-import { getVietnamDateStr } from "@/utils/missions";
+import { getVietnamDateStr, ALL_MISSIONS } from "@/utils/missions";
+import { getStreakMilestoneReached } from "@/utils/streakSystem";
 import type { MissionId, IMissionSlot } from "@/models/DailyMission";
 
 /**
@@ -49,21 +50,28 @@ export async function POST(req: NextRequest) {
   const streakLastDate: string = (dbUser as any).streakLastDate ?? '';
 
   let newStreak = currentStreak;
-  // Thưởng Xu tương đương với số EXP nhận được
-  const userUpdate: Record<string, unknown> = { $inc: { exp: slot.exp, coins: slot.exp } };
+  
+  const missionDef = ALL_MISSIONS.find(m => m.id === missionId);
+  const coinsReward = missionDef ? missionDef.coins : 10;
+  
+  // Thưởng Xu theo số xu cấu hình trong ALL_MISSIONS
+  const userUpdate: Record<string, unknown> = { $inc: { exp: slot.exp, coins: coinsReward } };
 
   if (!wasAnyClaimedBefore) {
     if (streakLastDate === today) {
-      // Already counted today — no change
       newStreak = currentStreak;
     } else if (streakLastDate === yesterday) {
-      // Consecutive day → increment
       newStreak = currentStreak + 1;
     } else {
-      // Missed one or more days → reset to 1
       newStreak = 1;
     }
     (userUpdate as any).$set = { streak: newStreak, streakLastDate: today };
+
+    // Kiểm tra mốc chuỗi và cộng thưởng xu
+    const milestone = getStreakMilestoneReached(newStreak);
+    if (milestone) {
+      (userUpdate.$inc as any).coins = (coinsReward + milestone.reward);
+    }
   }
 
   // Persist both DailyMission and User atomically
@@ -72,12 +80,17 @@ export async function POST(req: NextRequest) {
     User.updateOne({ _id: dbUser._id }, userUpdate),
   ]);
 
-  const updatedUser = await User.findById(dbUser._id).select('exp streak').lean() as { exp: number; streak: number } | null;
+  const updatedUser = await User.findById(dbUser._id).select('exp streak coins').lean() as { exp: number; streak: number; coins: number } | null;
+
+  // Kiểm tra mốc chuỗi để trả về cho frontend
+  const milestone = getStreakMilestoneReached(newStreak);
 
   return NextResponse.json({
     missions: doc.missions,
     expAwarded: slot.exp,
     totalExp: updatedUser?.exp ?? 0,
     streak: updatedUser?.streak ?? newStreak,
+    coins: updatedUser?.coins ?? 0,
+    streakMilestone: milestone ? { days: milestone.days, reward: milestone.reward, icon: milestone.icon, label: milestone.label } : null,
   });
 }

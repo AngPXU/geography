@@ -58,6 +58,23 @@ export async function POST(request: Request) {
 
     await user.save();
 
+    // Cập nhật tiến độ nhiệm vụ "feed-pet"
+    const { getVietnamDateStr } = require('@/utils/missions');
+    const DailyMission = require('@/models/DailyMission').default;
+    const todayStr = getVietnamDateStr();
+    const missionDoc = await DailyMission.findOne({ userId: user._id, date: todayStr });
+    
+    if (missionDoc) {
+      const feedSlot = missionDoc.missions.find((m: any) => m.missionId === 'feed-pet');
+      if (feedSlot && !feedSlot.completed) {
+        feedSlot.progress = Math.min(feedSlot.progress + feedAmount, feedSlot.target);
+        if (feedSlot.progress >= feedSlot.target) {
+          feedSlot.completed = true;
+        }
+        await missionDoc.save();
+      }
+    }
+
     return NextResponse.json({
       success: true,
       coins: user.coins,

@@ -5,7 +5,8 @@ export type MissionId =
   | "explore-map"
   | "play-arena"
   | "join-classroom"
-  | "read-book";
+  | "read-book"
+  | "feed-pet";
 
 export interface IMissionSlot {
   missionId: MissionId;
