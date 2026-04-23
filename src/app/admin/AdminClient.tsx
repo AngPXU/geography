@@ -2508,7 +2508,7 @@ function ClassDetailView({ cls, onBack }: {
             </div>
 
             {/* Autocomplete dropdown — position:fixed to escape all stacking contexts */}
-            {dropdownOpen && ddPos && (
+            {dropdownOpen && ddPos && createPortal(
               <div
                 style={{
                   position: 'fixed',
@@ -2585,7 +2585,8 @@ function ClassDetailView({ cls, onBack }: {
                     ))}
                   </ul>
                 )}
-              </div>
+              </div>,
+              document.body
             )}
           </div>
         </form>

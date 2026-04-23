@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ClassroomClient } from './ClassroomClient';
 import { HomeClassClient } from './HomeClassClient';
+import { OldLessonCheckClient } from './OldLessonCheckClient';
 
 interface Props {
   user: {
@@ -25,6 +26,7 @@ export function ClassroomTabs({ user }: Props) {
   const tabs: Array<{ key: TabKey, label: string, icon: string }> = [
     { key: 'online', label: 'Lớp học online',  icon: '🏫' },
     { key: 'home',   label: 'Lớp học ở nhà',   icon: '🏡' },
+    { key: 'test',   label: 'Kiểm tra bài cũ', icon: '📝' },
   ];
 
   return (
@@ -63,6 +65,7 @@ export function ClassroomTabs({ user }: Props) {
       <div>
         {tab === 'online' && <ClassroomClient user={user} />}
         {tab === 'home'   && <HomeClassClient user={user} />}
+        {tab === 'test'   && <OldLessonCheckClient user={user} />}
       </div>
     </div>
   );
