@@ -2331,8 +2331,10 @@ function ClassDetailView({ cls, onBack }: {
   const [sortDir, setSortDir]             = useState<'asc' | 'desc'>('asc');
   const [dropdownOpen, setDropdownOpen]   = useState(false);
   const [searchLoading, setSearchLoading] = useState(false);
+  const [pendingUsers, setPendingUsers]   = useState<StudentSuggestion[]>([]);
   const dropdownRef                       = useRef<HTMLDivElement>(null);
   const inputAdminRef                     = useRef<HTMLInputElement>(null);
+  const portalDropdownRef                 = useRef<HTMLDivElement>(null);
   const [ddPos, setDdPos]                 = useState<{ top: number; left: number; width: number } | null>(null);
   const inputFldCls = 'w-full px-3 py-2.5 rounded-full border border-slate-200 bg-slate-50 text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all';
 
@@ -2341,22 +2343,18 @@ function ClassDetailView({ cls, onBack }: {
     setTimeout(() => setToast(null), 3000);
   };
 
-  // Close dropdown on outside click
+  // Close dropdown on outside click — check BOTH the anchor div AND the portal div
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node))
-        setDropdownOpen(false);
+      const target = e.target as Node;
+      const inAnchor = dropdownRef.current?.contains(target);
+      const inPortal = portalDropdownRef.current?.contains(target);
+      if (!inAnchor && !inPortal) setDropdownOpen(false);
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  // Close dropdown on scroll so fixed coordinates stay accurate
-  useEffect(() => {
-    const handler = () => setDropdownOpen(false);
-    window.addEventListener('scroll', handler, true);
-    return () => window.removeEventListener('scroll', handler, true);
-  }, []);
 
   const updateDdPos = () => {
     if (inputAdminRef.current) {
@@ -2364,6 +2362,15 @@ function ClassDetailView({ cls, onBack }: {
       setDdPos({ top: r.bottom + 6, left: r.left, width: r.width });
     }
   };
+
+  // Khi scroll, cập nhật lại tọa độ dropdown để nó bám sát input thay vì bị lệch
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    const handler = () => updateDdPos();
+    window.addEventListener('scroll', handler, true);
+    return () => window.removeEventListener('scroll', handler, true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dropdownOpen]);
 
   // Debounced search
   useEffect(() => {
@@ -2375,7 +2382,7 @@ function ClassDetailView({ cls, onBack }: {
 
   const fetchSugg = async (q: string, cf: string, sk: string, sd: string) => {
     setSearchLoading(true);
-    const p = new URLSearchParams({ q, sort: sk, sortDir: sd, limit: '5' });
+    const p = new URLSearchParams({ q, sort: sk, sortDir: sd, limit: '50' });
     if (cf) p.set('className', cf);
     const res  = await fetch(`/api/homeclass/search-students?${p}`);
     const data = await res.json();
@@ -2393,18 +2400,23 @@ function ClassDetailView({ cls, onBack }: {
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!addUsername.trim()) return;
+    const toAdd = pendingUsers.length > 0 ? pendingUsers : (addUsername.trim() ? [{ _id: '', username: addUsername.trim(), fullName: '' } as StudentSuggestion] : []);
+    if (toAdd.length === 0) return;
     setAddLoading(true); setAddError(''); setDropdownOpen(false);
-    const res  = await fetch(`/api/homeclass/${cls._id}/members`, {
-      method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username: addUsername.trim() }),
-    });
-    const data = await res.json();
+    let added = 0;
+    for (const u of toAdd) {
+      const res = await fetch(`/api/homeclass/${cls._id}/members`, {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username: u.username }),
+      });
+      const data = await res.json();
+      if (res.ok) { setMembers(prev => [...prev, data.member]); added++; }
+      else setAddError(data.error || 'Thêm thất bại');
+    }
     setAddLoading(false);
-    if (!res.ok) { setAddError(data.error || 'Thêm thất bại'); return; }
-    setMembers(prev => [...prev, data.member]);
+    setPendingUsers([]);
     setAddUsername('');
-    showToast(`✅ Đã thêm ${addUsername}!`);
+    if (added > 0) showToast(`✅ Đã thêm ${added} học sinh!`);
   };
 
   const handleRemoveMember = async (memberId: string) => {
@@ -2485,6 +2497,18 @@ function ClassDetailView({ cls, onBack }: {
         )}
         <form onSubmit={handleAddMember}>
           <div ref={dropdownRef} className="relative">
+            {/* Chips selected users */}
+            {pendingUsers.length > 0 && (
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {pendingUsers.map(u => (
+                  <span key={u._id || u.username} className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-cyan-100 text-cyan-700 text-xs font-bold">
+                    {u.fullName || u.username}
+                    <button type="button" onClick={() => setPendingUsers(prev => prev.filter(x => x.username !== u.username))}
+                      className="hover:text-red-500 transition-colors">×</button>
+                  </span>
+                ))}
+              </div>
+            )}
             <div className="flex gap-2">
               <div className="relative flex-1">
                 <FaSearch className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#94A3B8] text-xs pointer-events-none" />
@@ -2498,18 +2522,18 @@ function ClassDetailView({ cls, onBack }: {
                   autoComplete="off"
                 />
               </div>
-              <button type="submit" disabled={addLoading || !addUsername.trim()}
+              <button type="submit" disabled={addLoading || (pendingUsers.length === 0 && !addUsername.trim())}
                 className="px-4 py-2 rounded-full bg-gradient-to-r from-cyan-500 to-blue-500
                   text-white text-sm font-bold hover:from-cyan-400 hover:to-blue-400 transition-all
                   flex items-center gap-2 disabled:opacity-50 shrink-0">
                 {addLoading ? <FaSpinner className="animate-spin" /> : <FaUserPlus />}
-                Thêm
+                {pendingUsers.length > 1 ? `Thêm ${pendingUsers.length} HS` : 'Thêm'}
               </button>
             </div>
 
-            {/* Autocomplete dropdown — position:fixed to escape all stacking contexts */}
             {dropdownOpen && ddPos && createPortal(
               <div
+                ref={portalDropdownRef}
                 style={{
                   position: 'fixed',
                   top: ddPos.top,
@@ -2522,15 +2546,18 @@ function ClassDetailView({ cls, onBack }: {
                   backdropFilter: 'blur(20px)',
                   border: '1px solid rgba(255,255,255,1)',
                   boxShadow: '0 16px 40px rgba(14,165,233,0.14)',
+                  maxHeight: '420px',
+                  display: 'flex',
+                  flexDirection: 'column',
                 }}>
 
                 {/* Filter & sort bar */}
-                <div className="px-3 pt-3 pb-2 border-b border-slate-100">
+                <div className="px-3 pt-3 pb-2 border-b border-slate-100 shrink-0">
                   {classNames.length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mb-2">
                       {['', ...classNames].map(cn => (
                         <button key={cn} type="button"
-                          onClick={() => setClassFilter(classFilter === cn ? '' : cn)}
+                          onMouseDown={e => { e.preventDefault(); setClassFilter(classFilter === cn ? '' : cn); }}
                           className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all
                             ${classFilter === cn ? 'bg-cyan-500 text-white' : 'bg-slate-100 text-[#334155] hover:bg-slate-200'}`}>
                           {cn === '' ? 'Tất cả' : `Lớp ${cn}`}
@@ -2541,7 +2568,8 @@ function ClassDetailView({ cls, onBack }: {
                   <div className="flex items-center gap-1.5">
                     <span className="text-[10px] text-[#94A3B8] font-semibold mr-1">Sắp xếp:</span>
                     {(['username', 'exp', 'streak'] as const).map(k => (
-                      <button key={k} type="button" onClick={() => toggleSuggSort(k)}
+                      <button key={k} type="button"
+                        onMouseDown={e => { e.preventDefault(); toggleSuggSort(k); }}
                         className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-bold transition-all
                           ${sortKey === k ? 'bg-violet-100 text-violet-700' : 'bg-slate-100 text-[#94A3B8] hover:bg-slate-200'}`}>
                         {k === 'username' ? 'Tên' : k === 'exp' ? 'EXP' : 'Streak'}
@@ -2559,30 +2587,46 @@ function ClassDetailView({ cls, onBack }: {
                 ) : suggestions.length === 0 ? (
                   <p className="text-center text-[#94A3B8] text-xs py-5">Không tìm thấy học sinh</p>
                 ) : (
-                  <ul>
-                    {suggestions.map((s, i) => (
-                      <li key={s._id}>
-                        <button type="button" onMouseDown={() => { setAddUsername(s.username); setDropdownOpen(false); }}
-                          className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-sky-50 transition-all
-                            ${i < suggestions.length - 1 ? 'border-b border-slate-50' : ''}`}>
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-purple-500
-                            flex items-center justify-center text-white text-xs font-black shrink-0 overflow-hidden">
-                            {s.avatar
-                              ? <img src={s.avatar} alt="" className="w-full h-full object-cover" />
-                              : s.username.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="font-bold text-[#082F49] text-sm truncate">{s.username}</p>
-                            {s.fullName && <p className="text-[#94A3B8] text-xs truncate">{s.fullName}</p>}
-                          </div>
-                          {s.className && (
-                            <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-600">
-                              Lớp {s.className}
-                            </span>
-                          )}
-                        </button>
-                      </li>
-                    ))}
+                  <ul style={{ overflowY: 'auto', flex: 1, minHeight: 0 }}>
+                    {suggestions.map((s, i) => {
+                      const isSelected = pendingUsers.some(u => u.username === s.username);
+                      return (
+                        <li key={s._id}>
+                          <button type="button"
+                            onMouseDown={e => {
+                              e.preventDefault();
+                              setPendingUsers(prev =>
+                                isSelected ? prev.filter(u => u.username !== s.username) : [...prev, s]
+                              );
+                              setAddUsername('');
+                            }}
+                            className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-all
+                              ${i < suggestions.length - 1 ? 'border-b border-slate-50' : ''}
+                              ${isSelected ? 'bg-cyan-50' : 'hover:bg-sky-50'}`}>
+                            {/* Checkbox */}
+                            <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0 transition-all
+                              ${isSelected ? 'bg-cyan-500 border-cyan-500' : 'border-slate-300'}`}>
+                              {isSelected && <span className="text-white text-[10px] font-black">✓</span>}
+                            </div>
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-violet-400 to-purple-500
+                              flex items-center justify-center text-white text-xs font-black shrink-0 overflow-hidden">
+                              {s.avatar
+                                ? <img src={s.avatar} alt="" className="w-full h-full object-cover" />
+                                : s.username.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="font-bold text-[#082F49] text-sm truncate">{s.username}</p>
+                              {s.fullName && <p className="text-[#94A3B8] text-xs truncate">{s.fullName}</p>}
+                            </div>
+                            {s.className && (
+                              <span className="shrink-0 text-[10px] font-bold px-2 py-0.5 rounded-full bg-sky-100 text-sky-600">
+                                Lớp {s.className}
+                              </span>
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
                   </ul>
                 )}
               </div>,
