@@ -7,8 +7,10 @@ import {
   FaArrowLeft, FaEdit, FaTrash, FaShieldAlt, FaSpinner,
   FaTimes, FaExclamationTriangle, FaGraduationCap, FaSchool,
   FaMapMarkerAlt, FaCalendarAlt, FaFire, FaStar,
-  FaEye, FaEyeSlash, FaLock,
+  FaEye, FaEyeSlash, FaLock, FaPaw, FaMedal,
 } from 'react-icons/fa';
+import { getPetInfo } from '@/utils/petSystem';
+import { BADGES, checkUnlocked } from '@/data/badges';
 
 const ROLE_LABEL: Record<number, { label: string; cls: string }> = {
   1: { label: 'Admin',     cls: 'bg-amber-100 text-amber-700 border-amber-200' },
@@ -40,6 +42,8 @@ interface FullUser {
   streakLastDate?: string;
   studyTimeToday?: number;
   studyTimeDate?: string;
+  petExp: number;
+  coins: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -423,6 +427,17 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
   const level        = Math.floor(user.exp / 100) + 1;
   const expInLevel   = user.exp % 100;
 
+  // Pet info
+  const petInfo = getPetInfo(user.petExp ?? 0);
+  const petLevel = petInfo.currentLevel.level;
+  const petStageName = petInfo.currentLevel.stageName;
+  const isMaxPet = petInfo.isMaxLevel;
+
+  // Badge count
+  const unlockedBadgeCount = BADGES.filter(b =>
+    checkUnlocked(b, user.exp, user.streak, 0, 0, 0, 0, petLevel)
+  ).length;
+
   return (
     <>
       <style>{`body { background: linear-gradient(135deg, #E0F2FE 0%, #FFFFFF 50%, #DCFCE7 100%); }`}</style>
@@ -522,8 +537,8 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
             {[
               { icon: <FaStar className="text-amber-400" />, label: 'Tổng EXP', value: (user.exp ?? 0).toLocaleString(), bg: 'bg-amber-50' },
               { icon: <FaFire className="text-orange-400" />, label: 'Chuỗi ngày', value: `${user.streak ?? 0} ngày`, bg: 'bg-orange-50' },
-              { icon: '⏱️', label: 'Học hôm nay', value: formatStudyTime(user.studyTimeToday ?? 0), bg: 'bg-sky-50' },
-              { icon: '🏆', label: 'Cấp độ', value: `Cấp ${level}`, bg: 'bg-violet-50' },
+              { icon: <FaPaw className="text-emerald-500" />, label: 'Level Thú Cưng', value: `Lv.${petLevel} · ${petStageName}`, bg: 'bg-emerald-50' },
+              { icon: <FaMedal className="text-violet-500" />, label: 'Huy hiệu', value: `${unlockedBadgeCount}/${BADGES.length} huy hiệu`, bg: 'bg-violet-50' },
             ].map((s, i) => (
               <div key={i} className={`${s.bg} rounded-[18px] p-4 border border-white/60
                 shadow-[0_4px_16px_rgba(14,165,233,0.06)]`}>
@@ -583,7 +598,7 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
               <InfoRow icon={<FaCalendarAlt />} label="Cập nhật"   value={new Date(user.updatedAt).toLocaleString('vi-VN')} />
             </div>
 
-            {/* Activity */}
+            {/* Activity + Pet */}
             <div className="rounded-[24px] p-6"
               style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(20px)',
                 border: '1px solid rgba(255,255,255,1)', boxShadow: '0 10px 30px rgba(14,165,233,0.08)' }}>
@@ -595,7 +610,54 @@ export default function UserDetailPage({ params }: { params: Promise<{ id: strin
               <InfoRow icon="📅"           label="Ngày streak gần nhất" value={user.streakLastDate || undefined} />
               <InfoRow icon="⏱️"           label="Học hôm nay"          value={formatStudyTime(user.studyTimeToday ?? 0)} />
               <InfoRow icon="📅"           label="Ngày học gần nhất"    value={user.studyTimeDate || undefined} />
-              <InfoRow icon="🏆"           label="Cấp độ"               value={`Cấp ${level} (${user.exp ?? 0} EXP)`} />
+              <InfoRow icon="🏆"           label="Cấp độ người dùng"   value={`Cấp ${level} (${user.exp ?? 0} EXP)`} />
+            </div>
+
+            {/* Pet & Badges */}
+            <div className="rounded-[24px] p-6"
+              style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255,255,255,1)', boxShadow: '0 10px 30px rgba(14,165,233,0.08)' }}>
+              <h2 className="font-black text-[#082F49] text-base mb-4 flex items-center gap-2">
+                <FaPaw className="text-emerald-500" /> Thú Cưng &amp; Huy Hiệu
+              </h2>
+              {/* Pet info */}
+              <div className="flex items-center gap-3 p-3 rounded-[16px] bg-emerald-50 border border-emerald-100 mb-3">
+                <span className="text-2xl">🐾</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-[#94A3B8] text-[10px] font-bold uppercase tracking-wide">Thú cưng</p>
+                  <p className="text-[#082F49] font-black text-sm">Lv.{petLevel} · {petStageName}{isMaxPet ? ' 🌟 MAX' : ''}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <div className="flex-1 h-1.5 bg-emerald-100 rounded-full overflow-hidden">
+                      <div className="h-full bg-emerald-500 rounded-full transition-all"
+                        style={{ width: isMaxPet ? '100%' : `${petInfo.progressPercent}%` }} />
+                    </div>
+                    <span className="text-[10px] font-bold text-emerald-600 shrink-0">
+                      {user.petExp ?? 0} EXP
+                    </span>
+                  </div>
+                </div>
+              </div>
+              {/* Coins */}
+              <InfoRow icon="🪙" label="Xu hiện có" value={`${(user.coins ?? 0).toLocaleString()} xu`} />
+              {/* Badges */}
+              <div className="mt-3 flex items-center justify-between p-3 rounded-[16px] bg-violet-50 border border-violet-100">
+                <div className="flex items-center gap-2">
+                  <FaMedal className="text-violet-500 text-lg" />
+                  <div>
+                    <p className="text-[#94A3B8] text-[10px] font-bold uppercase tracking-wide">Huy hiệu mở khoá</p>
+                    <p className="text-[#082F49] font-black text-sm">{unlockedBadgeCount} / {BADGES.length} huy hiệu</p>
+                  </div>
+                </div>
+                <div className="flex flex-wrap gap-1 max-w-[120px] justify-end">
+                  {BADGES.filter(b => checkUnlocked(b, user.exp, user.streak, 0, 0, 0, 0, petLevel))
+                    .slice(0, 6).map(b => (
+                      <span key={b.id} title={b.name} className="text-base">{b.icon}</span>
+                    ))}
+                  {unlockedBadgeCount > 6 && (
+                    <span className="text-xs font-bold text-violet-600">+{unlockedBadgeCount - 6}</span>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

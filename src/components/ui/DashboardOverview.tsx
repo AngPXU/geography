@@ -8,15 +8,17 @@ import { claimMission, claimMissionWithExp } from '@/utils/missionTracker';
 import { useStudyTimer } from '@/utils/useStudyTimer';
 import type { MissionId, IMissionSlot } from '@/models/DailyMission';
 import { FlashcardPanel } from '@/components/ui/FlashcardPanel';
+import { QuizStudyPanel } from '@/components/ui/QuizStudyPanel';
 import { BadgeSummaryCard } from '@/components/ui/BadgesPanel';
 import { PetGarden } from '@/components/pet/PetGarden';
 import { StreakModal } from '@/components/ui/StreakModal';
 
-type ActiveTab = 'overview' | 'flashcard';
+type ActiveTab = 'overview' | 'flashcard' | 'quiz';
 
 const MODULES: { id: ActiveTab | string; label: string; sub: string; icon: string; href?: string; isTab?: boolean }[] = [
   { id: 'overview', label: 'Tổng quan', sub: 'Tiến độ & Hoạt động', icon: '🏠', isTab: true },
   { id: 'flashcard', label: 'Thẻ Ghi Nhớ', sub: 'Luyện tập thẻ 3D', icon: '📝', isTab: true },
+  { id: 'quiz', label: 'Kiểm Tra', sub: 'Luyện đề thi', icon: '📋', isTab: true },
 ];
 
 const DAYS = ['CN', 'TH 2', 'TH 3', 'TH 4', 'TH 5', 'TH 6', 'TH 7'];
@@ -197,6 +199,7 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
 
         {/* ── Tab content ── */}
         {activeTab === 'flashcard' && <FlashcardPanel />}
+        {activeTab === 'quiz' && <QuizStudyPanel />}
 
         {activeTab === 'overview' && <>
 

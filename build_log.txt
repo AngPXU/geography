@@ -1,0 +1,253 @@
+
+> geography@0.1.0 build
+> next build
+
+⚠ Warning: Next.js inferred your workspace root, but it may not be correct.
+ We detected multiple lockfiles and selected the directory of C:\Users\nht_anh.BRYCENVN\package-lock.json as the root directory.
+ To silence this warning, set `turbopack.root` in your Next.js config, or consider removing one of the lockfiles if it's not needed.
+   See https://nextjs.org/docs/app/api-reference/config/next-config-js/turbopack#root-directory for more information.
+ Detected additional lockfiles: 
+   * C:\Users\nht_anh.BRYCENVN\Documents\geography\package-lock.json
+
+▲ Next.js 16.2.3 (Turbopack)
+- Environments: .env
+
+  Creating an optimized production build ...
+
+> Build error occurred
+Error: Turbopack build failed with 15 errors:
+./Documents/geography/src/app/api/admin/quizzes/questions/[id]/route.ts:3:1
+Export authOptions doesn't exist in target module
+  [90m1 |[0m [36mimport[0m { [33mNextRequest[0m, [33mNextResponse[0m } [36mfrom[0m [32m'next/server'[0m;
+  [90m2 |[0m [36mimport[0m { getServerSession } [36mfrom[0m [32m'next-auth'[0m;
+[31m[1m>[0m [90m3 |[0m [36mimport[0m { authOptions } [36mfrom[0m [32m'@/app/api/auth/[...nextauth]/route'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m { connectDB } [36mfrom[0m [32m'@/utils/db'[0m;
+  [90m5 |[0m [36mimport[0m [33mQuizQuestion[0m [36mfrom[0m [32m'@/models/QuizQuestion'[0m;
+  [90m6 |[0m
+
+The export authOptions was not found in module [project]/Documents/geography/src/app/api/auth/[...nextauth]/route.ts [app-route] (ecmascript).
+Did you mean to import POST?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./Documents/geography/src/app/api/admin/quizzes/questions/reorder/route.ts:3:1
+Export authOptions doesn't exist in target module
+  [90m1 |[0m [36mimport[0m { [33mNextRequest[0m, [33mNextResponse[0m } [36mfrom[0m [32m'next/server'[0m;
+  [90m2 |[0m [36mimport[0m { getServerSession } [36mfrom[0m [32m'next-auth'[0m;
+[31m[1m>[0m [90m3 |[0m [36mimport[0m { authOptions } [36mfrom[0m [32m'@/app/api/auth/[...nextauth]/route'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m { connectDB } [36mfrom[0m [32m'@/utils/db'[0m;
+  [90m5 |[0m [36mimport[0m [33mQuizQuestion[0m [36mfrom[0m [32m'@/models/QuizQuestion'[0m;
+  [90m6 |[0m
+
+The export authOptions was not found in module [project]/Documents/geography/src/app/api/auth/[...nextauth]/route.ts [app-route] (ecmascript).
+Did you mean to import POST?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./Documents/geography/src/app/api/admin/quizzes/questions/route.ts:3:1
+Export authOptions doesn't exist in target module
+  [90m1 |[0m [36mimport[0m { [33mNextRequest[0m, [33mNextResponse[0m } [36mfrom[0m [32m'next/server'[0m;
+  [90m2 |[0m [36mimport[0m { getServerSession } [36mfrom[0m [32m'next-auth'[0m;
+[31m[1m>[0m [90m3 |[0m [36mimport[0m { authOptions } [36mfrom[0m [32m'@/app/api/auth/[...nextauth]/route'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m { connectDB } [36mfrom[0m [32m'@/utils/db'[0m;
+  [90m5 |[0m [36mimport[0m [33mQuizQuestion[0m [36mfrom[0m [32m'@/models/QuizQuestion'[0m;
+  [90m6 |[0m [36mimport[0m [33mQuizSet[0m [36mfrom[0m [32m'@/models/QuizSet'[0m;
+
+The export authOptions was not found in module [project]/Documents/geography/src/app/api/auth/[...nextauth]/route.ts [app-route] (ecmascript).
+Did you mean to import POST?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./Documents/geography/src/app/api/admin/quizzes/sets/[id]/route.ts:3:1
+Export authOptions doesn't exist in target module
+  [90m1 |[0m [36mimport[0m { [33mNextRequest[0m, [33mNextResponse[0m } [36mfrom[0m [32m'next/server'[0m;
+  [90m2 |[0m [36mimport[0m { getServerSession } [36mfrom[0m [32m'next-auth'[0m;
+[31m[1m>[0m [90m3 |[0m [36mimport[0m { authOptions } [36mfrom[0m [32m'@/app/api/auth/[...nextauth]/route'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m { connectDB } [36mfrom[0m [32m'@/utils/db'[0m;
+  [90m5 |[0m [36mimport[0m [33mQuizSet[0m [36mfrom[0m [32m'@/models/QuizSet'[0m;
+  [90m6 |[0m [36mimport[0m [33mQuizQuestion[0m [36mfrom[0m [32m'@/models/QuizQuestion'[0m;
+
+The export authOptions was not found in module [project]/Documents/geography/src/app/api/auth/[...nextauth]/route.ts [app-route] (ecmascript).
+Did you mean to import POST?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./Documents/geography/src/app/api/admin/quizzes/sets/route.ts:3:1
+Export authOptions doesn't exist in target module
+  [90m1 |[0m [36mimport[0m { [33mNextRequest[0m, [33mNextResponse[0m } [36mfrom[0m [32m'next/server'[0m;
+  [90m2 |[0m [36mimport[0m { getServerSession } [36mfrom[0m [32m'next-auth'[0m;
+[31m[1m>[0m [90m3 |[0m [36mimport[0m { authOptions } [36mfrom[0m [32m'@/app/api/auth/[...nextauth]/route'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m4 |[0m [36mimport[0m { connectDB } [36mfrom[0m [32m'@/utils/db'[0m;
+  [90m5 |[0m [36mimport[0m [33mQuizSet[0m [36mfrom[0m [32m'@/models/QuizSet'[0m;
+  [90m6 |[0m [36mimport[0m [33mQuizQuestion[0m [36mfrom[0m [32m'@/models/QuizQuestion'[0m;
+
+The export authOptions was not found in module [project]/Documents/geography/src/app/api/auth/[...nextauth]/route.ts [app-route] (ecmascript).
+Did you mean to import POST?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./Documents/geography/src/app/api/admin/quizzes/questions/[id]/route.ts:4:1
+Export connectDB doesn't exist in target module
+  [90m2 |[0m [36mimport[0m { getServerSession } [36mfrom[0m [32m'next-auth'[0m;
+  [90m3 |[0m [36mimport[0m { authOptions } [36mfrom[0m [32m'@/app/api/auth/[...nextauth]/route'[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { connectDB } [36mfrom[0m [32m'@/utils/db'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mQuizQuestion[0m [36mfrom[0m [32m'@/models/QuizQuestion'[0m;
+  [90m6 |[0m
+  [90m7 |[0m [36masync[0m [36mfunction[0m requireAuth() {
+
+The export connectDB was not found in module [project]/Documents/geography/src/utils/db.ts [app-route] (ecmascript).
+Did you mean to import default?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./Documents/geography/src/app/api/admin/quizzes/questions/reorder/route.ts:4:1
+Export connectDB doesn't exist in target module
+  [90m2 |[0m [36mimport[0m { getServerSession } [36mfrom[0m [32m'next-auth'[0m;
+  [90m3 |[0m [36mimport[0m { authOptions } [36mfrom[0m [32m'@/app/api/auth/[...nextauth]/route'[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { connectDB } [36mfrom[0m [32m'@/utils/db'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mQuizQuestion[0m [36mfrom[0m [32m'@/models/QuizQuestion'[0m;
+  [90m6 |[0m
+  [90m7 |[0m [36masync[0m [36mfunction[0m requireAuth() {
+
+The export connectDB was not found in module [project]/Documents/geography/src/utils/db.ts [app-route] (ecmascript).
+Did you mean to import default?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./Documents/geography/src/app/api/admin/quizzes/questions/route.ts:4:1
+Export connectDB doesn't exist in target module
+  [90m2 |[0m [36mimport[0m { getServerSession } [36mfrom[0m [32m'next-auth'[0m;
+  [90m3 |[0m [36mimport[0m { authOptions } [36mfrom[0m [32m'@/app/api/auth/[...nextauth]/route'[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { connectDB } [36mfrom[0m [32m'@/utils/db'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mQuizQuestion[0m [36mfrom[0m [32m'@/models/QuizQuestion'[0m;
+  [90m6 |[0m [36mimport[0m [33mQuizSet[0m [36mfrom[0m [32m'@/models/QuizSet'[0m;
+  [90m7 |[0m
+
+The export connectDB was not found in module [project]/Documents/geography/src/utils/db.ts [app-route] (ecmascript).
+Did you mean to import default?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./Documents/geography/src/app/api/admin/quizzes/sets/[id]/route.ts:4:1
+Export connectDB doesn't exist in target module
+  [90m2 |[0m [36mimport[0m { getServerSession } [36mfrom[0m [32m'next-auth'[0m;
+  [90m3 |[0m [36mimport[0m { authOptions } [36mfrom[0m [32m'@/app/api/auth/[...nextauth]/route'[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { connectDB } [36mfrom[0m [32m'@/utils/db'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mQuizSet[0m [36mfrom[0m [32m'@/models/QuizSet'[0m;
+  [90m6 |[0m [36mimport[0m [33mQuizQuestion[0m [36mfrom[0m [32m'@/models/QuizQuestion'[0m;
+  [90m7 |[0m
+
+The export connectDB was not found in module [project]/Documents/geography/src/utils/db.ts [app-route] (ecmascript).
+Did you mean to import default?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./Documents/geography/src/app/api/admin/quizzes/sets/route.ts:4:1
+Export connectDB doesn't exist in target module
+  [90m2 |[0m [36mimport[0m { getServerSession } [36mfrom[0m [32m'next-auth'[0m;
+  [90m3 |[0m [36mimport[0m { authOptions } [36mfrom[0m [32m'@/app/api/auth/[...nextauth]/route'[0m;
+[31m[1m>[0m [90m4 |[0m [36mimport[0m { connectDB } [36mfrom[0m [32m'@/utils/db'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m5 |[0m [36mimport[0m [33mQuizSet[0m [36mfrom[0m [32m'@/models/QuizSet'[0m;
+  [90m6 |[0m [36mimport[0m [33mQuizQuestion[0m [36mfrom[0m [32m'@/models/QuizQuestion'[0m;
+  [90m7 |[0m
+
+The export connectDB was not found in module [project]/Documents/geography/src/utils/db.ts [app-route] (ecmascript).
+Did you mean to import default?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./Documents/geography/src/app/api/admin/quizzes/questions/[id]/route.ts:2:1
+Export getServerSession doesn't exist in target module
+  [90m1 |[0m [36mimport[0m { [33mNextRequest[0m, [33mNextResponse[0m } [36mfrom[0m [32m'next/server'[0m;
+[31m[1m>[0m [90m2 |[0m [36mimport[0m { getServerSession } [36mfrom[0m [32m'next-auth'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m3 |[0m [36mimport[0m { authOptions } [36mfrom[0m [32m'@/app/api/auth/[...nextauth]/route'[0m;
+  [90m4 |[0m [36mimport[0m { connectDB } [36mfrom[0m [32m'@/utils/db'[0m;
+  [90m5 |[0m [36mimport[0m [33mQuizQuestion[0m [36mfrom[0m [32m'@/models/QuizQuestion'[0m;
+
+The export getServerSession was not found in module [project]/Documents/geography/node_modules/next-auth/index.js [app-route] (ecmascript).
+Did you mean to import CredentialsSignin?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./Documents/geography/src/app/api/admin/quizzes/questions/reorder/route.ts:2:1
+Export getServerSession doesn't exist in target module
+  [90m1 |[0m [36mimport[0m { [33mNextRequest[0m, [33mNextResponse[0m } [36mfrom[0m [32m'next/server'[0m;
+[31m[1m>[0m [90m2 |[0m [36mimport[0m { getServerSession } [36mfrom[0m [32m'next-auth'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m3 |[0m [36mimport[0m { authOptions } [36mfrom[0m [32m'@/app/api/auth/[...nextauth]/route'[0m;
+  [90m4 |[0m [36mimport[0m { connectDB } [36mfrom[0m [32m'@/utils/db'[0m;
+  [90m5 |[0m [36mimport[0m [33mQuizQuestion[0m [36mfrom[0m [32m'@/models/QuizQuestion'[0m;
+
+The export getServerSession was not found in module [project]/Documents/geography/node_modules/next-auth/index.js [app-route] (ecmascript).
+Did you mean to import CredentialsSignin?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./Documents/geography/src/app/api/admin/quizzes/questions/route.ts:2:1
+Export getServerSession doesn't exist in target module
+  [90m1 |[0m [36mimport[0m { [33mNextRequest[0m, [33mNextResponse[0m } [36mfrom[0m [32m'next/server'[0m;
+[31m[1m>[0m [90m2 |[0m [36mimport[0m { getServerSession } [36mfrom[0m [32m'next-auth'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m3 |[0m [36mimport[0m { authOptions } [36mfrom[0m [32m'@/app/api/auth/[...nextauth]/route'[0m;
+  [90m4 |[0m [36mimport[0m { connectDB } [36mfrom[0m [32m'@/utils/db'[0m;
+  [90m5 |[0m [36mimport[0m [33mQuizQuestion[0m [36mfrom[0m [32m'@/models/QuizQuestion'[0m;
+
+The export getServerSession was not found in module [project]/Documents/geography/node_modules/next-auth/index.js [app-route] (ecmascript).
+Did you mean to import CredentialsSignin?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./Documents/geography/src/app/api/admin/quizzes/sets/[id]/route.ts:2:1
+Export getServerSession doesn't exist in target module
+  [90m1 |[0m [36mimport[0m { [33mNextRequest[0m, [33mNextResponse[0m } [36mfrom[0m [32m'next/server'[0m;
+[31m[1m>[0m [90m2 |[0m [36mimport[0m { getServerSession } [36mfrom[0m [32m'next-auth'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m3 |[0m [36mimport[0m { authOptions } [36mfrom[0m [32m'@/app/api/auth/[...nextauth]/route'[0m;
+  [90m4 |[0m [36mimport[0m { connectDB } [36mfrom[0m [32m'@/utils/db'[0m;
+  [90m5 |[0m [36mimport[0m [33mQuizSet[0m [36mfrom[0m [32m'@/models/QuizSet'[0m;
+
+The export getServerSession was not found in module [project]/Documents/geography/node_modules/next-auth/index.js [app-route] (ecmascript).
+Did you mean to import CredentialsSignin?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+./Documents/geography/src/app/api/admin/quizzes/sets/route.ts:2:1
+Export getServerSession doesn't exist in target module
+  [90m1 |[0m [36mimport[0m { [33mNextRequest[0m, [33mNextResponse[0m } [36mfrom[0m [32m'next/server'[0m;
+[31m[1m>[0m [90m2 |[0m [36mimport[0m { getServerSession } [36mfrom[0m [32m'next-auth'[0m;
+  [90m  |[0m [31m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m3 |[0m [36mimport[0m { authOptions } [36mfrom[0m [32m'@/app/api/auth/[...nextauth]/route'[0m;
+  [90m4 |[0m [36mimport[0m { connectDB } [36mfrom[0m [32m'@/utils/db'[0m;
+  [90m5 |[0m [36mimport[0m [33mQuizSet[0m [36mfrom[0m [32m'@/models/QuizSet'[0m;
+
+The export getServerSession was not found in module [project]/Documents/geography/node_modules/next-auth/index.js [app-route] (ecmascript).
+Did you mean to import CredentialsSignin?
+All exports of the module are statically known (It doesn't have dynamic exports). So it's known statically that the requested export doesn't exist.
+
+
+    at <unknown> (./Documents/geography/src/app/api/admin/quizzes/questions/[id]/route.ts:3:1)
+    at <unknown> (./Documents/geography/src/app/api/admin/quizzes/questions/reorder/route.ts:3:1)
+    at <unknown> (./Documents/geography/src/app/api/admin/quizzes/questions/route.ts:3:1)
+    at <unknown> (./Documents/geography/src/app/api/admin/quizzes/sets/[id]/route.ts:3:1)
+    at <unknown> (./Documents/geography/src/app/api/admin/quizzes/sets/route.ts:3:1)
+    at <unknown> (./Documents/geography/src/app/api/admin/quizzes/questions/[id]/route.ts:4:1)
+    at <unknown> (./Documents/geography/src/app/api/admin/quizzes/questions/reorder/route.ts:4:1)
+    at <unknown> (./Documents/geography/src/app/api/admin/quizzes/questions/route.ts:4:1)
+    at <unknown> (./Documents/geography/src/app/api/admin/quizzes/sets/[id]/route.ts:4:1)
+    at <unknown> (./Documents/geography/src/app/api/admin/quizzes/sets/route.ts:4:1)
+    at <unknown> (./Documents/geography/src/app/api/admin/quizzes/questions/[id]/route.ts:2:1)
+    at <unknown> (./Documents/geography/src/app/api/admin/quizzes/questions/reorder/route.ts:2:1)
+    at <unknown> (./Documents/geography/src/app/api/admin/quizzes/questions/route.ts:2:1)
+    at <unknown> (./Documents/geography/src/app/api/admin/quizzes/sets/[id]/route.ts:2:1)
+    at <unknown> (./Documents/geography/src/app/api/admin/quizzes/sets/route.ts:2:1)

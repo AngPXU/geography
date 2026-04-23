@@ -3,12 +3,14 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { createPortal } from 'react-dom';
 import {
   FaArrowLeft, FaBell, FaChartBar, FaDatabase, FaEdit,
   FaGlobeAsia, FaPlus, FaSearch, FaShieldAlt, FaSpinner,
   FaTimes, FaTrash, FaUsers, FaDownload, FaExclamationTriangle,
   FaUserPlus, FaSortAmountDown, FaSortAmountUp, FaSchool,
 } from 'react-icons/fa';
+import QuizManager from './components/QuizManager';
 
 /* ─────────────────────────── types ───────────────────────────── */
 
@@ -600,8 +602,9 @@ const genLessonId = () =>
 /* ── LessonFormModal (Add / Edit lesson) ─────────────────────── */
 
 function LessonFormModal({
-  mode, initial, onClose, onSaved,
+  apiPrefix, mode, initial, onClose, onSaved,
 }: {
+  apiPrefix: string;
   mode: 'add' | 'edit';
   initial?: LessonRow;
   onClose: () => void;
@@ -625,13 +628,13 @@ function LessonFormModal({
     try {
       let res: Response;
       if (mode === 'add') {
-        res = await fetch('/api/admin/flashcards/lessons', {
+        res = await fetch(`${apiPrefix}/lessons`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ grade, lessonId: lessonId.trim(), lessonTitle: lessonTitle.trim(), lessonIcon: lessonIcon.trim() || '📚' }),
         });
       } else {
-        res = await fetch(`/api/admin/flashcards/lessons/${initial!._id}`, {
+        res = await fetch(`${apiPrefix}/lessons/${initial!._id}`, {
           method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ lessonTitle: lessonTitle.trim(), lessonIcon: lessonIcon.trim() || '📚' }),
@@ -647,8 +650,8 @@ function LessonFormModal({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+  const content = (
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4"
       onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
       <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
       <div className="relative w-full max-w-md bg-[rgba(255,255,255,0.75)] backdrop-blur-[24px] border border-white/80
@@ -742,13 +745,15 @@ function LessonFormModal({
       </div>
     </div>
   );
+  return typeof document !== 'undefined' ? createPortal(content, document.body) : null;
 }
 
 /* ── DeleteLessonConfirm ──────────────────────────────────────── */
 
 function DeleteLessonConfirm({
-  lesson, onClose, onDeleted,
+  apiPrefix, lesson, onClose, onDeleted,
 }: {
+  apiPrefix: string;
   lesson: LessonRow;
   onClose: () => void;
   onDeleted: () => void;
@@ -760,7 +765,7 @@ function DeleteLessonConfirm({
     setDeleting(true);
     setError('');
     try {
-      const res  = await fetch(`/api/admin/flashcards/lessons/${lesson._id}`, { method: 'DELETE' });
+      const res  = await fetch(`${apiPrefix}/lessons/${lesson._id}`, { method: 'DELETE' });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Lỗi khi xoá');
       onDeleted();
@@ -770,8 +775,8 @@ function DeleteLessonConfirm({
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
+  const content = (
+    <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
       <div className="relative w-full max-w-sm bg-[rgba(255,255,255,0.75)] backdrop-blur-[24px] border border-white/80
         rounded-[32px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden">
@@ -818,6 +823,7 @@ function DeleteLessonConfirm({
       </div>
     </div>
   );
+  return typeof document !== 'undefined' ? createPortal(content, document.body) : null;
 }
 
 /* ── Paginator ────────────────────────────────────────────────── */
@@ -866,7 +872,8 @@ function Paginator({ page, totalPages, onPageChange }: {
 
 /* ── LessonsView ──────────────────────────────────────────────── */
 
-function LessonsView({ onSelectLesson, onClearAll }: {
+function LessonsView({ apiPrefix, onSelectLesson, onClearAll }: {
+  apiPrefix: string;
   onSelectLesson: (l: LessonRow) => void;
   onClearAll: () => void;
 }) {
@@ -891,7 +898,7 @@ function LessonsView({ onSelectLesson, onClearAll }: {
   const fetchLessons = useCallback(async () => {
     setLoading(true);
     try {
-      const res  = await fetch('/api/admin/flashcards/lessons');
+      const res  = await fetch(`${apiPrefix}/lessons`);
       const data = await res.json();
       setLessons(data.lessons ?? []);
     } finally { setLoading(false); }
@@ -1090,6 +1097,7 @@ function LessonsView({ onSelectLesson, onClearAll }: {
       {/* Add / Edit modal */}
       {formMode && (
         <LessonFormModal
+          apiPrefix={apiPrefix}
           mode={formMode}
           initial={editTarget ?? undefined}
           onClose={() => { setFormMode(null); setEditTarget(null); }}
@@ -1111,6 +1119,7 @@ function LessonsView({ onSelectLesson, onClearAll }: {
       {/* Delete confirm */}
       {deleteTarget && (
         <DeleteLessonConfirm
+          apiPrefix={apiPrefix}
           lesson={deleteTarget}
           onClose={() => setDeleteTarget(null)}
           onDeleted={() => {
@@ -1126,7 +1135,8 @@ function LessonsView({ onSelectLesson, onClearAll }: {
 
 /* ── CardsView ────────────────────────────────────────────────── */
 
-function CardsView({ lesson, onBack, onRefreshLessons }: {
+function CardsView({ apiPrefix, lesson, onBack, onRefreshLessons }: {
+  apiPrefix: string;
   lesson: LessonRow;
   onBack: () => void;
   onRefreshLessons: () => void;
@@ -1159,7 +1169,7 @@ function CardsView({ lesson, onBack, onRefreshLessons }: {
     setLoading(true);
     try {
       const params = new URLSearchParams({ lessonId: lesson.lessonId, grade: String(lesson.grade) });
-      const res  = await fetch(`/api/admin/flashcards?${params}`);
+      const res  = await fetch(`${apiPrefix}?${params}`);
       const data = await res.json();
       setCards(data.cards ?? []);
     } finally { setLoading(false); }
@@ -1196,7 +1206,7 @@ function CardsView({ lesson, onBack, onRefreshLessons }: {
   };
 
   const handleAdd = async (form: FormState) => {
-    const res = await fetch('/api/admin/flashcards', {
+    const res = await fetch(`${apiPrefix}`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...form, grade: Number(form.grade) }),
@@ -1209,7 +1219,7 @@ function CardsView({ lesson, onBack, onRefreshLessons }: {
 
   const handleEdit = async (form: FormState) => {
     if (!editingCard) return;
-    const res = await fetch(`/api/admin/flashcards/${editingCard._id}`, {
+    const res = await fetch(`${apiPrefix}/${editingCard._id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...form, grade: Number(form.grade) }),
@@ -1220,7 +1230,7 @@ function CardsView({ lesson, onBack, onRefreshLessons }: {
   };
 
   const handleDelete = async (card: CardRow) => {
-    const res = await fetch(`/api/admin/flashcards/${card._id}`, { method: 'DELETE' });
+    const res = await fetch(`${apiPrefix}/${card._id}`, { method: 'DELETE' });
     if (!res.ok) { showToast('Xoá thất bại', 'error'); return; }
     showToast('Đã xoá thẻ!');
     fetchCards();
@@ -1245,7 +1255,7 @@ function CardsView({ lesson, onBack, onRefreshLessons }: {
     setDragIdx(null); setOverIdx(null);
     setReordering(true);
     try {
-      const res = await fetch('/api/admin/flashcards/reorder', {
+      const res = await fetch(`${apiPrefix}/reorder`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ updates: withOrders.map(c => ({ id: c._id, order: c.order })) }),
@@ -1484,7 +1494,7 @@ function CardsView({ lesson, onBack, onRefreshLessons }: {
 
 /* ═══════════════════════ DATA TAB (orchestrator) ═════════════════ */
 
-function DataTab() {
+function DataManager({ apiPrefix, title }: { apiPrefix: string; title: string }) {
   const [view, setView]                     = useState<'lessons' | 'cards'>('lessons');
   const [selectedLesson, setSelectedLesson] = useState<LessonRow | null>(null);
   const [confirmClearAll, setConfirmClearAll] = useState(false);
@@ -1506,7 +1516,7 @@ function DataTab() {
   const handleBack = () => { setView('lessons'); setSelectedLesson(null); };
 
   const handleClearAll = async () => {
-    const res = await fetch('/api/admin/flashcards', { method: 'DELETE' });
+    const res = await fetch(`${apiPrefix}`, { method: 'DELETE' });
     if (!res.ok) { showToast('Xoá thất bại', 'error'); return; }
     showToast('Đã xoá toàn bộ thẻ!');
     if (view === 'cards') handleBack();
@@ -1516,7 +1526,7 @@ function DataTab() {
   const handleSeed = async () => {
     setSeeding(true);
     try {
-      const res  = await fetch('/api/admin/flashcards/seed', { method: 'POST' });
+      const res  = await fetch(`${apiPrefix}/seed`, { method: 'POST' });
       const data = await res.json();
       if (data.skipped) showToast(data.message, 'error');
       else { showToast(`Đã nhập ${data.count} thẻ từ dữ liệu gốc!`); setLessonsKey(k => k + 1); }
@@ -1538,10 +1548,11 @@ function DataTab() {
       )}
 
       {view === 'lessons' && (
-        <LessonsView key={lessonsKey} onSelectLesson={handleSelectLesson} onClearAll={() => setConfirmClearAll(true)} />
+        <LessonsView apiPrefix={apiPrefix} key={lessonsKey} onSelectLesson={handleSelectLesson} onClearAll={() => setConfirmClearAll(true)} />
       )}
       {view === 'cards' && selectedLesson && (
         <CardsView
+          apiPrefix={apiPrefix}
           lesson={selectedLesson}
           onBack={handleBack}
           onRefreshLessons={() => setLessonsKey(k => k + 1)}
@@ -1563,6 +1574,44 @@ function DataTab() {
           danger={false}
         />
       )}
+    </div>
+  );
+}
+
+function DataTab() {
+  const [subTab, setSubTab] = useState<'flashcards' | 'quizzes'>('flashcards');
+
+  return (
+    <div className="space-y-6">
+      {/* ── Sub-tabs navigation ── */}
+      <div className="flex gap-2 p-1.5 bg-slate-100/80 backdrop-blur-sm border border-slate-200 rounded-full w-fit">
+        <button
+          onClick={() => setSubTab('flashcards')}
+          className={`px-5 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${
+            subTab === 'flashcards'
+              ? 'bg-white text-cyan-600 shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-slate-200/50'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+          }`}
+        >
+          <span>📝</span> Thẻ ghi nhớ
+        </button>
+        <button
+          onClick={() => setSubTab('quizzes')}
+          className={`px-5 py-2 rounded-full text-sm font-bold transition-all flex items-center gap-2 ${
+            subTab === 'quizzes'
+              ? 'bg-white text-emerald-600 shadow-[0_2px_10px_rgba(0,0,0,0.05)] border border-slate-200/50'
+              : 'text-slate-500 hover:text-slate-700 hover:bg-slate-200/50'
+          }`}
+        >
+          <span>✅</span> Kiểm tra
+        </button>
+      </div>
+
+      {/* ── Content ── */}
+      <div className="bg-white/40 backdrop-blur-[12px] border border-white/60 rounded-[32px] p-6 shadow-sm">
+        {subTab === 'flashcards' && <DataManager apiPrefix="/api/admin/flashcards" title="Thẻ ghi nhớ" />}
+        {subTab === 'quizzes' && <QuizManager />}
+      </div>
     </div>
   );
 }
