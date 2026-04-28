@@ -179,7 +179,8 @@ export function PresentationPreview({ blocks, onClose }: Props) {
           const containerRect = container.getBoundingClientRect();
           const centerY = containerRect.top + containerRect.height / 2;
 
-          mapActionElements.forEach((el) => {
+          for (let i = 0; i < mapActionElements.length; i++) {
+            const el = mapActionElements[i];
             const rect = el.getBoundingClientRect();
             // Center of the element
             const elCenterY = rect.top + rect.height / 2;
@@ -189,7 +190,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
               minDistance = distance;
               activeEl = el;
             }
-          });
+          }
 
           if (activeEl) {
             const type = activeEl.getAttribute('data-type');
@@ -204,7 +205,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
               
               const altitude = Math.max(0.1, 5 / zoom);
               
-              setActiveMediaBlock(prev => {
+              setActiveMediaBlock((prev: any) => {
                 if (prev?.type === 'mapAction' && prev.lat === lat && prev.lng === lng && prev.altitude === altitude) {
                   return prev;
                 }
@@ -228,7 +229,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
               const singleUrl = activeEl.getAttribute('data-imageurl');
               if (parsedUrls.length === 0 && singleUrl) parsedUrls = [singleUrl];
 
-              setActiveMediaBlock(prev => {
+              setActiveMediaBlock((prev: any) => {
                 if (prev?.type === 'imageScenario' && JSON.stringify(prev.imageUrls) === JSON.stringify(parsedUrls)) {
                   return prev;
                 }

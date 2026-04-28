@@ -7,7 +7,7 @@ import FlashcardLesson from '@/models/FlashcardLesson';
 import QuizSet from '@/models/QuizSet';
 import HomeClass from '@/models/HomeClass';
 
-export async function GET() {
+export async function GET(req: Request) {
   const session = await auth();
   if (!session?.user || session.user.role !== 1) {
     return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
