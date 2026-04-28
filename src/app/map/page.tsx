@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Bản đồ Thế giới 3D | Khám Phá Địa Lý',
     description: 'Bản đồ thế giới 3D tương tác — thông tin địa lý, khí hậu, dân số hơn 190 quốc gia.',
-    url: 'https://vuihocdialy.edu.vn/map',
+    url: 'https://vuihocdialy.com/map',
   },
 };
 

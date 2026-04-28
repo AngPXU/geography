@@ -3,6 +3,12 @@ import { redirect } from 'next/navigation';
 import { Navbar } from '@/layouts/Navbar';
 import { Footer } from '@/layouts/Footer';
 import { ProfileClient } from '@/components/ui/ProfileClient';
+import { Metadata } from 'next';
+
+export const metadata: Metadata = {
+  title: 'Hồ Sơ | Vui học địa lý',
+  robots: { index: false },
+};
 
 export default async function ProfilePage() {
   const session = await auth();

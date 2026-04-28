@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Lộ trình học Địa lý | Khám Phá Địa Lý',
     description: 'Kế hoạch học Địa lý cá nhân hoá từ lớp 6 đến lớp 9.',
-    url: 'https://vuihocdialy.edu.vn/roadmap',
+    url: 'https://vuihocdialy.com/roadmap',
   },
 };
 

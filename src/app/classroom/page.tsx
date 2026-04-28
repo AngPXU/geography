@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Lớp học | Khám Phá Địa Lý',
     description: 'Lớp học Địa lý online & offline — giao bài, nộp bài, chấm điểm.',
-    url: 'https://vuihocdialy.edu.vn/classroom',
+    url: 'https://vuihocdialy.com/classroom',
   },
 };
 

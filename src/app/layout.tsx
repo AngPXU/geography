@@ -12,8 +12,8 @@ const beVietnamPro = Be_Vietnam_Pro({
   subsets: ["latin", "vietnamese"],
 });
 
-// ── Thay "https://vuihocdialy.edu.vn" bằng domain thật của bạn sau khi mua ──
-const SITE_URL = "https://vuihocdialy.edu.vn";
+// ── Thay "https://vuihocdialy.com" bằng domain thật của bạn sau khi mua ──
+const SITE_URL = "https://vuihocdialy.com";
 const SITE_NAME = "Khám Phá Địa Lý";
 const SITE_DESCRIPTION =
   "Nền tảng học Địa lý số hoá dành cho học sinh THCS Việt Nam — Bản đồ 3D, AI hỏi đáp, câu hỏi trắc nghiệm, lớp học trực tuyến và offline, giáo trình chuẩn Bộ GD&ĐT.";

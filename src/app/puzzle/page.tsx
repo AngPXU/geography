@@ -4,7 +4,7 @@ import { Navbar } from '@/layouts/Navbar';
 import { Footer } from '@/layouts/Footer';
 import { PuzzleClient } from './PuzzleClient';
 
-export const metadata = { title: 'Ghép Bản Đồ | Vui Học Địa Lý' };
+export const metadata = { title: 'Xếp Hình Bản Đồ | Vui học địa lý' };
 
 export default async function PuzzlePage({
   searchParams,

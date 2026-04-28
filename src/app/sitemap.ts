@@ -1,6 +1,6 @@
 import { MetadataRoute } from 'next';
 
-const SITE_URL = 'https://vuihocdialy.edu.vn';
+const SITE_URL = 'https://vuihocdialy.com';
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const now = new Date();

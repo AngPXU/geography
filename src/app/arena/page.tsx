@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Đấu trường Địa lý | Khám Phá Địa Lý',
     description: 'Câu hỏi trắc nghiệm, đoán bản đồ, luyện Địa lý mỗi ngày.',
-    url: 'https://vuihocdialy.edu.vn/arena',
+    url: 'https://vuihocdialy.com/arena',
   },
 };
 import MapGuessGateway from '@/components/arena/MapGuessGateway';

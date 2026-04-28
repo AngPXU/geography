@@ -1,5 +1,11 @@
+import { Metadata } from "next";
 import { auth } from "@/auth";
 import { redirect } from "next/navigation";
+
+export const metadata: Metadata = {
+  title: "Trang Chủ | Vui học địa lý",
+  description: "Khám phá bản đồ 3D, học tập qua các câu hỏi trắc nghiệm và theo dõi tiến trình học tập của bạn.",
+};
 import Link from 'next/link';
 import { Navbar } from "@/layouts/Navbar";
 import { EarthGlobe } from "@/components/ui/EarthGlobe";
