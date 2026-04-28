@@ -134,6 +134,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
   const [activePin, setActivePin] = useState<any>(null);
   const [selectedPin, setSelectedPin] = useState<any>(null);
   const [activeMediaBlock, setActiveMediaBlock] = useState<any>(null);
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({}); // blockId -> selected index
   const globeRef = useRef<any>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
@@ -382,9 +383,10 @@ export function PresentationPreview({ blocks, onClose }: Props) {
           if (block.type === 'text') {
             return (
               <div key={block.id} className="relative z-10 w-full">
-                <p className="text-[#334155] leading-[1.8] font-medium whitespace-pre-wrap text-[1.1rem] text-justify drop-shadow-sm">
-                  {block.content}
-                </p>
+                <div 
+                  className="text-[#334155] leading-[1.8] font-medium text-[1.1rem] text-justify drop-shadow-sm [&_b]:font-black [&_strong]:font-black [&_i]:italic [&_em]:italic [&_u]:underline [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:my-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:my-2 [&_li]:my-1"
+                  dangerouslySetInnerHTML={{ __html: block.content || '' }}
+                />
               </div>
             );
           }
@@ -442,15 +444,45 @@ export function PresentationPreview({ blocks, onClose }: Props) {
           }
 
           if (block.type === 'quiz') {
+            const selectedIdx = quizAnswers[block.id];
+            const hasAnswered = selectedIdx !== undefined;
+            const isCorrect = selectedIdx === block.correctIndex;
+
             return (
               <div key={block.id} className="relative z-10 bg-white/80 backdrop-blur-xl p-8 rounded-3xl border border-orange-200 shadow-[0_10px_30px_rgba(249,115,22,0.1)] mx-4">
                 <h3 className="font-bold text-[#082F49] mb-6 text-xl drop-shadow-sm">❓ {block.question}</h3>
                 <div className="space-y-3">
-                  {block.options?.map((opt, idx) => (
-                    <button key={idx} className="w-full text-left p-4 rounded-xl bg-slate-50/50 hover:bg-orange-100 border border-slate-200 hover:border-orange-400 text-[#334155] font-bold text-lg transition-all shadow-sm">
-                      {String.fromCharCode(65 + idx)}. {opt}
-                    </button>
-                  ))}
+                  {block.options?.map((opt, idx) => {
+                    const isSelected = selectedIdx === idx;
+                    const isCorrectOpt = idx === block.correctIndex;
+
+                    let optClass = "w-full text-left p-4 rounded-xl border font-bold text-lg transition-all shadow-sm ";
+                    if (!hasAnswered) {
+                      optClass += "bg-slate-50/50 hover:bg-orange-100 border-slate-200 hover:border-orange-400 text-[#334155] cursor-pointer";
+                    } else if (isCorrectOpt) {
+                      optClass += "bg-green-100 border-green-400 text-green-800";
+                    } else if (isSelected && !isCorrectOpt) {
+                      optClass += "bg-red-100 border-red-400 text-red-700";
+                    } else {
+                      optClass += "bg-slate-50 border-slate-200 text-slate-400 opacity-60";
+                    }
+
+                    return (
+                      <button
+                        key={idx}
+                        onClick={() => !hasAnswered && setQuizAnswers(prev => ({ ...prev, [block.id]: idx }))}
+                        className={optClass}
+                      >
+                        <span className="flex items-center gap-3">
+                          <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black shrink-0
+                            ${!hasAnswered ? 'bg-orange-100 text-orange-600' : isCorrectOpt ? 'bg-green-500 text-white' : isSelected ? 'bg-red-400 text-white' : 'bg-slate-200 text-slate-400'}`}>
+                            {hasAnswered && isCorrectOpt ? '✓' : hasAnswered && isSelected && !isCorrectOpt ? '✕' : String.fromCharCode(65 + idx)}
+                          </span>
+                          {opt}
+                        </span>
+                      </button>
+                    );
+                  })}
                 </div>
               </div>
             );

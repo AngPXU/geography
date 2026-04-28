@@ -17,6 +17,7 @@ export function PresentationManagerClient() {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [editingId, setEditingId] = useState<string | null>(null);
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
 
   const getGradeCardStyle = (grade: number) => {
     switch (grade) {
@@ -77,12 +78,18 @@ export function PresentationManagerClient() {
 
   const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!confirm('Bạn có chắc chắn muốn xóa bài giảng này không?')) return;
+    setDeleteConfirmId(id);
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirmId) return;
     try {
-      await fetch(`/api/presentations?id=${id}`, { method: 'DELETE' });
+      await fetch(`/api/presentations?id=${deleteConfirmId}`, { method: 'DELETE' });
       if (activeGrade) fetchPresentations(activeGrade, search, sort, page);
     } catch (e) {
-      alert('Lỗi xóa bài giảng');
+      console.error('Lỗi xóa bài giảng', e);
+    } finally {
+      setDeleteConfirmId(null);
     }
   };
 
@@ -340,6 +347,40 @@ export function PresentationManagerClient() {
                 className="px-6 py-2.5 rounded-[16px] font-bold text-white bg-[#06B6D4] hover:bg-[#22D3EE] disabled:opacity-50 transition-all duration-300 shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:shadow-[0_15px_25px_rgba(6,182,212,0.4)] hover:-translate-y-0.5"
               >
                 {isCreating ? 'Đang lưu...' : (editingId ? 'Lưu thay đổi' : 'Xác nhận tạo')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── MODAL XÁC NHẬN XÓA ── */}
+      {deleteConfirmId && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center px-4">
+          <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setDeleteConfirmId(null)} />
+          <div className="relative bg-white/80 backdrop-blur-[24px] p-8 rounded-[24px] w-full max-w-sm shadow-[0_20px_60px_rgba(220,38,38,0.15)] border border-white animate-in zoom-in-95 duration-200 text-center">
+            
+            {/* Icon */}
+            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center text-3xl mx-auto mb-5">
+              🗑️
+            </div>
+
+            <h3 className="text-2xl font-black text-[#082F49] mb-2">Xóa bài giảng?</h3>
+            <p className="text-sm text-slate-500 font-medium mb-8">
+              Hành động này không thể hoàn tác. Bài giảng sẽ bị xóa vĩnh viễn khỏi hệ thống.
+            </p>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirmId(null)}
+                className="flex-1 px-5 py-3 rounded-[16px] font-bold text-[#334155] bg-slate-100 hover:bg-slate-200 border border-slate-200 transition-all duration-300"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                onClick={confirmDelete}
+                className="flex-1 px-5 py-3 rounded-[16px] font-bold text-white bg-red-500 hover:bg-red-600 shadow-[0_8px_20px_rgba(239,68,68,0.3)] hover:shadow-[0_12px_25px_rgba(239,68,68,0.4)] hover:-translate-y-0.5 transition-all duration-300"
+              >
+                Xóa ngay
               </button>
             </div>
           </div>

@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { PresentationPreview } from './PresentationPreview';
+import { RichTextEditor } from './RichTextEditor';
 import dynamic from 'next/dynamic';
 
 const Globe = dynamic(() => import('react-globe.gl'), { ssr: false });
@@ -138,33 +139,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
   const [blocks, setBlocks] = useState<StoryBlock[]>([
     {
       id: 'b1', type: 'heading', level: 1,
-      content: 'Bài 1: Hệ thống kinh, vĩ tuyến. Tọa độ địa lí'
-    },
-    {
-      id: 'b2', type: 'text',
-      content: 'Mục tiêu bài học:\n- Biết được thế nào là kinh tuyến, vĩ tuyến.\n- Xác định được tọa độ địa lý của một điểm.'
-    },
-    {
-      id: 'b3', type: 'funFact', title: 'Em có biết?',
-      content: 'Kinh tuyến gốc được quy ước là kinh tuyến đi qua đài thiên văn Greenwich (nằm ở ngoại ô thủ đô London, nước Anh).'
-    },
-    {
-      id: 'b4', type: 'mapAction', lat: 51.4779, lng: -0.0015, zoom: 6,
-      description: 'Xoay bản đồ đến Đài thiên văn Greenwich (Luân Đôn, Anh)'
-    },
-    {
-      id: 'b5', type: 'heading', level: 2,
-      content: '1. Hệ thống kinh, vĩ tuyến'
-    },
-    {
-      id: 'b6', type: 'text',
-      content: 'Quả Địa Cầu là mô hình thu nhỏ của Trái Đất. Trên quả Địa Cầu, có thể hiện cực Bắc, cực Nam và hệ thống kinh, vĩ tuyến.'
-    },
-    {
-      id: 'b7', type: 'quiz',
-      question: 'Kinh tuyến đi qua đài thiên văn Greenwich gọi là gì?',
-      options: ['Xích đạo', 'Kinh tuyến gốc', 'Vĩ tuyến gốc', 'Đường đổi ngày'],
-      correctIndex: 1
+      content: 'Tiêu đề bài giảng mới'
     }
   ]);
 
@@ -195,6 +170,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
         })
         .finally(() => setIsLoading(false));
     } else {
+      setPresentationTitle('Bài giảng mới');
       setIsLoading(false);
     }
   }, [presentationId]);
@@ -349,16 +325,10 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
 
         {/* TEXT BLOCK */}
         {block.type === 'text' && (
-          <textarea 
-            value={block.content || ''} 
-            onChange={e => updateBlock(block.id, { content: e.target.value })}
-            placeholder="Gõ nội dung văn bản (hỗ trợ xuống dòng)..."
-            className="w-full bg-transparent outline-none resize-none text-[#334155] leading-relaxed min-h-[100px] font-medium"
-            onInput={(e) => {
-              const target = e.target as HTMLTextAreaElement;
-              target.style.height = 'auto';
-              target.style.height = target.scrollHeight + 'px';
-            }}
+          <RichTextEditor
+            value={block.content || ''}
+            onChange={(html) => updateBlock(block.id, { content: html })}
+            placeholder="Gõ nội dung văn bản..."
           />
         )}
 
