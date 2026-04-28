@@ -63,7 +63,7 @@ function LiveClock() {
 
 /** Countdown to Vietnam midnight (UTC+7 = next 00:00 VN) */
 function useResetCountdown() {
-  const calc = () => {
+  const calc = useCallback(() => {
     const now = new Date();
     const vnNow = new Date(now.getTime() + 7 * 3600_000);
     const vnMidnight = new Date(Date.UTC(vnNow.getUTCFullYear(), vnNow.getUTCMonth(), vnNow.getUTCDate() + 1));
@@ -72,12 +72,15 @@ function useResetCountdown() {
     const m = Math.floor((diff % 3600_000) / 60_000);
     const s = Math.floor((diff % 60_000) / 1_000);
     return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
-  };
-  const [countdown, setCountdown] = useState(calc);
+  }, []);
+
+  const [countdown, setCountdown] = useState('--:--:--');
   useEffect(() => {
+    setCountdown(calc());
     const t = setInterval(() => setCountdown(calc()), 1000);
     return () => clearInterval(t);
-  }, []);
+  }, [calc]);
+  
   return countdown;
 }
 

@@ -90,6 +90,6 @@ export const config = {
      * Kích hoạt trên tất cả API và Router giao diện. 
      * Bỏ qua các file tĩnh (CSS, Hình ảnh, Next.js core)
      */
-    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+    '/((?!_next/static|_next/image|favicon.png|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
   ],
 };

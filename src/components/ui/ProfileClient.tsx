@@ -288,7 +288,7 @@ export function ProfileClient() {
           setGeoCoords({ lat: d.lat, lon: d.lon, country: d.country ?? '', city: d.city ?? '' });
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // ── Fetch provinces ────────────────────────────────────────────────────────
@@ -296,7 +296,7 @@ export function ProfileClient() {
     fetch('https://provinces.open-api.vn/api/v2/p/')
       .then((r) => r.json())
       .then((data: AdminUnit[]) => setProvinces(data))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // ── Fetch wards when province changes (edit mode) ──────────────────────────
@@ -306,7 +306,7 @@ export function ProfileClient() {
     fetch(`https://provinces.open-api.vn/api/v2/p/${editProvCode}?depth=2`)
       .then((r) => r.json())
       .then((data: { wards?: AdminUnit[] }) => setWards(data.wards ?? []))
-      .catch(() => {});
+      .catch(() => { });
   }, [editProvCode]);
 
   // ── Fetch wards for view mode ──────────────────────────────────────────────
@@ -316,7 +316,7 @@ export function ProfileClient() {
     fetch(`https://provinces.open-api.vn/api/v2/p/${viewProvCode}?depth=2`)
       .then((r) => r.json())
       .then((data: { wards?: AdminUnit[] }) => setWards(data.wards ?? []))
-      .catch(() => {});
+      .catch(() => { });
   }, [viewProvCode, editing]);
 
   // ── Handlers ──────────────────────────────────────────────────────────────
@@ -514,10 +514,10 @@ export function ProfileClient() {
       </div>
 
       <div className="flex flex-col xl:flex-row gap-8 items-start relative mt-4">
-        
+
         {/* ═══ LEFT PANEL: GEO ID CARD ═══ */}
         <div className="w-full xl:w-[35%] xl:max-w-md flex flex-col gap-6 xl:sticky xl:top-28 z-20">
-          
+
           <div
             className="relative rounded-[40px] overflow-hidden flex flex-col items-center pt-12 pb-10 px-8 text-center"
             style={{
@@ -534,7 +534,7 @@ export function ProfileClient() {
                 100% { background-position: 0% 50%; }
               }
             `}</style>
-            
+
             {/* Hologram Overlay & grid */}
             <div
               className="absolute inset-0 opacity-[0.1]"
@@ -544,7 +544,7 @@ export function ProfileClient() {
               }}
             />
             <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[60px] rounded-full mix-blend-overlay"></div>
-            
+
             <div className="absolute top-4 left-6 text-white/40 text-[10px] font-black uppercase tracking-[0.3em]">
               CERT. // {new Date(profile.createdAt).getFullYear()}
             </div>
@@ -563,7 +563,7 @@ export function ProfileClient() {
                   </div>
                 )}
               </div>
-              
+
               <div className="absolute inset-[-12px] border-[2px] border-dashed border-white/40 rounded-full animate-[spin_10s_linear_infinite] pointer-events-none" />
 
               {editing && (
@@ -660,215 +660,214 @@ export function ProfileClient() {
         {/* ═══ RIGHT PANEL: SETTINGS MATRIX ═══ */}
         <div className="flex-1 w-full grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
-      {/* ── Thông tin cá nhân ─────────────────────────────────────────────── */}
-      <SectionCard icon={<FaUser size={13} />} title="Thông tin cá nhân">
-        {editing && form ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <GlassInput
-              label="Họ và tên"
-              id="fullName"
-              value={form.fullName}
-              onChange={(v) => setForm((f) => (f ? { ...f, fullName: v } : f))}
-              placeholder="Nguyễn Văn An"
-            />
-            <div>
-              <p className="text-xs font-semibold text-[#334155] mb-1.5 ml-1">Vai trò</p>
-              <span className={`inline-flex items-center px-4 py-2 rounded-2xl text-sm font-bold ${ROLE_BADGE[profile.role]}`}>
-                {ROLE_LABEL[profile.role]}
-              </span>
-              <p className="text-[10px] text-[#94A3B8] mt-1 ml-1">Không thể tự thay đổi vai trò</p>
-            </div>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <InfoRow label="Họ và tên" value={profile.fullName} empty="Chưa cập nhật" />
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8] mb-1">Vai trò</p>
-              <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${ROLE_BADGE[profile.role]}`}>
-                {ROLE_LABEL[profile.role]}
-              </span>
-            </div>
-          </div>
-        )}
-      </SectionCard>
-
-      {/* ── Học tập ───────────────────────────────────────────────────────── */}
-      <SectionCard icon={<FaGraduationCap size={13} />} title="Thông tin học tập">
-        {editing && form ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <GlassInput
-              label="Lớp"
-              id="className"
-              value={form.className}
-              onChange={(v) => setForm((f) => (f ? { ...f, className: v } : f))}
-              placeholder="Ví dụ: 8A1"
-            />
-            <GlassInput
-              label="Trường"
-              id="school"
-              value={form.school}
-              onChange={(v) => setForm((f) => (f ? { ...f, school: v } : f))}
-              placeholder="Tên trường của bạn"
-            />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <InfoRow label="Lớp" value={profile.className} empty="Chưa cập nhật" />
-            <InfoRow label="Trường" value={profile.school} empty="Chưa cập nhật" />
-          </div>
-        )}
-      </SectionCard>
-
-      {/* ── Tài khoản ─────────────────────────────────────────────────────── */}
-      <SectionCard icon={<FaGlobe size={13} />} title="Tài khoản">
-        {editing && form ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <GlassInput
-              label="Tên đăng nhập (không thể thay đổi)"
-              id="username-display"
-              value={profile.username}
-              disabled
-            />
-            <GlassInput
-              label="Email"
-              id="email"
-              type="email"
-              value={form.email}
-              onChange={(v) => setForm((f) => (f ? { ...f, email: v } : f))}
-              placeholder="example@email.com"
-            />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <InfoRow label="Tên đăng nhập" value={profile.username} />
-            <InfoRow label="Email" value={profile.email} empty="Chưa thêm email" />
-          </div>
-        )}
-      </SectionCard>
-
-      {/* ── Địa chỉ ───────────────────────────────────────────────────────── */}
-      <SectionCard icon={<FaMapMarkerAlt size={13} />} title="Địa chỉ">
-        {editing && form ? (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <GlassSelect
-                label="Tỉnh / Thành phố"
-                id="province"
-                value={String(form.province?.code ?? '')}
-                onChange={(v) => {
-                  const p = provinces.find((x) => String(x.code) === v) ?? null;
-                  setForm((f) => (f ? { ...f, province: p, ward: null } : f));
-                }}
-              >
-                <option value="">-- Chọn tỉnh / thành phố --</option>
-                {provinces.map((p) => (
-                  <option key={p.code} value={String(p.code)}>{p.name}</option>
-                ))}
-              </GlassSelect>
-              <GlassSelect
-                label="Xã / Phường"
-                id="ward"
-                value={String(form.ward?.code ?? '')}
-                onChange={(v) => {
-                  const w = wards.find((x) => String(x.code) === v) ?? null;
-                  setForm((f) => (f ? { ...f, ward: w } : f));
-                }}
-                disabled={!form.province || wards.length === 0}
-              >
-                <option value="">-- Chọn xã / phường --</option>
-                {wards.map((w) => (
-                  <option key={w.code} value={String(w.code)}>{w.name}</option>
-                ))}
-              </GlassSelect>
-            </div>
-            <GlassInput
-              label="Địa chỉ hiện tại"
-              id="address"
-              value={form.address}
-              onChange={(v) => setForm((f) => (f ? { ...f, address: v } : f))}
-              placeholder="Số nhà, tên đường, khu vực..."
-            />
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <InfoRow label="Tỉnh / Thành phố" value={profile.province?.name} empty="Chưa cập nhật" />
-            <InfoRow label="Xã / Phường" value={profile.ward?.name} empty="Chưa cập nhật" />
-            {profile.address && (
-              <div className="md:col-span-2">
-                <InfoRow label="Địa chỉ hiện tại" value={profile.address} />
+          {/* ── Thông tin cá nhân ─────────────────────────────────────────────── */}
+          <SectionCard icon={<FaUser size={13} />} title="Thông tin cá nhân">
+            {editing && form ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <GlassInput
+                  label="Họ và tên"
+                  id="fullName"
+                  value={form.fullName}
+                  onChange={(v) => setForm((f) => (f ? { ...f, fullName: v } : f))}
+                  placeholder="Nguyễn Văn An"
+                />
+                <div>
+                  <p className="text-xs font-semibold text-[#334155] mb-1.5 ml-1">Vai trò</p>
+                  <span className={`inline-flex items-center px-4 py-2 rounded-2xl text-sm font-bold ${ROLE_BADGE[profile.role]}`}>
+                    {ROLE_LABEL[profile.role]}
+                  </span>
+                  <p className="text-[10px] text-[#94A3B8] mt-1 ml-1">Không thể tự thay đổi vai trò</p>
+                </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <InfoRow label="Họ và tên" value={profile.fullName} empty="Chưa cập nhật" />
+                <div>
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8] mb-1">Vai trò</p>
+                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${ROLE_BADGE[profile.role]}`}>
+                    {ROLE_LABEL[profile.role]}
+                  </span>
+                </div>
               </div>
             )}
-          </div>
-        )}
-      </SectionCard>
+          </SectionCard>
 
-      {/* ── Bảo mật ───────────────────────────────────────────────────────── */}
-      <SectionCard icon={<FaLock size={13} />} title="Bảo mật">
-        <button
-          onClick={() => { setPwOpen((o) => !o); setPwError(''); }}
-          className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-300 ${
-            pwOpen
-              ? 'bg-[#06B6D4]/10 text-[#06B6D4] border border-[#06B6D4]/30'
-              : 'bg-white/60 text-[#334155] border border-[#BAE6FD] hover:border-[#06B6D4]/50 hover:text-[#06B6D4]'
-          }`}
-        >
-          <FaLock size={11} />
-          {pwOpen ? 'Đóng' : 'Đổi mật khẩu'}
-          <FaChevronDown
-            size={10}
-            className={`transition-transform duration-300 ${pwOpen ? 'rotate-180' : ''}`}
-          />
-        </button>
-
-        {pwOpen && (
-          <div className="mt-5 space-y-4 pt-5 border-t border-[#E0F2FE]">
-            {pwError && (
-              <div
-                className="flex items-center gap-2 px-4 py-3 rounded-2xl text-xs font-semibold"
-                style={{ background: 'rgba(254,226,226,0.8)', color: '#DC2626' }}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-[#F87171] flex-shrink-0" />
-                {pwError}
+          {/* ── Học tập ───────────────────────────────────────────────────────── */}
+          <SectionCard icon={<FaGraduationCap size={13} />} title="Thông tin học tập">
+            {editing && form ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <GlassInput
+                  label="Lớp"
+                  id="className"
+                  value={form.className}
+                  onChange={(v) => setForm((f) => (f ? { ...f, className: v } : f))}
+                  placeholder="Ví dụ: 8A1"
+                />
+                <GlassInput
+                  label="Trường"
+                  id="school"
+                  value={form.school}
+                  onChange={(v) => setForm((f) => (f ? { ...f, school: v } : f))}
+                  placeholder="Tên trường của bạn"
+                />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <InfoRow label="Lớp" value={profile.className} empty="Chưa cập nhật" />
+                <InfoRow label="Trường" value={profile.school} empty="Chưa cập nhật" />
               </div>
             )}
-            <PwInput
-              id="cur-pw"
-              label="Mật khẩu hiện tại"
-              value={currentPw}
-              onChange={setCurrentPw}
-              show={showCurrentPw}
-              setShow={setShowCurrentPw}
-              placeholder="Nhập mật khẩu hiện tại"
-            />
-            <PwInput
-              id="new-pw"
-              label="Mật khẩu mới"
-              value={newPw}
-              onChange={setNewPw}
-              show={showNewPw}
-              setShow={setShowNewPw}
-              placeholder="Tối thiểu 8 ký tự"
-              hint="Phải có: chữ hoa, chữ thường, chữ số và ký tự đặc biệt (!@#$...)"
-            />
-            <PwInput
-              id="confirm-pw"
-              label="Xác nhận mật khẩu mới"
-              value={confirmPw}
-              onChange={setConfirmPw}
-              show={showConfirmPw}
-              setShow={setShowConfirmPw}
-              placeholder="Nhập lại mật khẩu mới"
-            />
+          </SectionCard>
+
+          {/* ── Tài khoản ─────────────────────────────────────────────────────── */}
+          <SectionCard icon={<FaGlobe size={13} />} title="Tài khoản">
+            {editing && form ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <GlassInput
+                  label="Tên đăng nhập (không thể thay đổi)"
+                  id="username-display"
+                  value={profile.username}
+                  disabled
+                />
+                <GlassInput
+                  label="Email"
+                  id="email"
+                  type="email"
+                  value={form.email}
+                  onChange={(v) => setForm((f) => (f ? { ...f, email: v } : f))}
+                  placeholder="example@email.com"
+                />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <InfoRow label="Tên đăng nhập" value={profile.username} />
+                <InfoRow label="Email" value={profile.email} empty="Chưa thêm email" />
+              </div>
+            )}
+          </SectionCard>
+
+          {/* ── Địa chỉ ───────────────────────────────────────────────────────── */}
+          <SectionCard icon={<FaMapMarkerAlt size={13} />} title="Địa chỉ">
+            {editing && form ? (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <GlassSelect
+                    label="Tỉnh / Thành phố"
+                    id="province"
+                    value={String(form.province?.code ?? '')}
+                    onChange={(v) => {
+                      const p = provinces.find((x) => String(x.code) === v) ?? null;
+                      setForm((f) => (f ? { ...f, province: p, ward: null } : f));
+                    }}
+                  >
+                    <option value="">-- Chọn tỉnh / thành phố --</option>
+                    {provinces.map((p) => (
+                      <option key={p.code} value={String(p.code)}>{p.name}</option>
+                    ))}
+                  </GlassSelect>
+                  <GlassSelect
+                    label="Xã / Phường"
+                    id="ward"
+                    value={String(form.ward?.code ?? '')}
+                    onChange={(v) => {
+                      const w = wards.find((x) => String(x.code) === v) ?? null;
+                      setForm((f) => (f ? { ...f, ward: w } : f));
+                    }}
+                    disabled={!form.province || wards.length === 0}
+                  >
+                    <option value="">-- Chọn xã / phường --</option>
+                    {wards.map((w) => (
+                      <option key={w.code} value={String(w.code)}>{w.name}</option>
+                    ))}
+                  </GlassSelect>
+                </div>
+                <GlassInput
+                  label="Địa chỉ hiện tại"
+                  id="address"
+                  value={form.address}
+                  onChange={(v) => setForm((f) => (f ? { ...f, address: v } : f))}
+                  placeholder="Số nhà, tên đường, khu vực..."
+                />
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <InfoRow label="Tỉnh / Thành phố" value={profile.province?.name} empty="Chưa cập nhật" />
+                <InfoRow label="Xã / Phường" value={profile.ward?.name} empty="Chưa cập nhật" />
+                {profile.address && (
+                  <div className="md:col-span-2">
+                    <InfoRow label="Địa chỉ hiện tại" value={profile.address} />
+                  </div>
+                )}
+              </div>
+            )}
+          </SectionCard>
+
+          {/* ── Bảo mật ───────────────────────────────────────────────────────── */}
+          <SectionCard icon={<FaLock size={13} />} title="Bảo mật">
             <button
-              onClick={handlePasswordChange}
-              disabled={saving}
-              className="px-6 py-2.5 rounded-2xl font-bold text-white text-sm bg-[#06B6D4] hover:bg-[#22D3EE] disabled:opacity-60 transition-all duration-300 shadow-md"
+              onClick={() => { setPwOpen((o) => !o); setPwError(''); }}
+              className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-300 ${pwOpen
+                  ? 'bg-[#06B6D4]/10 text-[#06B6D4] border border-[#06B6D4]/30'
+                  : 'bg-white/60 text-[#334155] border border-[#BAE6FD] hover:border-[#06B6D4]/50 hover:text-[#06B6D4]'
+                }`}
             >
-              {saving ? 'Đang lưu...' : 'Xác nhận đổi mật khẩu'}
+              <FaLock size={11} />
+              {pwOpen ? 'Đóng' : 'Đổi mật khẩu'}
+              <FaChevronDown
+                size={10}
+                className={`transition-transform duration-300 ${pwOpen ? 'rotate-180' : ''}`}
+              />
             </button>
-          </div>
-        )}
-      </SectionCard>
+
+            {pwOpen && (
+              <div className="mt-5 space-y-4 pt-5 border-t border-[#E0F2FE]">
+                {pwError && (
+                  <div
+                    className="flex items-center gap-2 px-4 py-3 rounded-2xl text-xs font-semibold"
+                    style={{ background: 'rgba(254,226,226,0.8)', color: '#DC2626' }}
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-[#F87171] flex-shrink-0" />
+                    {pwError}
+                  </div>
+                )}
+                <PwInput
+                  id="cur-pw"
+                  label="Mật khẩu hiện tại"
+                  value={currentPw}
+                  onChange={setCurrentPw}
+                  show={showCurrentPw}
+                  setShow={setShowCurrentPw}
+                  placeholder="Nhập mật khẩu hiện tại"
+                />
+                <PwInput
+                  id="new-pw"
+                  label="Mật khẩu mới"
+                  value={newPw}
+                  onChange={setNewPw}
+                  show={showNewPw}
+                  setShow={setShowNewPw}
+                  placeholder="Tối thiểu 8 ký tự"
+                  hint="Phải có: chữ hoa, chữ thường, chữ số và ký tự đặc biệt (!@#$...)"
+                />
+                <PwInput
+                  id="confirm-pw"
+                  label="Xác nhận mật khẩu mới"
+                  value={confirmPw}
+                  onChange={setConfirmPw}
+                  show={showConfirmPw}
+                  setShow={setShowConfirmPw}
+                  placeholder="Nhập lại mật khẩu mới"
+                />
+                <button
+                  onClick={handlePasswordChange}
+                  disabled={saving}
+                  className="px-6 py-2.5 rounded-2xl font-bold text-white text-sm bg-[#06B6D4] hover:bg-[#22D3EE] disabled:opacity-60 transition-all duration-300 shadow-md"
+                >
+                  {saving ? 'Đang lưu...' : 'Xác nhận đổi mật khẩu'}
+                </button>
+              </div>
+            )}
+          </SectionCard>
 
         </div>
       </div>
@@ -880,7 +879,7 @@ export function ProfileClient() {
 
       {/* ── Footer ────────────────────────────────────────────────────────── */}
       <p className="text-center text-slate-400 font-bold text-xs pt-12 pb-4 tracking-widest uppercase">
-        🌏 Thiết lập hệ thống GeoLearn từ{' '}
+        🌏 Tham gia Vui học Địa Lý từ{' '}
         {new Date(profile.createdAt).toLocaleDateString('vi-VN', {
           year: 'numeric',
           month: 'long',

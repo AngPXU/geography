@@ -92,14 +92,14 @@ export const metadata: Metadata = {
   // ── Icons ──
   icons: {
     icon: [
-      { url: "/favicon.ico", sizes: "any" },
+      { url: "/favicon.png", sizes: "any" },
       { url: "/icon-192x192.png", type: "image/png", sizes: "192x192" },
       { url: "/icon-512x512.png", type: "image/png", sizes: "512x512" },
     ],
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
     ],
-    shortcut: "/favicon.ico",
+    shortcut: "/favicon.png",
   },
 
   // ── PWA manifest ──
@@ -127,7 +127,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#E0F2FE" },
-    { media: "(prefers-color-scheme: dark)",  color: "#0C4A6E" },
+    { media: "(prefers-color-scheme: dark)", color: "#0C4A6E" },
   ],
   width: "device-width",
   initialScale: 1,

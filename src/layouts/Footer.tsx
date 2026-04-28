@@ -4,18 +4,34 @@ import Link from 'next/link';
 import { FaFacebook, FaGithub, FaYoutube, FaMapMarkedAlt } from 'react-icons/fa';
 
 const MODAL_CONTENT = {
-  faq: { title: "❓ Câu hỏi thường gặp (FAQ)", body: "1. Làm sao để mở khóa bài học?\nBạn hãy thường xuyên vào Map để click học bài và làm Quiz.\n\n2. Tôi có thể đổi tên hiển thị không?\nĐược, bạn hãy vào phần Cài đặt ở Avatar góc phải màn hình." },
-  guide: { title: "📖 Hướng dẫn sử dụng", body: "- Kéo rê chuột (hoặc vuốt cảm ứng) để xoay Quả địa cầu 3D.\n- Dùng thanh cuộn chuột để Zoom in/out trong Bản đồ.\n- Bấm vào tên các Quốc gia trên Đấu trường để ghi điểm." },
-  contact: { title: "💬 Liên hệ", body: "Tất cả các vấn đề về hệ thống web, lỗi tài khoản hãy báo ngay với Quản trị viên nhà trường qua Email: nguyenthiman1011dh@gmail.com." },
-  terms: { title: "📜 Điều khoản dịch vụ", body: "Tất cả học sinh sử dụng tài khoản hệ thống phải chấp hành nội quy nhà trường. Không sử dụng từ ngữ thiếu văn hóa trên Bảng xếp hạng. Nghiêm cấm chia sẻ tài khoản cho người ngoài." },
-  privacy: { title: "🛡️ Quyền riêng tư", body: "Nền tảng Vui học Địa Lý không theo dõi vị trí thực của học sinh. Chúng tôi chỉ lưu trữ điểm số, lộ trình học và thiết lập tùy chọn cá nhân dùng cho ứng dụng." }
+  faq: { 
+    title: "❓ Câu hỏi thường gặp (FAQ)", 
+    body: "1. Làm sao để có thêm EXP và xu (Coins)?\nHoàn thành các bài Quiz trong Đấu trường (Arena), chơi xếp hình bản đồ, hoặc học bài thường xuyên.\n\n2. Tại sao tôi không thể vào lớp học ảo?\nBạn cần có Mã lớp học từ giáo viên. Vào mục 'Lớp học Ảo', nhập mã để tham gia.\n\n3. Tôi có thể đổi tên và Avatar không?\nCó, hãy vào mục Hồ sơ (Profile) ở góc trên bên phải màn hình để thay đổi Avatar và thông tin cá nhân." 
+  },
+  guide: { 
+    title: "📖 Hướng dẫn sử dụng", 
+    body: "- Bản đồ 3D: Kéo rê chuột để xoay Quả địa cầu. Dùng con lăn chuột để phóng to/thu nhỏ. Có thể chuyển các chế độ bản đồ như Khí hậu, Địa hình, Kinh tế.\n- Đấu trường: Tham gia mini-game Đoán vị trí hoặc Ghép bản đồ để đua top với bạn bè.\n- Bài giảng: Trải nghiệm bài học bằng cách cuộn chuột từ từ (Scrollytelling) để xem các hình ảnh trực quan." 
+  },
+  contact: { 
+    title: "💬 Liên hệ", 
+    body: "Tất cả các vấn đề về lỗi hệ thống, quên mật khẩu hoặc góp ý, học sinh vui lòng liên hệ Ban Quản trị qua Email: admin@vuihocdialy.com hoặc báo cáo trực tiếp với Giáo viên chủ nhiệm." 
+  },
+  terms: { 
+    title: "📜 Điều khoản dịch vụ", 
+    body: "Tất cả học sinh sử dụng tài khoản hệ thống phải chấp hành nội quy học tập. Không sử dụng từ ngữ thiếu văn hóa trên Bảng xếp hạng. Nghiêm cấm chia sẻ tài khoản cho người ngoài." 
+  },
+  privacy: { 
+    title: "🛡️ Quyền riêng tư", 
+    body: "Nền tảng Vui học Địa Lý cam kết bảo mật thông tin người dùng. Chúng tôi chỉ lưu trữ tiến độ học, điểm số, và dữ liệu cá nhân hóa (như exp, thú cưng) nhằm tối ưu trải nghiệm học tập của bạn." 
+  }
 };
 
 export function Footer() {
   const [activeModal, setActiveModal] = useState<keyof typeof MODAL_CONTENT | null>(null);
 
   return (
-    <footer className="relative mt-20 border-t border-white/60 bg-white/40 backdrop-blur-xl">
+    <>
+      <footer className="relative mt-20 border-t border-white/60 bg-white/40 backdrop-blur-xl">
       {/* Wave decoration on top */}
       <div className="absolute top-0 left-0 w-full overflow-hidden leading-none transform -translate-y-[99%]">
         <svg viewBox="0 0 1200 120" preserveAspectRatio="none" className="block w-full h-[50px] fill-white/40">
@@ -91,11 +107,13 @@ export function Footer() {
           </div>
         </div>
       </div>
-      {/* Pop up Modal UI (High z-index: 99999) */}
+      </footer>
+
+      {/* Pop up Modal UI (Nằm ngoài thẻ footer để không bị z-index và backdrop-blur của footer đè) */}
       {activeModal && (
         <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm" onClick={() => setActiveModal(null)} />
-          <div className="relative bg-white/90 backdrop-blur-2xl border border-white max-w-lg w-full rounded-3xl shadow-[0_30px_60px_rgba(8,47,73,0.15)] overflow-hidden animate-in fade-in zoom-in-95 duration-300">
+          <div className="relative bg-white/95 backdrop-blur-3xl border border-white max-w-lg w-full rounded-3xl shadow-[0_30px_60px_rgba(8,47,73,0.15)] overflow-hidden animate-in fade-in zoom-in-95 duration-300">
             {/* Header */}
             <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-gradient-to-r from-blue-50 to-cyan-50">
               <h3 className="text-lg font-black text-[#082F49]">
@@ -123,6 +141,6 @@ export function Footer() {
           </div>
         </div>
       )}
-    </footer>
+    </>
   );
 }
