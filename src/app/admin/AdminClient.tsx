@@ -1616,113 +1616,19 @@ function DataTab() {
   );
 }
 
-/* ═══════════════════════ USER ROLE MODAL ════════════════════════════ */
-
-function UserRoleModal({ user, onClose, onSaved }: {
-  user: UserRow;
+function UserFormModal({ mode, initialUser, onClose, onSaved }: {
+  mode: 'add' | 'edit';
+  initialUser?: UserRow;
   onClose: () => void;
-  onSaved: (userId: string, newRole: number) => Promise<void>;
-}) {
-  const [role, setRole]     = useState(user.role);
-  const [saving, setSaving] = useState(false);
-  const [error, setError]   = useState('');
-
-  const handle = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setSaving(true);
-    setError('');
-    try { await onSaved(user._id, role); onClose(); }
-    catch (err: unknown) { setError(err instanceof Error ? err.message : 'Lỗi không xác định'); }
-    finally { setSaving(false); }
-  };
-
-  return (
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
-      <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
-      <div className="relative w-full max-w-sm bg-[rgba(255,255,255,0.75)] backdrop-blur-[24px] border border-white/80
-        rounded-[32px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden">
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100
-          bg-gradient-to-r from-violet-50 to-purple-50">
-          <h3 className="font-black text-[#082F49] text-lg">✏️ Phân quyền</h3>
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200
-            flex items-center justify-center text-slate-500 transition-colors">
-            <FaTimes className="text-xs" />
-          </button>
-        </div>
-        <form onSubmit={handle} className="p-6 space-y-4">
-          {error && (
-            <div className="flex items-center gap-2 px-4 py-3 rounded-full bg-red-50 border
-              border-red-200 text-red-600 text-sm font-semibold">
-              <FaExclamationTriangle className="shrink-0" /> {error}
-            </div>
-          )}
-          {/* User info */}
-          <div className="flex items-center gap-3 p-3 bg-slate-50 rounded-[20px] border border-slate-200">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500
-              flex items-center justify-center text-white font-black text-sm shrink-0 overflow-hidden">
-              {user.avatar
-                ? <img src={user.avatar} alt="" className="w-full h-full object-cover rounded-full" />
-                : user.username.charAt(0).toUpperCase()}
-            </div>
-            <div>
-              <p className="font-black text-[#082F49] text-sm">{user.username}</p>
-              {user.fullName && <p className="text-[#94A3B8] text-xs">{user.fullName}</p>}
-            </div>
-          </div>
-          {/* Role options */}
-          <div>
-            <label className="block text-xs font-bold text-[#334155] mb-2">Chọn vai trò mới</label>
-            <div className="flex flex-col gap-2">
-              {([1, 2, 3] as const).map(r => {
-                const info = ROLE_LABEL[r];
-                return (
-                  <button key={r} type="button" onClick={() => setRole(r)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-[20px] border-2 text-left
-                      font-bold transition-all text-sm
-                      ${role === r
-                        ? 'border-violet-400 bg-violet-50 text-violet-700'
-                        : 'border-slate-200 bg-slate-50 text-[#334155] hover:border-slate-300'
-                      }`}>
-                    <span className={`w-5 h-5 rounded-full border-2 flex items-center justify-center shrink-0
-                      ${role === r ? 'border-violet-500 bg-violet-500' : 'border-slate-300'}`}>
-                      {role === r && <span className="w-2 h-2 rounded-full bg-white" />}
-                    </span>
-                    <span className={`px-2 py-0.5 rounded-full text-xs border ${info.cls}`}>{info.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-          <div className="flex gap-3">
-            <button type="button" onClick={onClose}
-              className="flex-1 py-2.5 rounded-full border border-slate-200 text-sm font-bold
-                text-[#334155] hover:bg-slate-50 transition-all">Huỷ</button>
-            <button type="submit" disabled={saving || role === user.role}
-              className="flex-1 py-2.5 rounded-full bg-gradient-to-r from-violet-500 to-purple-500
-                text-white text-sm font-bold hover:from-violet-400 hover:to-purple-400 transition-all
-                flex items-center justify-center gap-2 disabled:opacity-50">
-              {saving && <FaSpinner className="animate-spin text-xs" />}
-              Lưu thay đổi
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  );
-}
-
-/* ═══════════════════════ ADD USER MODAL ════════════════════════════ */
-
-function AddUserModal({ onClose, onSaved }: {
-  onClose: () => void;
-  onSaved: (user: any) => Promise<void>;
+  onSaved: (mode: 'add' | 'edit', form: any, userId?: string) => Promise<void>;
 }) {
   const [form, setForm] = useState({
     username: '', password: '', confirmPassword: '', role: 3, email: '', fullName: '',
-    className: '', school: '', province: '', ward: '', address: ''
+    className: '', school: '', province: '', ward: '', address: '',
+    exp: 0, streak: 0, petExp: 0, coins: 0
   });
   const [saving, setSaving] = useState(false);
+  const [loadingInitial, setLoadingInitial] = useState(mode === 'edit');
   const [error, setError] = useState('');
 
   const [provinces, setProvinces] = useState<{code: number, name: string}[]>([]);
@@ -1736,32 +1642,75 @@ function AddUserModal({ onClose, onSaved }: {
   }, []);
 
   useEffect(() => {
+    if (mode === 'edit' && initialUser) {
+      // Fetch full user data
+      fetch(`/api/admin/users/${initialUser._id}`)
+        .then(r => r.json())
+        .then(data => {
+          if (data.user) {
+            const u = data.user;
+            setForm({
+              username: u.username || '',
+              password: '', confirmPassword: '',
+              role: u.role || 3,
+              email: u.email || '',
+              fullName: u.fullName || '',
+              className: u.className || '',
+              school: u.school || '',
+              province: u.province?.code ? String(u.province.code) : '',
+              ward: u.ward?.code ? String(u.ward.code) : '',
+              address: u.address || '',
+              exp: u.exp || 0,
+              streak: u.streak || 0,
+              petExp: u.petExp || 0,
+              coins: u.coins || 0
+            });
+          }
+        })
+        .catch(() => setError('Lỗi khi tải thông tin người dùng'))
+        .finally(() => setLoadingInitial(false));
+    } else {
+      setLoadingInitial(false);
+    }
+  }, [mode, initialUser]);
+
+  useEffect(() => {
     if (!form.province) {
       setWards([]);
-      setForm(p => ({ ...p, ward: '' }));
+      if (mode === 'add' || (!loadingInitial)) setForm(p => ({ ...p, ward: '' }));
       return;
     }
     fetch(`https://provinces.open-api.vn/api/v2/p/${form.province}?depth=2`)
       .then((r) => r.json())
       .then((data) => {
         setWards(data.wards ?? []);
-        setForm(p => ({ ...p, ward: '' }));
+        // Only reset ward if we just changed province manually, not during initial load
+        if (!loadingInitial) {
+          setForm(p => {
+             // If current ward is in the new wards list, keep it, else reset
+             const currentWardCode = Number(p.ward);
+             if (currentWardCode && data.wards?.some((w: any) => w.code === currentWardCode)) {
+                return p;
+             }
+             return { ...p, ward: '' };
+          });
+        }
       })
       .catch(() => {});
-  }, [form.province]);
+  }, [form.province, loadingInitial, mode]);
 
-  const fldCls = 'w-full px-3 py-2.5 rounded-full border border-slate-200 bg-slate-50 text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all';
+  const fldCls = 'w-full px-3 py-2.5 rounded-full border border-slate-200 bg-slate-50 text-sm font-semibold text-[#082F49] focus:outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all disabled:opacity-60';
 
   const set = (k: string) => (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => 
-    setForm(p => ({ ...p, [k]: k === 'role' ? Number(e.target.value) : e.target.value }));
+    setForm(p => ({ ...p, [k]: ['role', 'exp', 'streak', 'petExp', 'coins'].includes(k) ? Number(e.target.value) : e.target.value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!form.username.trim() || !form.password.trim()) {
+    if (mode === 'add' && (!form.username.trim() || !form.password.trim())) {
       setError('Tên đăng nhập và mật khẩu là bắt buộc');
       return;
     }
-    if (form.password !== form.confirmPassword) {
+    if (form.password && form.password !== form.confirmPassword) {
       setError('Mật khẩu xác nhận không khớp');
       return;
     }
@@ -1772,9 +1721,8 @@ function AddUserModal({ onClose, onSaved }: {
     const provinceObj = form.province ? provinces.find((p) => String(p.code) === form.province) : undefined;
     const wardObj = form.ward ? wards.find((w) => String(w.code) === form.ward) : undefined;
 
-    const payload = {
+    const payload: any = {
       username: form.username,
-      password: form.password,
       role: form.role,
       fullName: form.fullName,
       email: form.email,
@@ -1782,11 +1730,18 @@ function AddUserModal({ onClose, onSaved }: {
       school: form.school,
       address: form.address,
       province: provinceObj,
-      ward: wardObj
+      ward: wardObj,
+      exp: form.exp,
+      streak: form.streak,
+      petExp: form.petExp,
+      coins: form.coins
     };
+    if (form.password) {
+      payload.password = form.password;
+    }
 
     try {
-      await onSaved(payload);
+      await onSaved(mode, payload, initialUser?._id);
       onClose();
     } catch (err: unknown) {
       setError(err instanceof Error ? err.message : 'Lỗi không xác định');
@@ -1802,117 +1757,152 @@ function AddUserModal({ onClose, onSaved }: {
         rounded-[32px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden flex flex-col max-h-[90vh]">
         <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100
           bg-gradient-to-r from-cyan-50 to-blue-50 shrink-0">
-          <h3 className="font-black text-[#082F49] text-lg">✨ Tạo người dùng mới</h3>
+          <h3 className="font-black text-[#082F49] text-lg">
+            {mode === 'add' ? '✨ Tạo người dùng mới' : '✏️ Chỉnh sửa người dùng'}
+          </h3>
           <button type="button" onClick={onClose} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200
             flex items-center justify-center text-slate-500 transition-colors">
             <FaTimes className="text-xs" />
           </button>
         </div>
-        <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
-          {error && (
-            <div className="flex items-center gap-2 px-4 py-3 rounded-full bg-red-50 border
-              border-red-200 text-red-600 text-sm font-semibold">
-              <FaExclamationTriangle className="shrink-0" /> {error}
-            </div>
-          )}
-          
-          <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-3">
-            <h4 className="text-xs font-black text-[#94A3B8] uppercase tracking-wide">1. Thông tin đăng nhập</h4>
-            
-            <div>
-              <label className="block text-xs font-bold text-[#334155] mb-1">Vai trò *</label>
-              <select value={form.role} onChange={set('role')} className={fldCls}>
-                <option value={1}>Admin</option>
-                <option value={2}>Giáo viên</option>
-                <option value={3}>Học sinh</option>
-              </select>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-[#334155] mb-1">Tên đăng nhập *</label>
-                <input value={form.username} onChange={set('username')} required className={fldCls} />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[#334155] mb-1">Email <span className="text-slate-400 font-normal">(tuỳ chọn)</span></label>
-                <input value={form.email} onChange={set('email')} type="email" className={fldCls} placeholder="example@email.com" />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-[#334155] mb-1">Mật khẩu *</label>
-                <input value={form.password} onChange={set('password')} required type="password" className={fldCls} />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[#334155] mb-1">Xác nhận mật khẩu *</label>
-                <input value={form.confirmPassword} onChange={set('confirmPassword')} required type="password" className={fldCls} />
-              </div>
-            </div>
+        
+        {loadingInitial ? (
+          <div className="p-10 flex flex-col items-center justify-center gap-3">
+            <FaSpinner className="animate-spin text-3xl text-cyan-500" />
+            <p className="text-sm font-semibold text-[#94A3B8]">Đang tải thông tin...</p>
           </div>
-
-          <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-3">
-            <h4 className="text-xs font-black text-[#94A3B8] uppercase tracking-wide">2. Nhận diện cá nhân</h4>
+        ) : (
+          <form onSubmit={handleSubmit} className="p-6 space-y-4 overflow-y-auto">
+            {error && (
+              <div className="flex items-center gap-2 px-4 py-3 rounded-full bg-red-50 border
+                border-red-200 text-red-600 text-sm font-semibold">
+                <FaExclamationTriangle className="shrink-0" /> {error}
+              </div>
+            )}
             
-            <div className="grid grid-cols-2 gap-3">
-              <div className="col-span-2">
-                <label className="block text-xs font-bold text-[#334155] mb-1">Họ và tên *</label>
-                <input value={form.fullName} onChange={set('fullName')} required className={fldCls} placeholder="Nguyễn Văn An" />
-              </div>
+            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-3">
+              <h4 className="text-xs font-black text-[#94A3B8] uppercase tracking-wide">1. Thông tin đăng nhập</h4>
+              
               <div>
-                <label className="block text-xs font-bold text-[#334155] mb-1">Lớp *</label>
-                <input value={form.className} onChange={set('className')} required className={fldCls} placeholder="Ví dụ: 8A1" />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-[#334155] mb-1">Trường *</label>
-                <input value={form.school} onChange={set('school')} required className={fldCls} placeholder="Tên trường..." />
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-xs font-bold text-[#334155] mb-1">Tỉnh / Thành phố</label>
-                <select value={form.province} onChange={set('province')} className={fldCls}>
-                  <option value="">-- Chọn tỉnh / thành phố --</option>
-                  {provinces.map((p) => (
-                    <option key={p.code} value={String(p.code)}>{p.name}</option>
-                  ))}
+                <label className="block text-xs font-bold text-[#334155] mb-1">Vai trò *</label>
+                <select value={form.role} onChange={set('role')} className={fldCls}>
+                  <option value={1}>Admin</option>
+                  <option value={2}>Giáo viên</option>
+                  <option value={3}>Học sinh</option>
                 </select>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-[#334155] mb-1">Xã / Phường</label>
-                <select value={form.ward} onChange={set('ward')} className={fldCls} disabled={!form.province || wards.length === 0}>
-                  <option value="">-- Chọn xã / phường --</option>
-                  {wards.map((w) => (
-                    <option key={w.code} value={String(w.code)}>{w.name}</option>
-                  ))}
-                </select>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-[#334155] mb-1">Tên đăng nhập *</label>
+                  <input value={form.username} onChange={set('username')} required className={fldCls} />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#334155] mb-1">Email <span className="text-slate-400 font-normal">(tuỳ chọn)</span></label>
+                  <input value={form.email} onChange={set('email')} type="email" className={fldCls} placeholder="example@email.com" />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-[#334155] mb-1">Mật khẩu {mode === 'add' ? '*' : <span className="text-slate-400 font-normal">(để trống nếu không đổi)</span>}</label>
+                  <input value={form.password} onChange={set('password')} required={mode === 'add'} type="password" className={fldCls} />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#334155] mb-1">Xác nhận mật khẩu {mode === 'add' ? '*' : ''}</label>
+                  <input value={form.confirmPassword} onChange={set('confirmPassword')} required={mode === 'add' || !!form.password} type="password" className={fldCls} />
+                </div>
               </div>
             </div>
 
-            <div>
-              <label className="block text-xs font-bold text-[#334155] mb-1">Địa chỉ hiện tại <span className="text-slate-400 font-normal">(tuỳ chọn)</span></label>
-              <input value={form.address} onChange={set('address')} className={fldCls} placeholder="Số nhà, tên đường, khu vực..." />
-            </div>
-          </div>
+            <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-3">
+              <h4 className="text-xs font-black text-[#94A3B8] uppercase tracking-wide">2. Nhận diện cá nhân</h4>
+              
+              <div className="grid grid-cols-2 gap-3">
+                <div className="col-span-2">
+                  <label className="block text-xs font-bold text-[#334155] mb-1">Họ và tên *</label>
+                  <input value={form.fullName} onChange={set('fullName')} required className={fldCls} placeholder="Nguyễn Văn An" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#334155] mb-1">Lớp *</label>
+                  <input value={form.className} onChange={set('className')} required className={fldCls} placeholder="Ví dụ: 8A1" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#334155] mb-1">Trường *</label>
+                  <input value={form.school} onChange={set('school')} required className={fldCls} placeholder="Tên trường..." />
+                </div>
+              </div>
 
-          <div className="flex gap-3 pt-2">
-            <button type="button" onClick={onClose}
-              className="flex-1 py-3 rounded-full border border-slate-200 text-sm font-bold
-                text-[#334155] hover:bg-slate-50 transition-all">Huỷ</button>
-            <button type="submit" disabled={saving}
-              className="flex-1 py-3 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500
-                text-white text-sm font-bold hover:from-emerald-400 hover:to-cyan-400 transition-all
-                flex items-center justify-center gap-2 disabled:opacity-50">
-              {saving && <FaSpinner className="animate-spin text-xs" />}
-              Hoàn tất tạo mới
-            </button>
-          </div>
-        </form>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-xs font-bold text-[#334155] mb-1">Tỉnh / Thành phố</label>
+                  <select value={form.province} onChange={set('province')} className={fldCls}>
+                    <option value="">-- Chọn tỉnh / thành phố --</option>
+                    {provinces.map((p) => (
+                      <option key={p.code} value={String(p.code)}>{p.name}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#334155] mb-1">Xã / Phường</label>
+                  <select value={form.ward} onChange={set('ward')} className={fldCls} disabled={!form.province || wards.length === 0}>
+                    <option value="">-- Chọn xã / phường --</option>
+                    {wards.map((w) => (
+                      <option key={w.code} value={String(w.code)}>{w.name}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-[#334155] mb-1">Địa chỉ hiện tại <span className="text-slate-400 font-normal">(tuỳ chọn)</span></label>
+                <input value={form.address} onChange={set('address')} className={fldCls} placeholder="Số nhà, tên đường, khu vực..." />
+              </div>
+            </div>
+
+            {mode === 'edit' && (
+              <div className="bg-slate-50 rounded-xl p-4 border border-slate-100 space-y-3">
+                <h4 className="text-xs font-black text-[#94A3B8] uppercase tracking-wide">3. Thông số học tập (Gamification)</h4>
+                <div className="grid grid-cols-4 gap-3">
+                  <div>
+                    <label className="block text-xs font-bold text-cyan-600 mb-1">EXP</label>
+                    <input type="number" value={form.exp} onChange={set('exp')} className={fldCls} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-orange-500 mb-1">Streak</label>
+                    <input type="number" value={form.streak} onChange={set('streak')} className={fldCls} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-violet-600 mb-1">Pet EXP</label>
+                    <input type="number" value={form.petExp} onChange={set('petExp')} className={fldCls} />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-amber-500 mb-1">Coins</label>
+                    <input type="number" value={form.coins} onChange={set('coins')} className={fldCls} />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-2">
+              <button type="button" onClick={onClose}
+                className="flex-1 py-3 rounded-full border border-slate-200 text-sm font-bold
+                  text-[#334155] hover:bg-slate-50 transition-all">Huỷ</button>
+              <button type="submit" disabled={saving}
+                className="flex-1 py-3 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500
+                  text-white text-sm font-bold hover:from-emerald-400 hover:to-cyan-400 transition-all
+                  flex items-center justify-center gap-2 disabled:opacity-50">
+                {saving && <FaSpinner className="animate-spin text-xs" />}
+                {mode === 'add' ? 'Hoàn tất tạo mới' : 'Lưu thay đổi'}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );
 }
+
 
 /* ═══════════════════════ USERS TAB ════════════════════════════════ */
 
@@ -1926,7 +1916,7 @@ function UsersTab() {
   const [roleFilter, setRoleFilter]     = useState<number | 'all'>('all');
   const [sortKey, setSortKey]           = useState<'username' | 'email' | 'exp' | 'streak' | 'createdAt'>('createdAt');
   const [sortDir, setSortDir]           = useState<'asc' | 'desc'>('desc');
-  const [showAddUser, setShowAddUser]   = useState(false);
+  const [formMode, setFormMode]         = useState<'add' | 'edit' | null>(null);
   const [editTarget, setEditTarget]     = useState<UserRow | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<UserRow | null>(null);
   const [toast, setToast]               = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
@@ -1961,18 +1951,6 @@ function UsersTab() {
     setPage(1);
   };
 
-  const handleEditSave = async (userId: string, newRole: number) => {
-    const res = await fetch(`/api/admin/users/${userId}`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ role: newRole }),
-    });
-    const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Cập nhật thất bại');
-    showToast('✅ Đã cập nhật vai trò!');
-    fetchUsers();
-  };
-
   const handleDelete = async () => {
     if (!deleteTarget) return;
     const res  = await fetch(`/api/admin/users/${deleteTarget._id}`, { method: 'DELETE' });
@@ -1984,16 +1962,18 @@ function UsersTab() {
     else fetchUsers();
   };
 
-  const handleAddUserSave = async (form: any) => {
-    const res = await fetch('/api/admin/users', {
-      method: 'POST',
+  const handleUserSave = async (mode: 'add' | 'edit', form: any, userId?: string) => {
+    const url = mode === 'add' ? '/api/admin/users' : `/api/admin/users/${userId}`;
+    const method = mode === 'add' ? 'POST' : 'PATCH';
+    const res = await fetch(url, {
+      method,
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(form)
     });
     const data = await res.json();
-    if (!res.ok) throw new Error(data.error || 'Tạo người dùng thất bại');
-    showToast('✨ Đã tạo người dùng thành công!');
-    setPage(1);
+    if (!res.ok) throw new Error(data.error || 'Lỗi lưu thông tin');
+    showToast(mode === 'add' ? '✨ Đã tạo người dùng thành công!' : '✅ Đã cập nhật người dùng!');
+    if (mode === 'add') setPage(1);
     fetchUsers();
   };
 
@@ -2067,7 +2047,7 @@ function UsersTab() {
               </button>
             )}
           </div>
-          <button onClick={() => setShowAddUser(true)}
+          <button onClick={() => { setEditTarget(null); setFormMode('add'); }}
             className="flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-emerald-500 to-cyan-500
               text-white text-sm font-bold hover:from-emerald-400 hover:to-cyan-400 shadow-[0_8px_20px_rgba(6,182,212,0.4)] transition-all">
             <FaUserPlus className="text-xs" />
@@ -2146,7 +2126,7 @@ function UsersTab() {
                       </td>
                       <td className="px-5 py-3 text-right" onClick={e => e.stopPropagation()}>
                         <div className="flex items-center justify-end gap-1">
-                          <button onClick={() => setEditTarget(u)} title="Đổi vai trò"
+                          <button onClick={() => { setEditTarget(u); setFormMode('edit'); }} title="Chỉnh sửa người dùng"
                             className="w-7 h-7 rounded-full bg-slate-50 border border-slate-200
                               flex items-center justify-center text-cyan-600 hover:bg-cyan-50
                               hover:border-cyan-300 transition-all">
@@ -2178,19 +2158,13 @@ function UsersTab() {
         </div>
       )}
 
-      {/* Add user modal */}
-      {showAddUser && (
-        <AddUserModal
-          onClose={() => setShowAddUser(false)}
-          onSaved={handleAddUserSave}
-        />
-      )}
-      {/* Edit role modal */}
-      {editTarget && (
-        <UserRoleModal
-          user={editTarget}
-          onClose={() => setEditTarget(null)}
-          onSaved={handleEditSave}
+      {/* User Form modal */}
+      {formMode && (
+        <UserFormModal
+          mode={formMode}
+          initialUser={editTarget ?? undefined}
+          onClose={() => { setFormMode(null); setEditTarget(null); }}
+          onSaved={handleUserSave}
         />
       )}
       {/* Delete confirm */}
@@ -2985,7 +2959,7 @@ function ClassroomsTab() {
 /* ════════════════════════ OVERVIEW TAB ════════════════════════════  */
 
 function OverviewTab() {
-  const [stats, setStats] = useState<Stats | null>(null);
+  const [stats, setStats] = useState<any | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -2995,87 +2969,161 @@ function OverviewTab() {
       .finally(() => setLoading(false));
   }, []);
 
-  const QUICK_LINKS = [
-    { href: '/',          icon: '🏠', label: 'Xem trang chủ',     color: 'from-cyan-100 to-blue-100' },
-    { href: '/classroom', icon: '🏫', label: 'Xem lớp học',       color: 'from-violet-100 to-purple-100' },
-    { href: '/map',       icon: '🗺️', label: 'Xem bản đồ',       color: 'from-emerald-100 to-green-100' },
-    { href: '/books',     icon: '📚', label: 'Quản lý sách',      color: 'from-amber-100 to-orange-100' },
-  ];
+  const roleColors  = ['#06B6D4','#22C55E','#F59E0B'];
+  const gradeColors = ['#06B6D4','#22C55E','#8B5CF6','#F59E0B'];
+
+  if (loading) return (
+    <div className="flex items-center justify-center py-32">
+      <FaSpinner className="text-5xl text-cyan-400 animate-spin" />
+    </div>
+  );
+
+  const maxDaily = Math.max(1, ...(stats?.dailyUsers ?? []).map((d: any) => d.count));
+  const maxGrade = Math.max(1, ...(stats?.gradeStats ?? []).map((g: any) => g.count));
+
+  const DonutChart = ({ data }: { data: { name: string; value: number; color: string }[] }) => {
+    const total = data.reduce((s, d) => s + d.value, 0) || 1;
+    let offset = -0.25;
+    const r = 38, cx = 60, cy = 60, sw = 16;
+    const arcs = data.map(d => {
+      const pct = d.value / total;
+      const s = offset * 2 * Math.PI, e = (offset + pct) * 2 * Math.PI;
+      offset += pct;
+      return { path: `M ${cx + r * Math.cos(s)} ${cy + r * Math.sin(s)} A ${r} ${r} 0 ${pct > 0.5 ? 1 : 0} 1 ${cx + r * Math.cos(e)} ${cy + r * Math.sin(e)}`, color: d.color, pct };
+    });
+    return (
+      <svg width={110} height={110} viewBox="0 0 120 120">
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#f1f5f9" strokeWidth={sw} />
+        {arcs.map((a, i) => a.pct > 0.001 && (
+          <path key={i} d={a.path} fill="none" stroke={a.color} strokeWidth={sw} strokeLinecap="round" />
+        ))}
+        <text x={cx} y={cy + 6} textAnchor="middle" fontSize="18" fontWeight="900" fill="#082F49">{total}</text>
+      </svg>
+    );
+  };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h2 className="text-2xl font-black text-[#082F49]">📊 Tổng quan</h2>
-        <p className="text-[#94A3B8] text-sm font-semibold mt-0.5">Thống kê hệ thống</p>
+        <h2 className="text-2xl font-black text-[#082F49]">📊 Tổng quan hệ thống</h2>
+        <p className="text-[#94A3B8] text-sm font-semibold mt-0.5">Dữ liệu thống kê theo thời gian thực</p>
       </div>
 
-      {/* Stats grid */}
-      {loading ? (
-        <div className="flex items-center justify-center py-16">
-          <FaSpinner className="text-4xl text-cyan-400 animate-spin" />
+      {/* Stat cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        {[
+          { icon: '👥', label: 'Người dùng',  value: stats?.totalUsers ?? 0,      sub: `+${stats?.newUsersWeek ?? 0} tuần này`, grad: 'from-cyan-500 to-blue-500',     bg: 'from-cyan-50 to-blue-50' },
+          { icon: '📇', label: 'Thẻ ghi nhớ', value: stats?.totalFlashcards ?? 0, sub: `${stats?.totalLessons ?? 0} bài học`,   grad: 'from-emerald-500 to-teal-500',  bg: 'from-emerald-50 to-teal-50' },
+          { icon: '📝', label: 'Bộ quiz',      value: stats?.totalQuizSets ?? 0,   sub: 'Câu hỏi kiểm tra',                      grad: 'from-violet-500 to-purple-500', bg: 'from-violet-50 to-purple-50' },
+          { icon: '🏫', label: 'Lớp học',      value: stats?.totalClasses ?? 0,    sub: 'Lớp đang hoạt động',                    grad: 'from-amber-500 to-orange-500',  bg: 'from-amber-50 to-orange-50' },
+        ].map((c, i) => (
+          <div key={i} className={`bg-gradient-to-br ${c.bg} border border-white/80 rounded-[24px] p-4 shadow-[0_8px_24px_rgba(14,165,233,0.07)]`}>
+            <div className={`w-10 h-10 rounded-[14px] bg-gradient-to-br ${c.grad} flex items-center justify-center text-lg mb-3 shadow-sm`}>{c.icon}</div>
+            <p className="text-[#94A3B8] text-xs font-bold uppercase tracking-wide">{c.label}</p>
+            <p className="text-[#082F49] text-3xl font-black leading-tight">{c.value.toLocaleString()}</p>
+            <p className="text-[#94A3B8] text-xs font-semibold mt-0.5">{c.sub}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Bar chart + donut */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        <div className="lg:col-span-2 bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[24px] p-5 shadow-[0_8px_24px_rgba(14,165,233,0.07)]">
+          <h3 className="font-black text-[#082F49] text-sm mb-4">📈 Người dùng mới 7 ngày qua</h3>
+          <div className="flex items-end gap-2 h-36">
+            {(stats?.dailyUsers ?? []).map((d: any, i: number) => (
+              <div key={i} className="flex-1 flex flex-col items-center gap-1 group">
+                <span className="text-[10px] font-black text-cyan-600 opacity-0 group-hover:opacity-100 transition-opacity">{d.count}</span>
+                <div className="w-full rounded-t-[8px] bg-gradient-to-t from-cyan-500 to-blue-400 shadow-sm transition-all"
+                  style={{ height: `${Math.max(4, (d.count / maxDaily) * 112)}px` }} />
+                <span className="text-[9px] text-[#94A3B8] font-semibold text-center leading-tight">{d.day}</span>
+              </div>
+            ))}
+          </div>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          <StatCard
-            icon={<FaUsers />}
-            label="Tổng người dùng"
-            value={stats?.totalUsers ?? 0}
-            sub="Tất cả tài khoản"
-            color="bg-blue-100 text-blue-600"
-          />
-          <StatCard
-            icon={<FaBell />}
-            label="Người dùng mới (7 ngày)"
-            value={stats?.newUsers ?? 0}
-            sub="Đăng ký tuần này"
-            color="bg-cyan-100 text-cyan-600"
-          />
-          <StatCard
-            icon={<FaDatabase />}
-            label="Thẻ ghi nhớ (DB)"
-            value={stats?.totalFlashcards ?? 0}
-            sub="Đã lưu trong database"
-            color="bg-emerald-100 text-emerald-600"
-          />
+        <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[24px] p-5 shadow-[0_8px_24px_rgba(14,165,233,0.07)]">
+          <h3 className="font-black text-[#082F49] text-sm mb-3">🍩 Phân bổ vai trò</h3>
+          <div className="flex flex-col items-center gap-3">
+            <DonutChart data={stats?.roleDistribution ?? []} />
+            <div className="w-full space-y-1.5">
+              {(stats?.roleDistribution ?? []).map((r: any, i: number) => (
+                <div key={i} className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: roleColors[i] }} />
+                    <span className="text-xs font-semibold text-[#334155]">{r.name}</span>
+                  </div>
+                  <span className="text-xs font-black text-[#082F49]">{r.value}</span>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
-      )}
+      </div>
+
+      {/* Grade bars + top users */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[24px] p-5 shadow-[0_8px_24px_rgba(14,165,233,0.07)]">
+          <h3 className="font-black text-[#082F49] text-sm mb-4">📚 Thẻ ghi nhớ theo khối lớp</h3>
+          <div className="space-y-3">
+            {(stats?.gradeStats ?? []).map((g: any, i: number) => (
+              <div key={i} className="flex items-center gap-3">
+                <span className="text-xs font-black text-[#082F49] w-12 shrink-0">{g.grade}</span>
+                <div className="flex-1 h-6 bg-slate-100 rounded-full overflow-hidden">
+                  <div className="h-full rounded-full flex items-center justify-end pr-2 transition-all duration-700"
+                    style={{ width: `${Math.max(4, (g.count / maxGrade) * 100)}%`, background: gradeColors[i] }}>
+                    <span className="text-[10px] font-black text-white">{g.count}</span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[24px] p-5 shadow-[0_8px_24px_rgba(14,165,233,0.07)]">
+          <h3 className="font-black text-[#082F49] text-sm mb-4">🏆 Top người dùng (EXP)</h3>
+          <div className="space-y-2.5">
+            {(stats?.topUsers ?? []).map((u: any, i: number) => {
+              const medals = ['🥇','🥈','🥉','4️⃣','5️⃣'];
+              return (
+                <div key={u._id ?? i} className="flex items-center gap-3">
+                  <span className="text-lg w-6 text-center shrink-0">{medals[i]}</span>
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-xs font-black shrink-0 overflow-hidden">
+                    {u.avatar ? <img src={u.avatar} className="w-full h-full object-cover" alt="" /> : u.username?.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs font-black text-[#082F49] truncate">{u.fullName || u.username}</p>
+                    <p className="text-[10px] text-[#94A3B8] font-semibold">🔥 {u.streak} ngày streak</p>
+                  </div>
+                  <span className="text-xs font-black text-cyan-600 shrink-0">{(u.exp ?? 0).toLocaleString()} EXP</span>
+                </div>
+              );
+            })}
+            {!stats?.topUsers?.length && <p className="text-[#94A3B8] text-xs font-semibold text-center py-4">Chưa có dữ liệu</p>}
+          </div>
+        </div>
+      </div>
 
       {/* Quick links */}
       <div>
-        <h3 className="text-base font-black text-[#082F49] mb-4">🔗 Truy cập nhanh</h3>
+        <h3 className="text-sm font-black text-[#082F49] mb-3">🔗 Truy cập nhanh</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-          {QUICK_LINKS.map(lk => (
+          {[
+            { href: '/',          icon: '🏠', label: 'Trang chủ', color: 'from-cyan-100 to-blue-100' },
+            { href: '/classroom', icon: '🏫', label: 'Lớp học',   color: 'from-violet-100 to-purple-100' },
+            { href: '/map',       icon: '🗺️', label: 'Bản đồ',  color: 'from-emerald-100 to-green-100' },
+            { href: '/books',     icon: '📚', label: 'Sách học',  color: 'from-amber-100 to-orange-100' },
+          ].map(lk => (
             <Link key={lk.href} href={lk.href}
-              className={`flex flex-col items-center gap-3 p-5 rounded-[32px] bg-gradient-to-br
-                ${lk.color} border border-white/80 hover:scale-[1.02] transition-all
-                shadow-[0_4px_16px_rgba(14,165,233,0.08)] group`}>
-              <span className="text-3xl group-hover:scale-110 transition-transform">
-                {lk.icon}
-              </span>
+              className={`flex flex-col items-center gap-2.5 p-4 rounded-[24px] bg-gradient-to-br ${lk.color} border border-white/80 hover:scale-[1.03] transition-all shadow-sm group`}>
+              <span className="text-2xl group-hover:scale-110 transition-transform">{lk.icon}</span>
               <p className="font-bold text-[#082F49] text-xs text-center">{lk.label}</p>
             </Link>
           ))}
         </div>
       </div>
-
-      {/* Info banner */}
-      <div className="bg-[rgba(186,230,253,0.6)] border border-sky-200 rounded-[32px] p-5">
-        <div className="flex items-start gap-3">
-          <span className="text-2xl">ℹ️</span>
-          <div>
-            <p className="font-bold text-[#0284C7] text-sm">Hướng dẫn sử dụng Admin Panel</p>
-            <ul className="text-[#0284C7] text-xs font-semibold mt-2 space-y-1 list-disc list-inside opacity-80">
-              <li>Tab <strong>Người dùng</strong>: Xem danh sách và thông tin tài khoản</li>
-              <li>Tab <strong>Dữ liệu</strong>: Quản lý thẻ ghi nhớ (thêm, sửa, xoá)</li>
-              <li>Nhấn <strong>Nhập dữ liệu mặc định</strong> để seed dữ liệu ban đầu vào DB</li>
-              <li>Sau khi seed, học sinh sẽ dùng dữ liệu từ trang Thẻ Ghi Nhớ</li>
-            </ul>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }
+
 
 /* ═══════════════════════ MAIN ADMIN CLIENT ════════════════════════ */
 

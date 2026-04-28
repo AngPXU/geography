@@ -36,14 +36,6 @@ export default function MapPuzzleGateway() {
             }}
           />
           <div className="absolute inset-0 bg-gradient-to-t from-[#082F49] via-[#082F49]/40 to-transparent opacity-85" />
-
-          {/* Floating pieces decoration */}
-          <div className="absolute inset-0 flex items-center justify-center gap-3 opacity-60 pointer-events-none">
-            {['🧩','🗺️','🧩'].map((e, i) => (
-              <span key={i} className={`text-3xl drop-shadow-lg ${i === 1 ? 'text-4xl opacity-100' : 'opacity-70'}`}>{e}</span>
-            ))}
-          </div>
-
           <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between">
             <div className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-xl border border-white/30 text-white font-bold text-xs">
               🌍 6 khu vực · 63 quốc gia
@@ -115,11 +107,10 @@ export default function MapPuzzleGateway() {
                 <button
                   key={s.id}
                   onClick={() => setSelectedSet(s.id)}
-                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border text-sm font-bold transition-all ${
-                    selectedSet === s.id
+                  className={`w-full flex items-center justify-between px-4 py-3.5 rounded-2xl border text-sm font-bold transition-all ${selectedSet === s.id
                       ? 'bg-amber-50 border-amber-300 text-amber-700 shadow-sm'
                       : 'bg-white/70 border-white hover:border-amber-200 text-[#334155]'
-                  }`}
+                    }`}
                 >
                   <span>{s.icon} {s.label}</span>
                   <span className="text-xs font-semibold text-slate-400">

@@ -25,7 +25,7 @@ export async function GET(_req: NextRequest, { params }: Params) {
   return NextResponse.json({ user });
 }
 
-// PATCH — update user info (role, fullName, school, className)
+// PATCH — update user info (all fields)
 export async function PATCH(req: NextRequest, { params }: Params) {
   const session = await auth();
   if (!session?.user || session.user.role !== 1) {
@@ -38,7 +38,11 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   const body = await req.json();
-  const ALLOWED_FIELDS = ['role', 'fullName', 'school', 'className'];
+  const ALLOWED_FIELDS = [
+    'username', 'email', 'role', 'fullName', 'school', 'className',
+    'province', 'ward', 'address', 'exp', 'streak', 'petExp', 'coins'
+  ];
+  
   const update: Record<string, unknown> = {};
   for (const key of ALLOWED_FIELDS) {
     if (body[key] !== undefined) update[key] = body[key];
@@ -49,6 +53,24 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   }
 
   await dbConnect();
+
+  // Kiểm tra username/email trùng lặp nếu có thay đổi
+  if (update.username) {
+    const existingUser = await User.findOne({ username: update.username, _id: { $ne: id } });
+    if (existingUser) return NextResponse.json({ error: 'Tên đăng nhập đã tồn tại' }, { status: 400 });
+  }
+  
+  if (update.email) {
+    const existingEmail = await User.findOne({ email: update.email, _id: { $ne: id } });
+    if (existingEmail) return NextResponse.json({ error: 'Email đã được sử dụng' }, { status: 400 });
+  }
+
+  // Nếu có password mới thì hash và update
+  if (body.password && typeof body.password === 'string' && body.password.trim() !== '') {
+    const bcrypt = await import('bcryptjs');
+    update.password = await bcrypt.hash(body.password.trim(), 12);
+  }
+
   const user = await User.findByIdAndUpdate(
     id,
     { $set: update },

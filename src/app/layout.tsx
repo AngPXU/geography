@@ -4,6 +4,7 @@ import "./globals.css";
 import PwaRegister from "@/components/PwaRegister";
 import { OnlineTimer } from "@/components/OnlineTimer";
 import { BadgeUnlockWatcher } from "@/components/ui/BadgeUnlockWatcher";
+import ThreeWarningSuppress from "@/components/ThreeWarningSuppress";
 
 const beVietnamPro = Be_Vietnam_Pro({
   weight: ["400", "500", "600", "700", "800", "900"],
@@ -200,6 +201,7 @@ export default function RootLayout({
         />
       </head>
       <body className="min-h-full flex flex-col">
+        <ThreeWarningSuppress />
         <PwaRegister />
         <OnlineTimer />
         <BadgeUnlockWatcher />
