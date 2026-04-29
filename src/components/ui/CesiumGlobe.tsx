@@ -3,9 +3,7 @@
 import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState, useCallback } from 'react';
 import * as Cesium from 'cesium';
 
-// CESIUM_BASE_URL is injected at compile-time via webpack.DefinePlugin in next.config.ts
-// This allows Cesium Workers to find static assets on Vercel and any deployment environment
-declare const CESIUM_BASE_URL: string;
+// CESIUM_BASE_URL will be set at runtime before Viewer init
 
 export interface CesiumGlobeHandle {
   flyTo: (lat: number, lng: number, altitude?: number, duration?: number) => void;
@@ -66,17 +64,25 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
       document.head.appendChild(link);
     }
 
-    // Initialize exactly like the demo but turn off bottom UI widgets
+    // Set CESIUM_BASE_URL before Viewer init (works for both Turbopack local dev and Vercel)
+    (window as any).CESIUM_BASE_URL = '/cesium';
+
+    // Initialize the viewer — no Ion services, no external requests
     const viewer = new Cesium.Viewer(containerRef.current, {
-      terrainProvider: new Cesium.EllipsoidTerrainProvider(), // Tránh gọi Cesium Ion gây lỗi 401 trên Vercel
+      terrainProvider: new Cesium.EllipsoidTerrainProvider(),
       animation: false,
       timeline: false,
       fullscreenButton: false,
-      baseLayerPicker: showLayerPicker, // Phụ thuộc vào prop (Trình chiếu = false)
-      infoBox: false, // Tắt InfoBox mặc định
-      selectionIndicator: false, // Tắt vòng xanh lá mặc định khi click
-      baseLayer: showLayerPicker ? undefined : false, // Tránh lỗi 401 Bing Maps nếu không dùng picker
+      baseLayerPicker: showLayerPicker,
+      infoBox: false,
+      selectionIndicator: false,
     });
+
+    // When not using the picker, remove ALL default imagery layers immediately
+    // (prevents any automatic Bing Maps/Ion calls)
+    if (!showLayerPicker) {
+      viewer.imageryLayers.removeAll();
+    }
 
     // Hide the Cesium logo and default token warning at the bottom
     if (viewer.cesiumWidget.creditContainer) {

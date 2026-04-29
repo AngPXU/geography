@@ -9,11 +9,6 @@ if (!fs.existsSync(src)) {
   process.exit(1);
 }
 
-if (fs.existsSync(dest)) {
-  console.log('[copy-cesium] public/cesium already exists, skipping copy.');
-  process.exit(0);
-}
-
 function copyDir(from, to) {
   fs.mkdirSync(to, { recursive: true });
   for (const entry of fs.readdirSync(from, { withFileTypes: true })) {
