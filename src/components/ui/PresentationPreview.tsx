@@ -432,7 +432,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
               imageryLayer={
                 activeMediaBlock?.globeStyle ||
                 (blocks.find(b => b.globeStyle)?.globeStyle) ||
-                'Bing Maps Aerial'
+                'ESRI World Imagery'
               }
               showGrid={activeMediaBlock?.grid || false}
               showLayerPicker={false}

@@ -76,6 +76,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
       baseLayerPicker: showLayerPicker, // Phụ thuộc vào prop (Trình chiếu = false)
       infoBox: false, // Tắt InfoBox mặc định
       selectionIndicator: false, // Tắt vòng xanh lá mặc định khi click
+      imageryProvider: showLayerPicker ? undefined : false, // Tránh lỗi 401 Bing Maps nếu không dùng picker
     });
 
     // Hide the Cesium logo and default token warning at the bottom
