@@ -68,8 +68,6 @@ export default function PdfViewer({ pdfUrl, title, color, grade = 6, startPage =
     const end = Math.min(numPages || 1, page + span);
     let fullText = '';
     
-    console.log('[getSurroundingPagesText] Starting. pdfDocRef =', !!pdfDocRef.current, 'start =', start, 'end =', end);
-
     // Fetch parallel to save time
     const promises = [];
     for (let i = start; i <= end; i++) {
@@ -77,7 +75,6 @@ export default function PdfViewer({ pdfUrl, title, color, grade = 6, startPage =
         pdfDocRef.current.getPage(i).then(async (pdfPage: any) => {
           const content = await pdfPage.getTextContent();
           const pText = content.items.filter((it: any) => 'str' in it).map((it: any) => it.str).join(' ').trim();
-          console.log(`[getSurroundingPagesText] Page ${i} length: ${pText.length}`);
           return { pageNum: i, text: pText };
         }).catch((err: any) => {
           console.error(`[getSurroundingPagesText] Error at page ${i}`, err);
@@ -93,7 +90,6 @@ export default function PdfViewer({ pdfUrl, title, color, grade = 6, startPage =
         fullText += `[Trang ${res.pageNum}]\n${res.text}\n\n`;
       }
     }
-    console.log('[getSurroundingPagesText] Done. Total length:', fullText.length);
     return fullText;
   }, [page, numPages]);
 

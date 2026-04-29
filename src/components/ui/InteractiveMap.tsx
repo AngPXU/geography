@@ -8,8 +8,7 @@ import {
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import { trackMission } from '@/utils/missionTracker';
-import 'leaflet/dist/leaflet.css';
-// Không còn dùng import mapData from '@/data/mapData.json' vì đã dùng Database
+
 
 
 // ── Leaflet icon fix ──────────────────────────────────────────────────────────
@@ -479,7 +478,6 @@ export default function InteractiveMap({ is3D, onToggle3D, mode, onModeChange }:
   const [selectedGeo, setSelectedGeo] = useState<GeoItem | null>(null);
   const [panelView, setPanelView] = useState<'none' | 'info' | 'legend'>('none');
   const [flyTarget, setFlyTarget] = useState<[number, number, number] | null>(null);
-  const [isFullscreen, setIsFullscreen] = useState(false);
   const [searchQ, setSearchQ] = useState('');
   const [searchResults, setSearchResults] = useState<any[]>([]);
   const [vnFetching, setVnFetching] = useState(false);
@@ -610,16 +608,6 @@ export default function InteractiveMap({ is3D, onToggle3D, mode, onModeChange }:
     setSearchResults([]);
   };
 
-  // Fullscreen
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      containerRef.current?.requestFullscreen();
-      setIsFullscreen(true);
-    } else {
-      document.exitFullscreen();
-      setIsFullscreen(false);
-    }
-  };
 
   const handleModeChange = (m: MapMode) => {
     onModeChange(m);
@@ -641,7 +629,7 @@ export default function InteractiveMap({ is3D, onToggle3D, mode, onModeChange }:
   return (
     <div
       ref={containerRef}
-      className="relative w-full h-[calc(100vh-80px)] rounded-[32px] overflow-hidden border border-white/40 shadow-[0_20px_50px_rgba(14,165,233,0.15)] mt-6"
+      className="relative w-full h-full overflow-hidden"
     >
       {/* ── Map: Leaflet 2D (Mapbox 3D được render ở MapWrapper) ── */}
       <div className="absolute inset-0">
@@ -888,67 +876,6 @@ export default function InteractiveMap({ is3D, onToggle3D, mode, onModeChange }:
         </div>
       )}
 
-      {/* ── Top Bar ── */}
-      <div className="absolute top-4 left-4 right-4 z-[1000] flex items-center gap-2">
-        {/* Logo */}
-        <div className="shrink-0 bg-white/80 backdrop-blur-xl border border-white px-4 py-2.5 rounded-[18px] shadow-sm flex items-center gap-2">
-          <span className="text-xl">🌍</span>
-          <div>
-            <p className="text-sm font-black text-[#082F49] leading-none">GeoMap</p>
-            <p className="text-[9px] font-bold text-cyan-600 mt-0.5">Bản Đồ Học Tập</p>
-          </div>
-        </div>
-
-        {/* Search */}
-        <div className="relative flex-1 max-w-sm">
-          <div className="flex items-center bg-white/80 backdrop-blur-xl border border-white rounded-[18px] shadow-sm px-3 py-2.5">
-            <span className="text-slate-400 mr-2 text-sm">🔍</span>
-            <input
-              type="text"
-              value={searchQ}
-              onChange={e => handleSearch(e.target.value)}
-              placeholder="Tìm địa danh, quốc gia..."
-              className="flex-1 bg-transparent text-sm font-medium text-[#082F49] placeholder-slate-400 outline-none min-w-0"
-            />
-            {searchQ && (
-              <button onClick={() => { setSearchQ(''); setSearchResults([]); }} className="text-slate-400 hover:text-slate-600 ml-1 text-xs">✕</button>
-            )}
-          </div>
-          {searchResults.length > 0 && (
-            <div className="absolute top-full mt-1.5 left-0 right-0 bg-white/95 backdrop-blur-xl border border-white rounded-[18px] shadow-xl overflow-hidden z-50">
-              {searchResults.map((r, i) => (
-                <button key={i} onClick={() => handleSelectResult(r)}
-                  className="w-full text-left px-4 py-2.5 text-sm text-[#082F49] font-medium hover:bg-cyan-50 transition-colors border-b border-slate-50 last:border-0">
-                  <p className="font-bold truncate text-xs">{r.display_name.split(',')[0]}</p>
-                  <p className="text-[10px] text-slate-400 truncate">{r.display_name}</p>
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Action buttons */}
-        <button
-          onClick={() => setPanelView(v => v === 'legend' ? 'none' : 'legend')}
-          title="Chú giải"
-          className={`w-10 h-10 rounded-[14px] border backdrop-blur-xl flex items-center justify-center text-base transition-all ${panelView === 'legend' ? 'bg-cyan-500 text-white border-cyan-400 shadow-md' : 'bg-white/80 border-white text-slate-600 hover:bg-white'}`}
-        >📋</button>
-
-        {/* Nút 2D / 3D */}
-        <button
-          onClick={() => { onToggle3D(); setPanelView('none'); setSelectedGeo(null); }}
-          title="Bật chế độ 3D"
-          className="h-10 px-3 rounded-[14px] border bg-white/80 border-white backdrop-blur-xl flex items-center gap-1.5 text-xs font-black text-slate-600 hover:bg-white transition-all"
-        >
-          <span className="text-base">🌐</span> 3D
-        </button>
-
-        <button
-          onClick={toggleFullscreen}
-          title="Toàn màn hình"
-          className="w-10 h-10 rounded-[14px] bg-white/80 backdrop-blur-xl border border-white flex items-center justify-center text-sm hover:bg-white transition-all"
-        >{isFullscreen ? '✕' : '⧆'}</button>
-      </div>
 
       {/* ── Right panel: Legend or Info ── */}
       <div className={`absolute top-[76px] right-4 w-[290px] max-w-[calc(100vw-32px)] bg-white/85 backdrop-blur-2xl border border-white rounded-[24px] shadow-[0_20px_40px_rgba(8,47,73,0.12)] p-5 z-[999] transition-all duration-400 ${panelView !== 'none' ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-8 pointer-events-none'}`}>
@@ -1218,22 +1145,6 @@ export default function InteractiveMap({ is3D, onToggle3D, mode, onModeChange }:
 
       </div>
 
-      {/* ── Mode Dock ── */}
-      <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-[1000] flex items-center gap-1.5 p-1.5 bg-white/65 backdrop-blur-2xl border border-white rounded-[28px] shadow-[0_10px_30px_rgba(8,47,73,0.15)] overflow-x-auto max-w-[calc(100vw-24px)]">
-        {MODES.map(m => (
-          <button
-            key={m.id}
-            onClick={() => handleModeChange(m.id)}
-            className={`flex flex-col items-center justify-center min-w-[68px] h-[58px] rounded-[20px] font-bold text-xs transition-all duration-300 whitespace-nowrap px-2 ${mode === m.id
-                ? 'bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-lg -translate-y-1 scale-105'
-                : 'bg-white/40 text-slate-600 hover:bg-white/80 hover:text-cyan-600'
-              }`}
-          >
-            <span className="text-lg mb-0.5">{m.icon}</span>
-            {m.label}
-          </button>
-        ))}
-      </div>
     </div>
   );
 }

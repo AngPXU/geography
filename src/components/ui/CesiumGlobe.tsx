@@ -202,13 +202,14 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
   useEffect(() => {
     if (!ready || !initialized || !viewerRef.current?.baseLayerPicker) return;
     let lastSeen = viewerRef.current.baseLayerPicker.viewModel.selectedImagery?.name;
+    // Poll at 1500ms (was 500ms) — user picks layers slowly, no need for high frequency
     const interval = setInterval(() => {
       const cur = viewerRef.current?.baseLayerPicker?.viewModel?.selectedImagery?.name;
       if (cur && cur !== lastSeen) {
         lastSeen = cur;
         if (onLayerChangeRef.current && cur !== imageryLayer) onLayerChangeRef.current(cur);
       }
-    }, 500);
+    }, 1500);
     return () => clearInterval(interval);
   }, [ready, initialized, imageryLayer]);
 
