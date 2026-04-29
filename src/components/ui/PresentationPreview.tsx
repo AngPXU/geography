@@ -4,7 +4,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
 
-const Globe = dynamic(() => import('react-globe.gl'), { ssr: false });
+const CesiumGlobe = dynamic(() => import('./CesiumGlobe'), { ssr: false });
 
 type BlockType = 'heading' | 'text' | 'funFact' | 'mapAction' | 'quiz' | 'objectives' | 'imageScenario' | 'dataTable';
 
@@ -53,11 +53,11 @@ function DataTablePreview({ block }: { block: StoryBlock }) {
   // Sort rows
   const rows = sortCol !== null
     ? [...rawRows].sort((a, b) => {
-        const va = parseFloat(a[sortCol]?.replace(/[^0-9.-]/g, '')) || 0;
-        const vb = parseFloat(b[sortCol]?.replace(/[^0-9.-]/g, '')) || 0;
-        const sv = va === 0 && vb === 0 ? (a[sortCol] || '').localeCompare(b[sortCol] || '') : va - vb;
-        return sortAsc ? sv : -sv;
-      })
+      const va = parseFloat(a[sortCol]?.replace(/[^0-9.-]/g, '')) || 0;
+      const vb = parseFloat(b[sortCol]?.replace(/[^0-9.-]/g, '')) || 0;
+      const sv = va === 0 && vb === 0 ? (a[sortCol] || '').localeCompare(b[sortCol] || '') : va - vb;
+      return sortAsc ? sv : -sv;
+    })
     : rawRows;
 
   // Find max in highlight col for bar width
@@ -170,21 +170,21 @@ function ImageSlider({ urls }: { urls: string[] }) {
 
   return (
     <div className="w-full h-full relative group bg-slate-50/50 flex items-center justify-center p-8 backdrop-blur-sm">
-      <img 
-        src={urls[currentIndex]} 
-        alt="Minh họa tình huống" 
+      <img
+        src={urls[currentIndex]}
+        alt="Minh họa tình huống"
         className="max-w-full max-h-full object-contain drop-shadow-2xl rounded-2xl transition-all duration-500 animate-in fade-in zoom-in-95"
         key={currentIndex} // force re-render for animation
       />
       {urls.length > 1 && (
         <>
-          <button 
+          <button
             onClick={() => setCurrentIndex(prev => prev === 0 ? urls.length - 1 : prev - 1)}
             className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 hover:bg-white text-[#082F49] text-xl font-bold rounded-full shadow-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all pointer-events-auto border border-slate-100 hover:scale-110"
           >
             ←
           </button>
-          <button 
+          <button
             onClick={() => setCurrentIndex(prev => prev === urls.length - 1 ? 0 : prev + 1)}
             className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 hover:bg-white text-[#082F49] text-xl font-bold rounded-full shadow-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all pointer-events-auto border border-slate-100 hover:scale-110"
           >
@@ -192,10 +192,10 @@ function ImageSlider({ urls }: { urls: string[] }) {
           </button>
           <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 bg-white/50 backdrop-blur-md px-4 py-2 rounded-full border border-white/50 shadow-sm pointer-events-auto">
             {urls.map((_, idx) => (
-              <button 
-                key={idx} 
+              <button
+                key={idx}
                 onClick={() => setCurrentIndex(idx)}
-                className={`h-2.5 rounded-full transition-all ${idx === currentIndex ? 'bg-emerald-500 w-8' : 'bg-slate-400 w-2.5 hover:bg-slate-500'}`} 
+                className={`h-2.5 rounded-full transition-all ${idx === currentIndex ? 'bg-emerald-500 w-8' : 'bg-slate-400 w-2.5 hover:bg-slate-500'}`}
               />
             ))}
           </div>
@@ -297,7 +297,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
           const mapActionElements = document.querySelectorAll('.preview-media-action');
           let activeEl: Element | null = null;
           let minDistance = Infinity;
-          
+
           const containerRect = container.getBoundingClientRect();
           const centerY = containerRect.top + containerRect.height / 2;
 
@@ -316,7 +316,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
 
           if (activeEl) {
             const type = activeEl.getAttribute('data-type');
-            
+
             if (type === 'mapAction') {
               const lat = parseFloat(activeEl.getAttribute('data-lat') || '0');
               const lng = parseFloat(activeEl.getAttribute('data-lng') || '0');
@@ -325,9 +325,9 @@ export function PresentationPreview({ blocks, onClose }: Props) {
               const annotationPreset = activeEl.getAttribute('data-annotationpreset') || 'none';
               const hasPin = activeEl.getAttribute('data-showpin') === 'true';
               const globeStyle = activeEl.getAttribute('data-globestyle') || 'blue-marble';
-              
+
               const altitude = Math.max(0.1, 5 / zoom);
-              
+
               setActiveMediaBlock((prev: any) => {
                 if (prev?.type === 'mapAction' && prev.lat === lat && prev.lng === lng && prev.altitude === altitude) {
                   return prev;
@@ -347,7 +347,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
               const urlsAttr = activeEl.getAttribute('data-imageurls');
               let parsedUrls: string[] = [];
               if (urlsAttr) {
-                try { parsedUrls = JSON.parse(urlsAttr); } catch (e) {}
+                try { parsedUrls = JSON.parse(urlsAttr); } catch (e) { }
               }
               const singleUrl = activeEl.getAttribute('data-imageurl');
               if (parsedUrls.length === 0 && singleUrl) parsedUrls = [singleUrl];
@@ -382,7 +382,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
   useEffect(() => {
     const initInterval = setInterval(() => {
       if (globeRef.current && !activeMediaBlock) {
-        globeRef.current.pointOfView({ lat: 16.0, lng: 106.0, altitude: 2 }, 1000);
+        globeRef.current.flyTo(16.0, 106.0, 8000000, 2);
         clearInterval(initInterval);
       } else if (globeRef.current && activeMediaBlock) {
         clearInterval(initInterval);
@@ -397,15 +397,11 @@ export function PresentationPreview({ blocks, onClose }: Props) {
 
     const interval = setInterval(() => {
       if (globeRef.current) {
-        globeRef.current.pointOfView({ 
-          lat: activeMediaBlock.lat, 
-          lng: activeMediaBlock.lng, 
-          altitude: activeMediaBlock.altitude 
-        }, 1500);
+        globeRef.current.flyTo(activeMediaBlock.lat, activeMediaBlock.lng, activeMediaBlock.altitude * 4000000, 1.5);
         setShowGrid(activeMediaBlock.grid);
         setActivePin(activeMediaBlock.pin);
         if (!activeMediaBlock.pin) {
-           setSelectedPin(null);
+          setSelectedPin(null);
         }
         clearInterval(interval);
       }
@@ -424,54 +420,29 @@ export function PresentationPreview({ blocks, onClose }: Props) {
       {/* RIGHT: GLOBE & MEDIA BACKGROUND (Fixed) */}
       <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none flex items-center justify-center overflow-hidden">
         <div className="pointer-events-auto w-full h-full relative">
-          
-          {/* LAYER 1: GLOBE */}
+
+          {/* LAYER 1: CESIUM GLOBE */}
           <div className={`absolute inset-0 transition-opacity duration-700 ${(!activeMediaBlock || activeMediaBlock.type === 'mapAction') ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
-            <Globe
+            <CesiumGlobe
               ref={globeRef}
-              globeImageUrl={(({'blue-marble':'//unpkg.com/three-globe/example/img/earth-blue-marble.jpg','day':'//unpkg.com/three-globe/example/img/earth-day.jpg','night':'//unpkg.com/three-globe/example/img/earth-night.jpg','dark':'//unpkg.com/three-globe/example/img/earth-dark.jpg','terrain':'https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73776/world.topo.bathy.200412.3x2700x1350.jpg','ocean':'https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73963/gebco_08_rev_col_4500x2250.png'})[activeMediaBlock?.globeStyle || 'blue-marble'] || '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')}
-              bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
-              backgroundColor="rgba(0,0,0,0)"
-              width={dimensions.width}
-              height={dimensions.height}
-              showGraticules={showGrid}
-              
-              // Cấu hình HTML Pin
-              htmlElementsData={[
-                ...(activePin ? [activePin] : []),
-                ...(ANNOTATION_PRESETS[activeMediaBlock?.annotationPreset || 'none'] || [])
-              ]}
-              htmlElement={(d: any) => {
-                if (d.isAnnotation) {
-                  const el = document.createElement('div');
-                  el.className = `font-bold bg-white/80 backdrop-blur-sm px-2 py-0.5 rounded-md border border-white/50 shadow-sm pointer-events-none whitespace-nowrap ${d.color} ${d.isSmall ? 'text-[10px]' : 'text-xs'}`;
-                  el.innerText = d.label;
-                  return el;
-                }
-                const el = document.createElement('div');
-                el.innerHTML = `
-                  <div class="relative group cursor-pointer flex flex-col items-center animate-bounce">
-                    <div class="bg-red-500 text-white font-bold text-xs px-2 py-1 rounded-md shadow-lg border border-red-300 whitespace-nowrap mb-1">
-                      📍 ${d.title || 'Điểm đến'}
-                    </div>
-                    <div class="w-3 h-3 bg-red-500 rotate-45 -mt-2"></div>
-                  </div>
-                `;
-                el.onclick = () => setSelectedPin(d);
-                el.style.pointerEvents = 'auto';
-                return el;
-              }}
+              imageryLayer={
+                activeMediaBlock?.globeStyle ||
+                (blocks.find(b => b.globeStyle)?.globeStyle) ||
+                'Bing Maps Aerial'
+              }
+              showGrid={activeMediaBlock?.grid || false}
+              showLayerPicker={false}
             />
           </div>
 
           {/* LAYER 2: IMAGE SCENARIO */}
           <div className={`absolute inset-0 bg-transparent transition-opacity duration-700 ${activeMediaBlock?.type === 'imageScenario' ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
-             <ImageSlider urls={activeMediaBlock?.imageUrls || (activeMediaBlock?.imageUrl ? [activeMediaBlock.imageUrl] : [])} />
+            <ImageSlider urls={activeMediaBlock?.imageUrls || (activeMediaBlock?.imageUrl ? [activeMediaBlock.imageUrl] : [])} />
           </div>
 
         </div>
         <div className="absolute inset-0 bg-gradient-to-r from-[#E0F2FE] via-transparent to-transparent pointer-events-none" />
-        
+
         {/* HIỂN THỊ POPUP THÔNG TIN KHI BẤM VÀO GHIM */}
         {selectedPin && (
           <div className="absolute z-50 bg-white/80 backdrop-blur-xl p-6 rounded-3xl border border-white shadow-[0_20px_50px_rgba(14,165,233,0.3)] max-w-sm pointer-events-auto right-8 top-1/2 -translate-y-1/2 animate-in slide-in-from-right fade-in">
@@ -491,7 +462,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
       {/* Thêm class để ẩn scrollbar hiển thị ở giữa màn hình */}
       <div ref={scrollContainerRef} className="w-1/2 min-w-[500px] max-w-3xl h-full overflow-y-auto overflow-x-hidden pt-32 pb-64 px-16 space-y-10 relative z-20 bg-white/70 backdrop-blur-2xl border-r border-white/80 shadow-[20px_0_50px_rgba(14,165,233,0.1)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
         {blocks.map((block) => {
-          
+
           if (block.type === 'heading') {
             return (
               <div key={block.id} className="relative z-10 bg-gradient-to-r from-cyan-50 to-transparent p-6 rounded-2xl border-l-4 border-[#06B6D4]">
@@ -505,7 +476,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
           if (block.type === 'text') {
             return (
               <div key={block.id} className="relative z-10 w-full">
-                <div 
+                <div
                   className="text-[#334155] leading-[1.8] font-medium text-[1.1rem] text-justify drop-shadow-sm [&_b]:font-black [&_strong]:font-black [&_i]:italic [&_em]:italic [&_u]:underline [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:my-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:my-2 [&_li]:my-1"
                   dangerouslySetInnerHTML={{ __html: block.content || '' }}
                 />
@@ -534,9 +505,9 @@ export function PresentationPreview({ blocks, onClose }: Props) {
 
           if (block.type === 'imageScenario') {
             return (
-              <div 
-                key={block.id} 
-                id={`block-${block.id}`} 
+              <div
+                key={block.id}
+                id={`block-${block.id}`}
                 className="preview-media-action relative z-10 bg-white border-2 border-emerald-400 rounded-[32px] p-8 shadow-md mx-4 my-12"
                 data-type="imageScenario"
                 data-imageurl={block.imageUrl}
@@ -616,8 +587,8 @@ export function PresentationPreview({ blocks, onClose }: Props) {
 
           if (block.type === 'mapAction') {
             return (
-              <div 
-                key={block.id} 
+              <div
+                key={block.id}
                 className="preview-media-action relative z-10 my-16"
                 data-type="mapAction"
                 data-lat={block.lat}
@@ -629,7 +600,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
                 data-pintitle={block.pinTitle}
                 data-pininfo={block.pinInfo}
                 data-pinimage={block.pinImage}
-                 data-globestyle={block.globeStyle || 'blue-marble'}
+                data-globestyle={block.globeStyle || 'blue-marble'}
               >
                 <div className="bg-white/90 backdrop-blur-md px-6 py-3 rounded-full border border-cyan-400 text-[#06B6D4] text-xs font-black uppercase tracking-[0.2em] text-center w-fit mx-auto shadow-[0_5px_20px_rgba(6,182,212,0.2)]">
                   📍 {block.description}
@@ -640,7 +611,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
 
           return null;
         })}
-        
+
         <div className="text-center pt-24 pb-12 opacity-70">
           <span className="text-[#94A3B8] text-sm font-bold uppercase tracking-widest">Hết bài giảng</span>
           <div className="w-1 h-16 bg-[#CBD5E1] mx-auto mt-4 rounded-full"></div>

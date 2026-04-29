@@ -69,13 +69,14 @@ export default auth((req) => {
   // * Hình ảnh tải thoải mái từ mọi URL.
   const cspHeader = `
     default-src 'self';
-    script-src 'self' 'unsafe-eval' 'unsafe-inline' https://apis.google.com https://unpkg.com;
-    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com https://unpkg.com;
+    script-src 'self' 'unsafe-eval' 'unsafe-inline' blob: https://apis.google.com https://unpkg.com https://cesium.com;
+    style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://api.mapbox.com https://unpkg.com https://cesium.com;
     img-src 'self' blob: data: https://* http://*;
     font-src 'self' data: https://fonts.gstatic.com;
     connect-src 'self' wss: ws: https://* http://*;
     frame-src 'self' https://*;
     media-src 'self' blob: https://*;
+    worker-src 'self' blob:;
   `.replace(/\s{2,}/g, ' ').trim();
 
   response.headers.set('Content-Security-Policy', cspHeader);

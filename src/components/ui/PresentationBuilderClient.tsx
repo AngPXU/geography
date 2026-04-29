@@ -6,7 +6,7 @@ import { PresentationPreview } from './PresentationPreview';
 import { RichTextEditor } from './RichTextEditor';
 import dynamic from 'next/dynamic';
 
-const Globe = dynamic(() => import('react-globe.gl'), { ssr: false });
+const CesiumGlobe = dynamic(() => import('./CesiumGlobe'), { ssr: false });
 
 type BlockType = 'heading' | 'text' | 'funFact' | 'mapAction' | 'quiz' | 'objectives' | 'imageScenario' | 'dataTable';
 
@@ -188,11 +188,12 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
   useEffect(() => {
     const timer = setTimeout(() => {
       if (builderGlobeRef.current && activeBlock) {
-        builderGlobeRef.current.pointOfView({ 
-          lat: activeBlock.lat || 0, 
-          lng: activeBlock.lng || 0, 
-          altitude: Math.max(0.1, 5 / (activeBlock.zoom || 5)) 
-        }, 800);
+        builderGlobeRef.current.flyTo(
+          activeBlock.lat || 0,
+          activeBlock.lng || 0,
+          Math.max(0.1, 5 / (activeBlock.zoom || 5)) * 4000000,
+          1
+        );
       }
     }, 300);
 
@@ -203,7 +204,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
   useEffect(() => {
     const initInterval = setInterval(() => {
       if (builderGlobeRef.current && (!activeBlock || activeBlock.type !== 'mapAction')) {
-        builderGlobeRef.current.pointOfView({ lat: 16.0, lng: 106.0, altitude: 2 }, 1000);
+        builderGlobeRef.current.flyTo(16.0, 106.0, 8000000, 2);
         clearInterval(initInterval);
       } else if (builderGlobeRef.current && activeBlock?.type === 'mapAction') {
         clearInterval(initInterval); // Đã có mapAction thì không set default nữa
@@ -258,7 +259,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
       pinTitle: type === 'mapAction' ? '' : undefined,
       pinInfo: type === 'mapAction' ? '' : undefined,
       pinImage: type === 'mapAction' ? '' : undefined,
-      globeStyle: type === 'mapAction' ? 'blue-marble' : undefined,
+      globeStyle: type === 'mapAction' ? 'esri-imagery' : undefined,
       // DataTable defaults
       tableTitle: type === 'dataTable' ? 'Bảng số liệu' : undefined,
       tableHeaders: type === 'dataTable' ? ['Khu vực', 'Diện tích (km²)', 'Dân số (triệu)'] : undefined,
@@ -275,7 +276,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
   };
 
   const updateBlock = (id: string, updates: Partial<StoryBlock>) => {
-    setBlocks(prev => prev.map(b => b.id === id ? { ...b, ...updates } : b));
+    setBlocks(prevBlocks => prevBlocks.map(b => b.id === id ? { ...b, ...updates } : b));
   };
 
   const deleteBlock = (id: string) => {
@@ -474,34 +475,6 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                     <option value="oceans">Tên các Đại dương</option>
                   </select>
                 </div>
-               </div>
-
-               {/* Globe Style Selector */}
-               <div className="mb-2">
-                 <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2 block">Kiểu hiển thị quả cầu</label>
-                 <div className="grid grid-cols-3 gap-2">
-                   {[
-                     { id: 'blue-marble', label: '🌍 Vệ tinh',  desc: 'Blue Marble' },
-                     { id: 'day',         label: '☀️ Ban ngày', desc: 'Tự nhiên' },
-                     { id: 'night',       label: '🌃 Ban đêm',  desc: 'Đèn đô thị' },
-                     { id: 'terrain',     label: '🗺️ Địa hình', desc: 'Topo+Bathy' },
-                     { id: 'ocean',       label: '🌊 Đại dương', desc: 'Đáy biển' },
-                     { id: 'dark',        label: '⚫ Tối giản',  desc: 'Dark mode' },
-                   ].map(s => (
-                     <button
-                       key={s.id}
-                       onClick={() => updateBlock(block.id, { globeStyle: s.id })}
-                       className={`px-2 py-2 rounded-lg text-xs font-bold transition-all border ${
-                         (block.globeStyle || 'blue-marble') === s.id
-                           ? 'bg-cyan-500 text-white border-cyan-400 shadow-md'
-                           : 'bg-slate-700 text-slate-300 border-slate-600 hover:border-cyan-400 hover:text-cyan-300'
-                       }`}
-                     >
-                       <div>{s.label}</div>
-                       <div className="text-[9px] opacity-70 mt-0.5">{s.desc}</div>
-                     </button>
-                   ))}
-                 </div>
                </div>
 
                {/* Hint text for grid/annotation */}
@@ -789,7 +762,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
       </div>
 
       {/* ── RIGHT: REAL MAP PREVIEW ── */}
-      <div className={`w-[400px] flex flex-col p-4 ${glassPanel} bg-gradient-to-b from-slate-900 to-[#082F49] text-white relative overflow-hidden shrink-0`}>
+      <div className={`w-[420px] flex flex-col p-0 ${glassPanel} bg-gradient-to-b from-slate-900 to-[#082F49] text-white relative overflow-hidden shrink-0`}>
         <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/stardust.png')] opacity-20 pointer-events-none"></div>
         
         <div className="relative z-10 flex items-center justify-between mb-4 px-2 pointer-events-none">
@@ -802,37 +775,26 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center relative z-10">
-          <div className="w-[360px] h-[360px] rounded-full flex items-center justify-center relative overflow-hidden pointer-events-auto bg-slate-800 shadow-[0_0_50px_rgba(34,211,238,0.15)] border-2 border-cyan-900/50">
+          <div className="w-full h-full flex items-center justify-center relative overflow-hidden pointer-events-auto bg-slate-900">
             
-            {/* LỚP 1: QUẢ CẦU 3D */}
+            {/* LỚP 1: CESIUM GLOBE */}
             <div className={`absolute inset-0 transition-opacity duration-700 ${(!activeBlock || activeBlock.type === 'mapAction' || (!activeBlock.imageUrl && activeBlock.type !== 'imageScenario')) ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
-              <Globe
+              <CesiumGlobe
                 ref={builderGlobeRef}
-                globeImageUrl={(({'blue-marble':'//unpkg.com/three-globe/example/img/earth-blue-marble.jpg','day':'//unpkg.com/three-globe/example/img/earth-day.jpg','night':'//unpkg.com/three-globe/example/img/earth-night.jpg','dark':'//unpkg.com/three-globe/example/img/earth-dark.jpg','terrain':'https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73776/world.topo.bathy.200412.3x2700x1350.jpg','ocean':'https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73963/gebco_08_rev_col_4500x2250.png'})[activeBlock?.globeStyle || 'blue-marble'] || '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')}
-                bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
-                backgroundColor="rgba(0,0,0,0)"
-                width={360}
-                height={360}
-                showGraticules={activeBlock?.showGrid || false}
-                htmlElementsData={[
-                  ...(activeBlock?.showPin ? [activeBlock as StoryBlock] : []),
-                  ...(ANNOTATION_PRESETS[activeBlock?.annotationPreset || (activeBlock?.showAnnotations ? 'latlng' : 'none')] || [])
-                ]}
-                htmlElement={(d: any) => {
-                  if (d.isAnnotation) {
-                    const el = document.createElement('div');
-                    el.className = `font-bold bg-white/80 backdrop-blur-sm px-2 py-0.5 rounded-md border border-white/50 shadow-sm pointer-events-none whitespace-nowrap ${d.color} ${d.isSmall ? 'text-[10px]' : 'text-xs'}`;
-                    el.innerText = d.label;
-                    return el;
-                  }
-                  const el = document.createElement('div');
-                  el.innerHTML = `<div class="text-2xl animate-bounce">📍</div>`;
-                  return el;
+                imageryLayer={
+                  activeBlock?.globeStyle || 
+                  (blocks.find(b => b.globeStyle)?.globeStyle) || 
+                  'Bing Maps Aerial'
+                }
+                showGrid={activeBlock?.showGrid || false}
+                onLayerChange={(id) => {
+                  // Cập nhật bản đồ cho TOÀN BỘ các khối để nó trở thành cài đặt toàn cục (Global)
+                  setBlocks(prevBlocks => prevBlocks.map(b => ({ ...b, globeStyle: id })));
                 }}
               />
             </div>
 
-            {/* LỚP 2: HÌNH ẢNH */}
+            {/* LỚP 2: HÌNH ẢNH */}            {/* LỚP 2: HÌNH ẢNH */}
             <div className={`absolute inset-0 transition-opacity duration-700 bg-transparent ${((activeBlock?.type === 'imageScenario' && (activeBlock.imageUrls?.length || activeBlock.imageUrl)) || activeBlock?.imageUrl) ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
               <ImageSlider urls={activeBlock?.imageUrls || (activeBlock?.imageUrl ? [activeBlock.imageUrl] : [])} />
             </div>
