@@ -53,3 +53,16 @@ h1, h2, h3, h4, h5, h6 {
   66% { transform: translate(-20px, 20px) scale(0.9); }
   100% { transform: translate(0px, 0px) scale(1); }
 }
+
+/* ── Mobile-first content container: 95% chiều rộng trên mobile ── */
+@media (max-width: 639px) {
+  .page-container {
+    padding-left: 2.5%;
+    padding-right: 2.5%;
+  }
+  /* Navbar pill nội dung cũng thu hẹp */
+  .navbar-full {
+    padding-left: 2.5% !important;
+    padding-right: 2.5% !important;
+  }
+}

@@ -89,7 +89,7 @@ export function GeoFunFacts() {
       <div className="absolute bottom-0 right-[20%] w-96 h-96 rounded-full opacity-20 blur-[100px] pointer-events-none"
         style={{ background: 'radial-gradient(circle, #f472b6, transparent)' }} />
 
-      <div className="w-[90%] max-w-[1400px] mx-auto">
+      <div className="w-[95%] md:w-[90%] max-w-[1400px] mx-auto">
 
         {/* Tiêu đề */}
         <div className="text-center mb-12 relative z-10">

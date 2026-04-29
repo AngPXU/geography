@@ -52,7 +52,7 @@ export default async function HomePage() {
         <div className="absolute top-[40%] left-[30%] w-[40%] h-[40%] bg-violet-300/20 rounded-full blur-[100px] animate-[liquid-blob_18s_infinite_2s]"></div>
       </div>
 
-      <main className="w-[95%] max-w-[1300px] mx-auto px-4 sm:px-6 xl:px-8 pt-32 pb-24 min-h-[90vh] flex flex-col items-center justify-center relative z-10">
+      <main className="w-[95%] md:w-[90%] max-w-[1300px] mx-auto pt-32 pb-24 min-h-[90vh] flex flex-col items-center justify-center relative z-10">
         
         {/* The Grand Glass Panel - iOS 26 Inspired */}
         <div 
@@ -104,12 +104,12 @@ export default async function HomePage() {
           </div>
 
           {/* Right Column: 3D Earth Globe */}
-          <div className="lg:w-1/2 w-full relative z-30 flex items-center justify-center pointer-events-auto min-h-[350px] lg:min-h-[500px]">
+          <div className="lg:w-1/2 w-full relative z-30 flex items-center justify-center pointer-events-auto min-h-[260px] sm:min-h-[320px] lg:min-h-[500px]">
             {/* Glowing orb behind earth */}
             <div className="absolute inset-10 bg-gradient-to-tr from-[#06B6D4]/30 to-[#22C55E]/20 rounded-full blur-[80px]"></div>
             
             {/* Wrapper to control max size of the earth to avoid overwhelming the view */}
-            <div className="w-full max-w-[500px] aspect-square relative hover:scale-[1.02] transition-transform duration-700">
+            <div className="w-full max-w-[280px] sm:max-w-[360px] lg:max-w-[500px] aspect-square relative hover:scale-[1.02] transition-transform duration-700">
               <EarthGlobe userRole={userRole} />
             </div>
           </div>

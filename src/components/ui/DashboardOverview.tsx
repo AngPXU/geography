@@ -139,7 +139,7 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
 
   return (
     <section className="pt-8 pb-16 relative overflow-hidden bg-transparent">
-      <div className="w-[90%] max-w-[1400px] mx-auto px-4 xl:px-8 relative z-10 space-y-6">
+      <div className="w-[95%] md:w-[90%] max-w-[1400px] mx-auto relative z-10 space-y-6">
 
         {/* ── Section Header ── */}
         <div className="text-center mb-2">

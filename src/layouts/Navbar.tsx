@@ -204,8 +204,11 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
           position: fixed;
           top: 0; left: 0; right: 0;
           z-index: 100;
-          padding: 16px 24px;
+          padding: 12px 12px;
           transition: opacity 0.35s ease, transform 0.35s ease;
+        }
+        @media (min-width: 640px) {
+          .navbar-full { padding: 16px 24px; }
         }
         .navbar-full.hidden-bar {
           opacity: 0;
@@ -312,13 +315,13 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
           <div className="bg-white/80 backdrop-blur-[24px] border border-white rounded-[24px] px-5 py-3 flex items-center justify-between shadow-[0_8px_32px_rgba(14,165,233,0.10),0_2px_8px_rgba(14,165,233,0.06)]">
 
             {/* Logo */}
-            <Link href="/" className="flex items-center gap-3 group shrink-0">
-              <div className="w-10 h-10 rounded-[14px] bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-lg shadow-md group-hover:scale-105 group-hover:shadow-cyan-300/40 transition-all duration-300">
+            <Link href="/" className="flex items-center gap-2.5 group shrink-0 min-w-0">
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[14px] bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-lg shadow-md group-hover:scale-105 group-hover:shadow-cyan-300/40 transition-all duration-300 flex-shrink-0">
                 <FaGlobeAsia />
               </div>
-              <div>
-                <p className="font-black text-[#082F49] text-lg leading-none tracking-tight">Vui học Địa Lý</p>
-                <p className="text-[9px] text-cyan-600 font-bold tracking-[0.18em] uppercase mt-0.5">Cùng nhau Khám phá Thế Giới</p>
+              <div className="min-w-0">
+                <p className="font-black text-[#082F49] text-sm sm:text-lg leading-none tracking-tight truncate">Vui học Địa Lý</p>
+                <p className="hidden sm:block text-[9px] text-cyan-600 font-bold tracking-[0.18em] uppercase mt-0.5">Cùng nhau Khám phá Thế Giới</p>
               </div>
             </Link>
 

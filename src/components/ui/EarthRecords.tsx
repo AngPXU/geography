@@ -88,7 +88,7 @@ export function EarthRecords() {
       {/* Background Decor */}
       <div className="absolute top-0 right-0 w-[800px] h-[800px] bg-gradient-to-bl from-rose-100/30 to-transparent rounded-full blur-3xl -z-10 translate-x-1/2 -translate-y-1/2"></div>
 
-      <div className="w-[90%] max-w-[1400px] mx-auto px-4 xl:px-8 relative z-10">
+      <div className="w-[95%] md:w-[90%] max-w-[1400px] mx-auto relative z-10">
 
         {/* Section Header */}
         <div className="text-center md:text-left mb-16 flex flex-col md:flex-row md:items-end justify-between gap-6">

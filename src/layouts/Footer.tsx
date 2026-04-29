@@ -39,7 +39,7 @@ export function Footer() {
         </svg>
       </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-12 md:py-16">
+      <div className="w-[95%] md:w-[90%] max-w-7xl mx-auto py-12 md:py-16">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-10 lg:gap-16">
           
           {/* Brand Info */}

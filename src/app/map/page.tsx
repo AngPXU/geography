@@ -32,7 +32,7 @@ export default async function MapPage() {
         <div className="absolute top-[60%] right-[-10%] w-[50%] h-[50%] bg-green-300/30 rounded-full blur-[120px]"></div>
       </div>
 
-      <main className="max-w-[1440px] mx-auto px-4 md:px-8 pt-24 pb-8 relative z-10 flex flex-col items-center h-screen">
+      <main className="max-w-[1440px] mx-auto px-[2.5%] md:px-8 pt-24 pb-8 relative z-10 flex flex-col items-center h-screen">
 
         {/* Tiêu đề & Giới thiệu ngắn */}
         <div className="w-full text-center mt-4">

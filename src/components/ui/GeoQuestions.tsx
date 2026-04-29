@@ -111,7 +111,7 @@ export function GeoQuestions() {
   };
 
   return (
-    <section className="w-[90%] max-w-[1400px] mx-auto py-20 relative z-10">
+    <section className="w-[95%] md:w-[90%] max-w-[1400px] mx-auto py-20 relative z-10">
       {/* Decorative blobs */}
       <div className="absolute top-0 right-[20%] w-[30rem] h-[30rem] bg-gradient-to-tr from-cyan-200/50 to-blue-200/50 rounded-full blur-[100px] opacity-60 z-[-1] pointer-events-none" />
       <div className="absolute bottom-10 left-[10%] w-[35rem] h-[35rem] bg-gradient-to-bl from-rose-200/40 to-orange-100/40 rounded-full blur-[120px] opacity-60 z-[-1] pointer-events-none" />

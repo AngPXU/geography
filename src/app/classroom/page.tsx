@@ -31,7 +31,7 @@ export default async function ClassroomPage() {
         <div className="absolute top-[40%] left-[30%] w-[40%] h-[40%] bg-violet-300/20 rounded-full blur-[100px] animate-[liquid-blob_18s_infinite_2s]"></div>
       </div>
 
-      <main className="max-w-7xl mx-auto px-4 md:px-8 pt-28 pb-16 relative z-10">
+      <main className="max-w-7xl mx-auto px-[2.5%] md:px-8 pt-28 pb-16 relative z-10">
         <ClassroomTabs user={session.user} />
       </main>
 
