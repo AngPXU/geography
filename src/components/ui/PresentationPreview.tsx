@@ -400,7 +400,11 @@ export function PresentationPreview({ blocks, onClose }: Props) {
         globeRef.current.flyTo(activeMediaBlock.lat, activeMediaBlock.lng, activeMediaBlock.altitude * 4000000, 1.5);
         setShowGrid(activeMediaBlock.grid);
         setActivePin(activeMediaBlock.pin);
-        if (!activeMediaBlock.pin) {
+        
+        globeRef.current.clearPins();
+        if (activeMediaBlock.pin) {
+          globeRef.current.addPin(activeMediaBlock.pin.lat, activeMediaBlock.pin.lng, activeMediaBlock.pin.title || '', activeMediaBlock.pin.info || '', activeMediaBlock.pin.image || '');
+        } else {
           setSelectedPin(null);
         }
         clearInterval(interval);
@@ -432,6 +436,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
               }
               showGrid={activeMediaBlock?.grid || false}
               showLayerPicker={false}
+              onPinClick={(pin) => setSelectedPin(pin)}
             />
           </div>
 
@@ -477,7 +482,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
             return (
               <div key={block.id} className="relative z-10 w-full">
                 <div
-                  className="text-[#334155] leading-[1.8] font-medium text-[1.1rem] text-justify drop-shadow-sm [&_b]:font-black [&_strong]:font-black [&_i]:italic [&_em]:italic [&_u]:underline [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:my-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:my-2 [&_li]:my-1"
+                  className="text-[#334155] leading-[1.8] font-medium text-[1.1rem] text-justify drop-shadow-sm [&_b]:font-black [&_strong]:font-black [&_i]:italic [&_em]:italic [&_u]:underline [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:my-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:my-2 [&_li]:my-1 [&_h2]:text-2xl [&_h2]:font-black [&_h2]:text-cyan-700 [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:text-xl [&_h3]:font-black [&_h3]:text-cyan-600 [&_h3]:mt-4 [&_h3]:mb-2 [&_h4]:text-lg [&_h4]:font-bold [&_h4]:text-slate-700 [&_h4]:mt-3 [&_h4]:mb-1"
                   dangerouslySetInnerHTML={{ __html: block.content || '' }}
                 />
               </div>
@@ -485,20 +490,15 @@ export function PresentationPreview({ blocks, onClose }: Props) {
           }
 
           if (block.type === 'objectives') {
-            const items = block.content?.split('\n').filter(Boolean) || [];
             return (
               <div key={block.id} className="relative z-10 bg-gradient-to-br from-orange-50 to-amber-50 backdrop-blur-xl p-8 rounded-3xl border border-orange-200 shadow-[0_10px_30px_rgba(245,158,11,0.15)] mx-4 my-8">
                 <h3 className="font-black text-orange-600 mb-4 flex items-center gap-3 text-xl drop-shadow-sm">
                   🎯 Học xong bài này, em sẽ:
                 </h3>
-                <ul className="space-y-3">
-                  {items.map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-3 text-[#334155] font-medium text-lg leading-relaxed">
-                      <span className="text-orange-400 mt-1.5 font-black text-xl">•</span>
-                      <span>{item.trim()}</span>
-                    </li>
-                  ))}
-                </ul>
+                <div
+                  className="text-[#334155] font-medium text-lg leading-relaxed [&_b]:font-black [&_strong]:font-black [&_i]:italic [&_em]:italic [&_u]:underline [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:my-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:my-2 [&_li]:my-1 [&_h2]:text-2xl [&_h2]:font-black [&_h2]:text-cyan-700 [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:text-xl [&_h3]:font-black [&_h3]:text-cyan-600 [&_h3]:mt-4 [&_h3]:mb-2 [&_h4]:text-lg [&_h4]:font-bold [&_h4]:text-slate-700 [&_h4]:mt-3 [&_h4]:mb-1"
+                  dangerouslySetInnerHTML={{ __html: block.content || '' }}
+                />
               </div>
             );
           }
@@ -531,7 +531,10 @@ export function PresentationPreview({ blocks, onClose }: Props) {
             return (
               <div key={block.id} className="relative z-10 bg-gradient-to-br from-[#E0F2FE]/90 to-[#DCFCE7]/90 backdrop-blur-xl p-8 rounded-3xl border border-white shadow-[0_10px_30px_rgba(14,165,233,0.1)] mx-4">
                 <h3 className="font-black text-[#082F49] mb-3 flex items-center gap-3 text-xl drop-shadow-sm">💡 {block.title}</h3>
-                <p className="text-[#334155] text-lg leading-relaxed font-medium">{block.content}</p>
+                <div
+                  className="text-[#334155] text-lg leading-relaxed font-medium [&_b]:font-black [&_strong]:font-black [&_i]:italic [&_em]:italic [&_u]:underline [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:my-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:my-2 [&_li]:my-1 [&_h2]:text-2xl [&_h2]:font-black [&_h2]:text-cyan-700 [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:text-xl [&_h3]:font-black [&_h3]:text-cyan-600 [&_h3]:mt-4 [&_h3]:mb-2 [&_h4]:text-lg [&_h4]:font-bold [&_h4]:text-slate-700 [&_h4]:mt-3 [&_h4]:mb-1"
+                  dangerouslySetInnerHTML={{ __html: block.content || '' }}
+                />
               </div>
             );
           }

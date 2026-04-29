@@ -12,7 +12,7 @@ export interface CesiumGlobeHandle {
   flyTo: (lat: number, lng: number, altitude?: number, duration?: number) => void;
   setLayer: (layerId: string) => void;
   setGrid: (show: boolean) => void;
-  addPin: (lat: number, lng: number, title: string, info?: string) => void;
+  addPin: (lat: number, lng: number, title: string, info?: string, image?: string) => void;
   clearPins: () => void;
 }
 
@@ -23,6 +23,7 @@ interface CesiumGlobeProps {
   showGrid?: boolean;
   imageryLayer?: string;
   onLayerChange?: (layerName: string) => void;
+  onPinClick?: (pinData: { title: string, info: string, image?: string }) => void;
   showLayerPicker?: boolean;
   className?: string;
 }
@@ -34,6 +35,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
   showGrid = false,
   imageryLayer,
   onLayerChange,
+  onPinClick,
   showLayerPicker = true,
   className = '',
 }, ref) => {
@@ -42,11 +44,12 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
   const gridLayerRef = useRef<any>(null);
   const initRef      = useRef(false);
 
-  // Dùng ref để tránh stale closure trong knockout subscribe
   const onLayerChangeRef = useRef(onLayerChange);
+  const onPinClickRef = useRef(onPinClick);
   useEffect(() => {
     onLayerChangeRef.current = onLayerChange;
-  }, [onLayerChange]);
+    onPinClickRef.current = onPinClick;
+  }, [onLayerChange, onPinClick]);
 
   const [ready, setReady] = useState(false);
   const [initialized, setInitialized] = useState(false);
@@ -71,6 +74,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
       timeline: false,
       fullscreenButton: false,
       baseLayerPicker: showLayerPicker, // Phụ thuộc vào prop (Trình chiếu = false)
+      infoBox: false, // Tắt InfoBox mặc định
+      selectionIndicator: false, // Tắt vòng xanh lá mặc định khi click
     });
 
     // Hide the Cesium logo and default token warning at the bottom
@@ -82,6 +87,20 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
     viewer.camera.setView({
       destination: Cesium.Cartesian3.fromDegrees(initialLng, initialLat, initialAltitude),
     });
+
+    // Add click event listener for pins
+    const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+    handler.setInputAction((click: any) => {
+      const pickedObject = viewer.scene.pick(click.position);
+      if (Cesium.defined(pickedObject) && pickedObject.id) {
+        const entity = pickedObject.id;
+        if (entity._customPinData) {
+          if (onPinClickRef.current) {
+            onPinClickRef.current(entity._customPinData);
+          }
+        }
+      }
+    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
     viewerRef.current = viewer;
     setReady(true);
@@ -219,36 +238,37 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
       // Bỏ qua vì hiện tại dùng bộ chọn layer mặc định của Cesium
     },
     setGrid() {},
-    addPin(lat, lng, title, info) {
+    addPin(lat, lng, title, info, image) {
       if (!viewerRef.current) return;
-      viewerRef.current.entities.add({
-        position: Cesium.Cartesian3.fromDegrees(lng, lat),
-        label: {
-          text: title,
-          font: '14pt Nunito, sans-serif',
-          fillColor: Cesium.Color.WHITE,
-          outlineColor: Cesium.Color.fromCssColorString('#082F49'),
-          outlineWidth: 3,
-          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
-          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-          pixelOffset: new Cesium.Cartesian2(0, -16),
-          disableDepthTestDistance: Number.POSITIVE_INFINITY,
-        },
-        billboard: {
-          image: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(
-            '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="40" viewBox="0 0 32 40">'
-            + '<ellipse cx="16" cy="38" rx="6" ry="3" fill="rgba(0,0,0,0.3)"/>'
-            + '<path d="M16 0C9.4 0 4 5.4 4 12c0 9 12 28 12 28s12-19 12-28c0-6.6-5.4-12-12-12z" fill="#06B6D4"/>'
-            + '<circle cx="16" cy="12" r="6" fill="white"/>'
-            + '</svg>'
-          )}`,
-          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
-          width: 32,
-          height: 40,
+      
+      const entityData: any = {
+        position: Cesium.Cartesian3.fromDegrees(lng, lat, 1000),
+        point: {
+          pixelSize: new Cesium.CallbackProperty(() => 20 + Math.abs(Math.sin(Date.now() / 250)) * 12, false),
+          color: Cesium.Color.fromCssColorString('#06B6D4'),
+          outlineColor: Cesium.Color.WHITE,
+          outlineWidth: new Cesium.CallbackProperty(() => 2 + Math.abs(Math.sin(Date.now() / 250)) * 4, false),
           disableDepthTestDistance: Number.POSITIVE_INFINITY,
         },
         description: info,
-      });
+      };
+
+      if (title && title.trim().length > 0) {
+        entityData.label = {
+          text: title,
+          font: 'bold 16pt Nunito, sans-serif',
+          fillColor: Cesium.Color.WHITE,
+          outlineColor: Cesium.Color.fromCssColorString('#082F49'),
+          outlineWidth: 4,
+          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+          verticalOrigin: Cesium.VerticalOrigin.BOTTOM,
+          pixelOffset: new Cesium.Cartesian2(0, -20),
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+        };
+      }
+
+      const entity = viewerRef.current.entities.add(entityData);
+      entity._customPinData = { title, info, image };
     },
     clearPins() {
       viewerRef.current?.entities.removeAll();

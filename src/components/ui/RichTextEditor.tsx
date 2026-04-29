@@ -36,7 +36,36 @@ export function RichTextEditor({ value, onChange, placeholder = 'Nhập nội du
   return (
     <div className="w-full border border-slate-200 rounded-xl overflow-hidden bg-white shadow-sm focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-100 transition-all">
       {/* Toolbar */}
-      <div className="flex items-center gap-1 p-2 border-b border-slate-100 bg-slate-50">
+      <div className="flex items-center gap-1 p-2 border-b border-slate-100 bg-slate-50 flex-wrap">
+        <button 
+          onClick={() => execCommand('formatBlock', 'H2')}
+          className={btnClass}
+          title="Tiêu đề Lớn (H2)"
+        >
+          <span className="font-black text-sm">H2</span>
+        </button>
+        <button 
+          onClick={() => execCommand('formatBlock', 'H3')}
+          className={btnClass}
+          title="Tiêu đề Vừa (H3)"
+        >
+          <span className="font-bold text-sm">H3</span>
+        </button>
+        <button 
+          onClick={() => execCommand('formatBlock', 'H4')}
+          className={btnClass}
+          title="Tiêu đề Nhỏ (H4)"
+        >
+          <span className="font-bold text-xs">H4</span>
+        </button>
+        <button 
+          onClick={() => execCommand('formatBlock', 'P')}
+          className={btnClass}
+          title="Văn bản thường"
+        >
+          <span className="text-xs">¶</span>
+        </button>
+        <div className="w-px h-5 bg-slate-300 mx-1"></div>
         <button 
           onClick={() => execCommand('bold')}
           className={btnClass}
@@ -82,7 +111,7 @@ export function RichTextEditor({ value, onChange, placeholder = 'Nhập nội du
         onInput={handleInput}
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
-        className="w-full min-h-[120px] max-h-[400px] overflow-y-auto p-4 outline-none text-[#334155] leading-relaxed [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:my-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:my-2 [&_b]:font-black [&_i]:italic [&_u]:underline"
+        className="w-full min-h-[120px] max-h-[400px] overflow-y-auto p-4 outline-none text-[#334155] leading-relaxed [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:my-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:my-2 [&_b]:font-black [&_i]:italic [&_u]:underline [&_h2]:text-2xl [&_h2]:font-black [&_h2]:text-cyan-700 [&_h2]:mt-4 [&_h2]:mb-2 [&_h3]:text-xl [&_h3]:font-black [&_h3]:text-cyan-600 [&_h3]:mt-3 [&_h3]:mb-1 [&_h4]:text-lg [&_h4]:font-bold [&_h4]:text-slate-700 [&_h4]:mt-2 [&_h4]:mb-1"
       />
     </div>
   );
