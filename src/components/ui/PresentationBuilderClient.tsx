@@ -863,9 +863,10 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                 imageryLayer={
                   activeBlock?.globeStyle ||
                   (blocks.find(b => b.globeStyle)?.globeStyle) ||
-                  'Bing Maps Aerial'
+                  'ESRI World Imagery'
                 }
                 showGrid={activeBlock?.showGrid || false}
+                showLayerPicker={false}
                 onLayerChange={(id) => {
                   setBlocks(prevBlocks => prevBlocks.map(b => ({ ...b, globeStyle: id })));
                 }}

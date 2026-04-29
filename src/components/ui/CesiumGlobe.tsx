@@ -69,7 +69,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
 
     // Initialize exactly like the demo but turn off bottom UI widgets
     const viewer = new Cesium.Viewer(containerRef.current, {
-      terrain: Cesium.Terrain.fromWorldTerrain(),
+      terrainProvider: new Cesium.EllipsoidTerrainProvider(), // Tránh gọi Cesium Ion gây lỗi 401 trên Vercel
       animation: false,
       timeline: false,
       fullscreenButton: false,
