@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import webpack from "webpack";
 
 const nextConfig: NextConfig = {
   // Turbopack config
@@ -8,10 +9,19 @@ const nextConfig: NextConfig = {
       encoding: './src/utils/empty-module.ts',
     },
   },
-  // Webpack fallback
+  // Webpack config
   webpack: (config) => {
     config.resolve.alias.canvas = false;
     config.resolve.alias.encoding = false;
+
+    // Inject CESIUM_BASE_URL at compile-time so Cesium Workers
+    // can locate static assets regardless of deployment environment
+    config.plugins.push(
+      new webpack.DefinePlugin({
+        CESIUM_BASE_URL: JSON.stringify('/cesium'),
+      })
+    );
+
     return config;
   },
 };

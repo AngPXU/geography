@@ -3,10 +3,9 @@
 import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState, useCallback } from 'react';
 import * as Cesium from 'cesium';
 
-// Set base URL for Cesium static assets so it doesn't fetch from CDN and break CSP
-if (typeof window !== 'undefined') {
-  (window as any).CESIUM_BASE_URL = '/cesium/';
-}
+// CESIUM_BASE_URL is injected at compile-time via webpack.DefinePlugin in next.config.ts
+// This allows Cesium Workers to find static assets on Vercel and any deployment environment
+declare const CESIUM_BASE_URL: string;
 
 export interface CesiumGlobeHandle {
   flyTo: (lat: number, lng: number, altitude?: number, duration?: number) => void;
