@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 
 const Globe = dynamic(() => import('react-globe.gl'), { ssr: false });
 
-type BlockType = 'heading' | 'text' | 'funFact' | 'mapAction' | 'quiz' | 'objectives' | 'imageScenario';
+type BlockType = 'heading' | 'text' | 'funFact' | 'mapAction' | 'quiz' | 'objectives' | 'imageScenario' | 'dataTable';
 
 interface StoryBlock {
   id: string;
@@ -31,6 +31,127 @@ interface StoryBlock {
   // ImageScenario
   imageUrl?: string;
   imageUrls?: string[];
+  // DataTable
+  tableTitle?: string;
+  tableHeaders?: string[];
+  tableRows?: string[][];
+  tableHighlightCol?: number;
+  tableUnit?: string;
+  // Globe Style
+  globeStyle?: string;
+}
+
+function DataTablePreview({ block }: { block: StoryBlock }) {
+  const [sortCol, setSortCol] = useState<number | null>(null);
+  const [sortAsc, setSortAsc] = useState(true);
+  const [hoveredRow, setHoveredRow] = useState<number | null>(null);
+
+  const headers = block.tableHeaders || [];
+  const rawRows = block.tableRows || [];
+  const highlightCol = block.tableHighlightCol ?? 1;
+
+  // Sort rows
+  const rows = sortCol !== null
+    ? [...rawRows].sort((a, b) => {
+        const va = parseFloat(a[sortCol]?.replace(/[^0-9.-]/g, '')) || 0;
+        const vb = parseFloat(b[sortCol]?.replace(/[^0-9.-]/g, '')) || 0;
+        const sv = va === 0 && vb === 0 ? (a[sortCol] || '').localeCompare(b[sortCol] || '') : va - vb;
+        return sortAsc ? sv : -sv;
+      })
+    : rawRows;
+
+  // Find max in highlight col for bar width
+  const numericValues = rows.map(r => parseFloat((r[highlightCol] || '0').replace(/[^0-9.-]/g, '')) || 0);
+  const maxVal = Math.max(...numericValues, 1);
+
+  const handleSort = (ci: number) => {
+    if (sortCol === ci) setSortAsc(!sortAsc);
+    else { setSortCol(ci); setSortAsc(false); }
+  };
+
+  return (
+    <div className="relative z-10 mx-4 my-8">
+      <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-violet-200 shadow-[0_10px_40px_rgba(139,92,246,0.12)] overflow-hidden">
+        {/* Header */}
+        <div className="bg-gradient-to-r from-violet-600 to-purple-500 px-6 py-4 flex items-center gap-3">
+          <span className="text-2xl">📊</span>
+          <div>
+            <h3 className="font-black text-white text-xl">{block.tableTitle || 'Bảng số liệu'}</h3>
+            {block.tableUnit && <p className="text-violet-200 text-xs font-medium mt-0.5">Đơn vị: {block.tableUnit}</p>}
+          </div>
+          <div className="ml-auto flex items-center gap-1 bg-white/20 rounded-full px-3 py-1">
+            <span className="text-white text-xs font-bold">Nhấn tiêu đề cột để sắp xếp</span>
+          </div>
+        </div>
+
+        {/* Table */}
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="bg-violet-50 border-b-2 border-violet-100">
+                <th className="px-4 py-3 text-left text-xs font-black text-violet-400 uppercase tracking-wider w-8">#</th>
+                {headers.map((h, ci) => (
+                  <th
+                    key={ci}
+                    onClick={() => handleSort(ci)}
+                    className="px-4 py-3 text-left cursor-pointer hover:bg-violet-100 transition-colors select-none group"
+                  >
+                    <div className="flex items-center gap-1">
+                      <span className={`text-sm font-black ${ci === highlightCol ? 'text-violet-700' : 'text-[#082F49]'}`}>{h}</span>
+                      <span className="text-violet-400 text-xs opacity-0 group-hover:opacity-100 transition-opacity">
+                        {sortCol === ci ? (sortAsc ? '↑' : '↓') : '↕'}
+                      </span>
+                    </div>
+                  </th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((row, ri) => {
+                const numVal = parseFloat((row[highlightCol] || '0').replace(/[^0-9.-]/g, '')) || 0;
+                const barPct = Math.round((numVal / maxVal) * 100);
+                const isHovered = hoveredRow === ri;
+                return (
+                  <tr
+                    key={ri}
+                    onMouseEnter={() => setHoveredRow(ri)}
+                    onMouseLeave={() => setHoveredRow(null)}
+                    className={`border-b border-violet-50 transition-all duration-200 ${isHovered ? 'bg-violet-50' : ri % 2 === 0 ? 'bg-white' : 'bg-violet-50/30'}`}
+                  >
+                    <td className="px-4 py-3 text-xs font-bold text-violet-300">{ri + 1}</td>
+                    {row.map((cell, ci) => (
+                      <td key={ci} className="px-4 py-3">
+                        {ci === highlightCol ? (
+                          <div className="flex items-center gap-3">
+                            <span className="font-black text-violet-700 text-base min-w-[60px]">{cell}</span>
+                            <div className="flex-1 bg-violet-100 rounded-full h-2.5 overflow-hidden">
+                              <div
+                                className="h-full bg-gradient-to-r from-violet-500 to-purple-400 rounded-full transition-all duration-700"
+                                style={{ width: `${barPct}%` }}
+                              />
+                            </div>
+                            <span className="text-xs text-violet-400 font-bold w-8 text-right">{barPct}%</span>
+                          </div>
+                        ) : (
+                          <span className={`font-medium text-[#334155] ${isHovered ? 'text-[#082F49] font-bold' : ''}`}>{cell}</span>
+                        )}
+                      </td>
+                    ))}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+
+        {/* Footer */}
+        <div className="bg-violet-50 px-6 py-3 flex items-center gap-2 text-xs text-violet-400 font-medium border-t border-violet-100">
+          <span>📌</span>
+          <span>{rows.length} mục dữ liệu • Cột “{headers[highlightCol]}” đang hiển thị thanh thị phần trăm</span>
+        </div>
+      </div>
+    </div>
+  );
 }
 
 function ImageSlider({ urls }: { urls: string[] }) {
@@ -203,6 +324,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
               const grid = activeEl.getAttribute('data-showgrid') === 'true';
               const annotationPreset = activeEl.getAttribute('data-annotationpreset') || 'none';
               const hasPin = activeEl.getAttribute('data-showpin') === 'true';
+              const globeStyle = activeEl.getAttribute('data-globestyle') || 'blue-marble';
               
               const altitude = Math.max(0.1, 5 / zoom);
               
@@ -212,7 +334,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
                 }
                 return {
                   type: 'mapAction',
-                  lat, lng, altitude, grid, annotationPreset,
+                  lat, lng, altitude, grid, annotationPreset, globeStyle,
                   pin: hasPin ? {
                     lat, lng,
                     title: activeEl!.getAttribute('data-pintitle'),
@@ -307,7 +429,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
           <div className={`absolute inset-0 transition-opacity duration-700 ${(!activeMediaBlock || activeMediaBlock.type === 'mapAction') ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
             <Globe
               ref={globeRef}
-              globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+              globeImageUrl={(({'blue-marble':'//unpkg.com/three-globe/example/img/earth-blue-marble.jpg','day':'//unpkg.com/three-globe/example/img/earth-day.jpg','night':'//unpkg.com/three-globe/example/img/earth-night.jpg','dark':'//unpkg.com/three-globe/example/img/earth-dark.jpg','terrain':'https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73776/world.topo.bathy.200412.3x2700x1350.jpg','ocean':'https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73963/gebco_08_rev_col_4500x2250.png'})[activeMediaBlock?.globeStyle || 'blue-marble'] || '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')}
               bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
               backgroundColor="rgba(0,0,0,0)"
               width={dimensions.width}
@@ -443,6 +565,10 @@ export function PresentationPreview({ blocks, onClose }: Props) {
             );
           }
 
+          if (block.type === 'dataTable') {
+            return <DataTablePreview key={block.id} block={block} />;
+          }
+
           if (block.type === 'quiz') {
             const selectedIdx = quizAnswers[block.id];
             const hasAnswered = selectedIdx !== undefined;
@@ -503,6 +629,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
                 data-pintitle={block.pinTitle}
                 data-pininfo={block.pinInfo}
                 data-pinimage={block.pinImage}
+                 data-globestyle={block.globeStyle || 'blue-marble'}
               >
                 <div className="bg-white/90 backdrop-blur-md px-6 py-3 rounded-full border border-cyan-400 text-[#06B6D4] text-xs font-black uppercase tracking-[0.2em] text-center w-fit mx-auto shadow-[0_5px_20px_rgba(6,182,212,0.2)]">
                   📍 {block.description}

@@ -8,7 +8,7 @@ import dynamic from 'next/dynamic';
 
 const Globe = dynamic(() => import('react-globe.gl'), { ssr: false });
 
-type BlockType = 'heading' | 'text' | 'funFact' | 'mapAction' | 'quiz' | 'objectives' | 'imageScenario';
+type BlockType = 'heading' | 'text' | 'funFact' | 'mapAction' | 'quiz' | 'objectives' | 'imageScenario' | 'dataTable';
 
 interface StoryBlock {
   id: string;
@@ -38,6 +38,14 @@ interface StoryBlock {
   // ImageScenario
   imageUrl?: string;
   imageUrls?: string[];
+  // DataTable
+  tableTitle?: string;
+  tableHeaders?: string[];
+  tableRows?: string[][];
+  tableHighlightCol?: number;
+  tableUnit?: string;
+  // Globe Style
+  globeStyle?: string;
 }
 
 function ImageSlider({ urls }: { urls: string[] }) {
@@ -250,6 +258,13 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
       pinTitle: type === 'mapAction' ? '' : undefined,
       pinInfo: type === 'mapAction' ? '' : undefined,
       pinImage: type === 'mapAction' ? '' : undefined,
+      globeStyle: type === 'mapAction' ? 'blue-marble' : undefined,
+      // DataTable defaults
+      tableTitle: type === 'dataTable' ? 'Bảng số liệu' : undefined,
+      tableHeaders: type === 'dataTable' ? ['Khu vực', 'Diện tích (km²)', 'Dân số (triệu)'] : undefined,
+      tableRows: type === 'dataTable' ? [['Châu Á', '44.614.000', '4.700'],['Châu Phi', '30.370.000', '1.400'],['Châu Âu', '10.530.000', '746']] : undefined,
+      tableHighlightCol: type === 'dataTable' ? 2 : undefined,
+      tableUnit: type === 'dataTable' ? '' : undefined,
     };
     setBlocks([...blocks, newBlock]);
     setActiveBlockId(newBlock.id);
@@ -461,6 +476,38 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                 </div>
                </div>
 
+               {/* Globe Style Selector */}
+               <div className="mb-2">
+                 <label className="text-[10px] text-slate-400 font-bold uppercase tracking-wider mb-2 block">Kiểu hiển thị quả cầu</label>
+                 <div className="grid grid-cols-3 gap-2">
+                   {[
+                     { id: 'blue-marble', label: '🌍 Vệ tinh',  desc: 'Blue Marble' },
+                     { id: 'day',         label: '☀️ Ban ngày', desc: 'Tự nhiên' },
+                     { id: 'night',       label: '🌃 Ban đêm',  desc: 'Đèn đô thị' },
+                     { id: 'terrain',     label: '🗺️ Địa hình', desc: 'Topo+Bathy' },
+                     { id: 'ocean',       label: '🌊 Đại dương', desc: 'Đáy biển' },
+                     { id: 'dark',        label: '⚫ Tối giản',  desc: 'Dark mode' },
+                   ].map(s => (
+                     <button
+                       key={s.id}
+                       onClick={() => updateBlock(block.id, { globeStyle: s.id })}
+                       className={`px-2 py-2 rounded-lg text-xs font-bold transition-all border ${
+                         (block.globeStyle || 'blue-marble') === s.id
+                           ? 'bg-cyan-500 text-white border-cyan-400 shadow-md'
+                           : 'bg-slate-700 text-slate-300 border-slate-600 hover:border-cyan-400 hover:text-cyan-300'
+                       }`}
+                     >
+                       <div>{s.label}</div>
+                       <div className="text-[9px] opacity-70 mt-0.5">{s.desc}</div>
+                     </button>
+                   ))}
+                 </div>
+               </div>
+
+               {/* Hint text for grid/annotation */}
+               <p className="text-[10px] text-slate-400 leading-relaxed italic mb-2 px-1">
+                 💡 Trên Trái Đất có 360 kinh tuyến, gồm 180 đường ở bán cầu Đông và 180 đường ở bán cầu Tây. Mỗi kinh tuyến giao vuông góc với các vĩ tuyến, tạo thành lưới Kinh – Vĩ giúp xác định chính xác vị trí bất kỳ trên bề mặt Trái Đất.
+               </p>
                <div className="mt-2 flex flex-col gap-2 bg-slate-700/50 p-3 rounded-lg">
                  <div className="flex items-center gap-2">
                    <input 
@@ -484,6 +531,134 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                  )}
                </div>
              </div>
+          </div>
+        )}
+
+        {/* DATA TABLE BLOCK */}
+        {block.type === 'dataTable' && (
+          <div className="bg-gradient-to-br from-violet-50 to-purple-50 border-2 border-violet-300 rounded-2xl p-5 space-y-4">
+            <div className="flex items-center gap-3">
+              <span className="text-2xl">📊</span>
+              <input
+                type="text"
+                value={block.tableTitle || ''}
+                onChange={e => updateBlock(block.id, { tableTitle: e.target.value })}
+                className="flex-1 bg-transparent outline-none font-black text-violet-800 text-lg border-b border-violet-200 focus:border-violet-500"
+                placeholder="Tiêu đề bảng số liệu..."
+              />
+            </div>
+
+            {/* Headers row */}
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse text-sm">
+                <thead>
+                  <tr className="bg-violet-100">
+                    {(block.tableHeaders || []).map((h, ci) => (
+                      <th key={ci} className="p-2 text-left">
+                        <div className="flex items-center gap-1">
+                          <input
+                            type="text"
+                            value={h}
+                            onChange={e => {
+                              const hs = [...(block.tableHeaders || [])];
+                              hs[ci] = e.target.value;
+                              updateBlock(block.id, { tableHeaders: hs });
+                            }}
+                            className="bg-transparent outline-none font-black text-violet-700 w-full min-w-[80px]"
+                            placeholder={`Cột ${ci + 1}`}
+                          />
+                          {(block.tableHeaders || []).length > 1 && (
+                            <button
+                              onClick={() => {
+                                const hs = (block.tableHeaders || []).filter((_, i) => i !== ci);
+                                const rows = (block.tableRows || []).map(r => r.filter((_, i) => i !== ci));
+                                updateBlock(block.id, { tableHeaders: hs, tableRows: rows });
+                              }}
+                              className="text-red-400 hover:text-red-600 font-bold shrink-0"
+                              title="Xóa cột"
+                            >✕</button>
+                          )}
+                        </div>
+                      </th>
+                    ))}
+                    <th className="p-2">
+                      <button
+                        onClick={() => {
+                          const hs = [...(block.tableHeaders || []), 'Cột mới'];
+                          const rows = (block.tableRows || []).map(r => [...r, '']);
+                          updateBlock(block.id, { tableHeaders: hs, tableRows: rows });
+                        }}
+                        className="text-violet-500 hover:text-violet-700 font-bold text-lg"
+                        title="Thêm cột"
+                      >+</button>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(block.tableRows || []).map((row, ri) => (
+                    <tr key={ri} className="border-t border-violet-100 even:bg-violet-50/50">
+                      {row.map((cell, ci) => (
+                        <td key={ci} className="p-1">
+                          <input
+                            type="text"
+                            value={cell}
+                            onChange={e => {
+                              const rows = (block.tableRows || []).map((r, i) =>
+                                i === ri ? r.map((c, j) => j === ci ? e.target.value : c) : r
+                              );
+                              updateBlock(block.id, { tableRows: rows });
+                            }}
+                            className="bg-white/70 border border-violet-100 rounded px-2 py-1 outline-none w-full text-[#334155] focus:border-violet-400"
+                          />
+                        </td>
+                      ))}
+                      <td className="p-1">
+                        <button
+                          onClick={() => updateBlock(block.id, { tableRows: (block.tableRows || []).filter((_, i) => i !== ri) })}
+                          className="text-red-400 hover:text-red-600 font-bold px-1"
+                          title="Xóa hàng"
+                        >✕</button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Controls */}
+            <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-violet-200">
+              <button
+                onClick={() => {
+                  const emptyRow = (block.tableHeaders || []).map(() => '');
+                  updateBlock(block.id, { tableRows: [...(block.tableRows || []), emptyRow] });
+                }}
+                className="text-sm font-bold text-violet-600 hover:text-violet-800 px-3 py-1.5 bg-white rounded-lg border border-violet-200 hover:border-violet-400 transition-all"
+              >+ Thêm hàng</button>
+
+              <div className="flex items-center gap-2 text-sm">
+                <label className="font-bold text-violet-700">Cột nổi bật (thanh bar):</label>
+                <select
+                  value={block.tableHighlightCol ?? 1}
+                  onChange={e => updateBlock(block.id, { tableHighlightCol: parseInt(e.target.value) })}
+                  className="bg-white border border-violet-200 rounded-lg px-2 py-1 outline-none text-sm font-bold text-violet-700 focus:border-violet-500"
+                >
+                  {(block.tableHeaders || []).map((h, i) => (
+                    <option key={i} value={i}>{h || `Cột ${i + 1}`}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm">
+                <label className="font-bold text-violet-700">Đơn vị:</label>
+                <input
+                  type="text"
+                  value={block.tableUnit || ''}
+                  onChange={e => updateBlock(block.id, { tableUnit: e.target.value })}
+                  placeholder="VD: triệu người"
+                  className="bg-white border border-violet-200 rounded-lg px-2 py-1 outline-none text-sm focus:border-violet-500 w-32"
+                />
+              </div>
+            </div>
           </div>
         )}
 
@@ -606,6 +781,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                 <button onClick={() => addBlock('funFact')} className="px-4 py-2 bg-white rounded-xl shadow-sm border border-slate-200 text-[#082F49] font-bold text-sm hover:border-blue-400 hover:text-blue-600 transition-all">💡 Có thể em chưa biết</button>
                 <button onClick={() => addBlock('mapAction')} className="px-4 py-2 bg-emerald-50 rounded-xl shadow-sm border border-emerald-200 text-emerald-700 font-bold text-sm hover:border-emerald-400 hover:bg-emerald-100 transition-all">🌍 Hành động Bản đồ</button>
                 <button onClick={() => addBlock('quiz')} className="px-4 py-2 bg-orange-50 rounded-xl shadow-sm border border-orange-200 text-orange-700 font-bold text-sm hover:border-orange-400 hover:bg-orange-100 transition-all">❓ Câu hỏi đan xen</button>
+                <button onClick={() => addBlock('dataTable')} className="px-4 py-2 bg-violet-50 rounded-xl shadow-sm border border-violet-200 text-violet-700 font-bold text-sm hover:border-violet-400 hover:bg-violet-100 transition-all">📊 Bảng số liệu</button>
               </div>
             </div>
           </div>
@@ -626,17 +802,17 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
         </div>
 
         <div className="flex-1 flex flex-col items-center justify-center relative z-10">
-          <div className="w-full h-80 rounded-full flex items-center justify-center relative overflow-hidden mask-circle pointer-events-auto bg-slate-800 shadow-[0_0_50px_rgba(34,211,238,0.1)]">
+          <div className="w-[360px] h-[360px] rounded-full flex items-center justify-center relative overflow-hidden pointer-events-auto bg-slate-800 shadow-[0_0_50px_rgba(34,211,238,0.15)] border-2 border-cyan-900/50">
             
             {/* LỚP 1: QUẢ CẦU 3D */}
             <div className={`absolute inset-0 transition-opacity duration-700 ${(!activeBlock || activeBlock.type === 'mapAction' || (!activeBlock.imageUrl && activeBlock.type !== 'imageScenario')) ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
               <Globe
                 ref={builderGlobeRef}
-                globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+                globeImageUrl={(({'blue-marble':'//unpkg.com/three-globe/example/img/earth-blue-marble.jpg','day':'//unpkg.com/three-globe/example/img/earth-day.jpg','night':'//unpkg.com/three-globe/example/img/earth-night.jpg','dark':'//unpkg.com/three-globe/example/img/earth-dark.jpg','terrain':'https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73776/world.topo.bathy.200412.3x2700x1350.jpg','ocean':'https://eoimages.gsfc.nasa.gov/images/imagerecords/73000/73963/gebco_08_rev_col_4500x2250.png'})[activeBlock?.globeStyle || 'blue-marble'] || '//unpkg.com/three-globe/example/img/earth-blue-marble.jpg')}
                 bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
                 backgroundColor="rgba(0,0,0,0)"
-                width={350}
-                height={350}
+                width={360}
+                height={360}
                 showGraticules={activeBlock?.showGrid || false}
                 htmlElementsData={[
                   ...(activeBlock?.showPin ? [activeBlock as StoryBlock] : []),
