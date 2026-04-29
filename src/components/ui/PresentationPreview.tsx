@@ -415,58 +415,17 @@ export function PresentationPreview({ blocks, onClose }: Props) {
   }, [activeMediaBlock]);
 
   const modalContent = (
-    <div className="fixed inset-0 z-[99999] flex bg-[#E0F2FE] animate-in fade-in overflow-hidden">
+    <div className="fixed inset-0 z-[99999] flex flex-col lg:flex-row bg-[#E0F2FE] animate-in fade-in overflow-hidden">
       {/* CLOSE BUTTON */}
-      <div className="absolute top-6 right-6 z-[100000]">
-        <button onClick={onClose} className="w-12 h-12 bg-white/50 hover:bg-white/80 text-[#082F49] rounded-full flex items-center justify-center text-xl font-bold backdrop-blur-md transition-all shadow-lg border border-white/80">✕</button>
+      <div className="absolute top-4 right-4 lg:top-6 lg:right-6 z-[100000]">
+        <button onClick={onClose} className="w-10 h-10 lg:w-12 lg:h-12 bg-white/50 hover:bg-white/80 text-[#082F49] rounded-full flex items-center justify-center text-lg lg:text-xl font-bold backdrop-blur-md transition-all shadow-lg border border-white/80">✕</button>
       </div>
 
-      {/* RIGHT: GLOBE & MEDIA BACKGROUND (Fixed) */}
-      <div className="absolute right-0 top-0 bottom-0 w-1/2 pointer-events-none flex items-center justify-center overflow-hidden">
-        <div className="pointer-events-auto w-full h-full relative">
-
-          {/* LAYER 1: CESIUM GLOBE */}
-          <div className={`absolute inset-0 transition-opacity duration-700 ${(!activeMediaBlock || activeMediaBlock.type === 'mapAction') ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
-            <CesiumGlobe
-              ref={globeRef}
-              imageryLayer={
-                activeMediaBlock?.globeStyle ||
-                (blocks.find(b => b.globeStyle)?.globeStyle) ||
-                'ArcGIS World Imagery'
-              }
-              showGrid={activeMediaBlock?.grid || false}
-              showLayerPicker={false}
-              onPinClick={(pin) => setSelectedPin(pin)}
-            />
-          </div>
-
-          {/* LAYER 2: IMAGE SCENARIO */}
-          <div className={`absolute inset-0 bg-transparent transition-opacity duration-700 ${activeMediaBlock?.type === 'imageScenario' ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
-            <ImageSlider urls={activeMediaBlock?.imageUrls || (activeMediaBlock?.imageUrl ? [activeMediaBlock.imageUrl] : [])} />
-          </div>
-
-        </div>
-        <div className="absolute inset-0 bg-gradient-to-r from-[#E0F2FE] via-transparent to-transparent pointer-events-none" />
-
-        {/* HIỂN THỊ POPUP THÔNG TIN KHI BẤM VÀO GHIM */}
-        {selectedPin && (
-          <div className="absolute z-50 bg-white/80 backdrop-blur-xl p-6 rounded-3xl border border-white shadow-[0_20px_50px_rgba(14,165,233,0.3)] max-w-sm pointer-events-auto right-8 top-1/2 -translate-y-1/2 animate-in slide-in-from-right fade-in">
-            <button onClick={() => setSelectedPin(null)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-full font-bold">✕</button>
-            {selectedPin.image && (
-              <div className="w-full h-40 bg-slate-200 rounded-xl mb-4 overflow-hidden">
-                <img src={selectedPin.image} alt={selectedPin.title} className="w-full h-full object-cover" />
-              </div>
-            )}
-            <h3 className="font-black text-2xl text-[#082F49] mb-2">{selectedPin.title}</h3>
-            <p className="text-[#334155] leading-relaxed text-sm font-medium">{selectedPin.info}</p>
-          </div>
-        )}
-      </div>
-
-      {/* LEFT: SCROLLABLE CONTENT */}
-      {/* Thêm class để ẩn scrollbar hiển thị ở giữa màn hình */}
-      <div ref={scrollContainerRef} className="w-1/2 min-w-[500px] max-w-3xl h-full overflow-y-auto overflow-x-hidden pt-32 pb-64 px-16 space-y-10 relative z-20 bg-white/70 backdrop-blur-2xl border-r border-white/80 shadow-[20px_0_50px_rgba(14,165,233,0.1)] [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-        {blocks.map((block) => {
+      {/* LEFT: SCROLLABLE CONTENT WRAPPER */}
+      <div className="left-panel-preview flex flex-col relative z-20 bg-white/70 backdrop-blur-2xl border-b lg:border-b-0 lg:border-r border-white/80 shadow-[20px_0_50px_rgba(14,165,233,0.1)] w-full lg:w-1/2 lg:min-w-[500px] lg:max-w-3xl overflow-hidden">
+        {/* Thêm class để ẩn scrollbar hiển thị ở giữa màn hình */}
+        <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden pt-16 lg:pt-32 pb-16 lg:pb-64 px-4 lg:px-16 space-y-6 lg:space-y-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
+          {blocks.map((block) => {
 
           if (block.type === 'heading') {
             return (
@@ -616,11 +575,86 @@ export function PresentationPreview({ blocks, onClose }: Props) {
         })}
 
         <div className="text-center pt-24 pb-12 opacity-70">
-          <span className="text-[#94A3B8] text-sm font-bold uppercase tracking-widest">Hết bài giảng</span>
-          <div className="w-1 h-16 bg-[#CBD5E1] mx-auto mt-4 rounded-full"></div>
+            <span className="text-[#94A3B8] text-sm font-bold uppercase tracking-widest">Hết bài giảng</span>
+            <div className="w-1 h-16 bg-[#CBD5E1] mx-auto mt-4 rounded-full"></div>
+          </div>
         </div>
       </div>
 
+      {/* RIGHT: GLOBE & MEDIA BACKGROUND */}
+      <div className="right-panel-preview w-full flex flex-col p-2 lg:p-0 relative lg:absolute lg:right-0 lg:top-0 lg:bottom-0 lg:w-1/2 lg:h-full shrink-0 z-10 bg-white/40 lg:bg-transparent backdrop-blur-3xl lg:backdrop-blur-none border-t lg:border-0 border-white/80 rounded-t-[24px] lg:rounded-none">
+        
+        {/* MAC OS STYLE HEADER (Mobile Only) */}
+        <div className="flex lg:hidden items-center justify-between mb-2 bg-white/80 backdrop-blur-md rounded-xl p-2 border border-white/60 shadow-sm shrink-0">
+          <h3 className="font-black text-[#082F49] uppercase tracking-widest text-[10px]">Mô phỏng Đa phương tiện</h3>
+          <div className="flex gap-1.5">
+            <div className="w-2.5 h-2.5 rounded-full bg-red-400 shadow-inner"></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-amber-400 shadow-inner"></div>
+            <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-inner"></div>
+          </div>
+        </div>
+
+        {/* DEVICE MOCKUP CONTAINER */}
+        <div className="flex-1 flex flex-col items-center justify-center relative rounded-xl lg:rounded-none overflow-hidden border-4 lg:border-0 border-white/80 lg:border-transparent shadow-[0_20px_50px_rgba(14,165,233,0.2)] lg:shadow-none bg-[#082F49] pointer-events-none w-full h-full">
+          <div className="pointer-events-auto w-full h-full relative">
+
+            {/* LAYER 1: CESIUM GLOBE */}
+            <div className={`absolute inset-0 transition-opacity duration-700 ${(!activeMediaBlock || activeMediaBlock.type === 'mapAction') ? 'opacity-100 z-10' : 'opacity-0 z-0 pointer-events-none'}`}>
+              <CesiumGlobe
+                ref={globeRef}
+                imageryLayer={
+                  activeMediaBlock?.globeStyle ||
+                  (blocks.find(b => b.globeStyle)?.globeStyle) ||
+                  'ArcGIS World Imagery'
+                }
+                showGrid={activeMediaBlock?.grid || false}
+                showLayerPicker={false}
+                onPinClick={(pin) => setSelectedPin(pin)}
+              />
+            </div>
+
+            {/* LAYER 2: IMAGE SCENARIO */}
+            <div className={`absolute inset-0 bg-transparent transition-opacity duration-700 ${activeMediaBlock?.type === 'imageScenario' ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
+              <ImageSlider urls={activeMediaBlock?.imageUrls || (activeMediaBlock?.imageUrl ? [activeMediaBlock.imageUrl] : [])} />
+            </div>
+
+          </div>
+          <div className="hidden lg:block absolute inset-0 bg-gradient-to-r from-[#E0F2FE] via-transparent to-transparent pointer-events-none" />
+
+          {/* HIỂN THỊ POPUP THÔNG TIN KHI BẤM VÀO GHIM */}
+          {selectedPin && (
+            <div className="absolute z-50 bg-white/80 backdrop-blur-xl p-4 lg:p-6 rounded-3xl border border-white shadow-[0_20px_50px_rgba(14,165,233,0.3)] w-11/12 max-w-sm pointer-events-auto left-1/2 -translate-x-1/2 top-4 lg:left-auto lg:-translate-x-0 lg:right-8 lg:top-1/2 lg:-translate-y-1/2 animate-in slide-in-from-right fade-in">
+              <button onClick={() => setSelectedPin(null)} className="absolute top-4 right-4 w-8 h-8 flex items-center justify-center bg-slate-100 hover:bg-slate-200 text-slate-500 rounded-full font-bold">✕</button>
+              {selectedPin.image && (
+                <div className="w-full h-40 bg-slate-200 rounded-xl mb-4 overflow-hidden">
+                  <img src={selectedPin.image} alt={selectedPin.title} className="w-full h-full object-cover" />
+                </div>
+              )}
+              <h3 className="font-black text-2xl text-[#082F49] mb-2">{selectedPin.title}</h3>
+              <p className="text-[#334155] leading-relaxed text-sm font-medium">{selectedPin.info}</p>
+            </div>
+          )}
+        </div>
+      </div>
+      <style dangerouslySetInnerHTML={{__html: `
+        .left-panel-preview {
+          height: 55vh;
+          flex: none;
+        }
+        .right-panel-preview {
+          height: 45vh;
+          flex: none;
+        }
+        @media (min-width: 1024px) {
+          .left-panel-preview {
+            height: 100% !important;
+            flex: 1 1 0% !important;
+          }
+          .right-panel-preview {
+            height: 100% !important;
+          }
+        }
+      `}} />
     </div>
   );
 

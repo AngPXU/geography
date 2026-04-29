@@ -187,7 +187,7 @@ export default function BooksPage({ isAdmin }: { isAdmin?: boolean }) {
   const book = books.find(b => b.grade === activeGrade);
 
   return (
-    <main className="pt-28 pb-16 px-4 md:px-8" style={{ maxWidth: '90%', margin: '0 auto' }}>
+    <main className="pt-24 md:pt-28 pb-16 mx-auto w-[95%] max-w-[1400px]">
 
       {/* ── Page Header ── */}
       <div className="mb-8 text-center">

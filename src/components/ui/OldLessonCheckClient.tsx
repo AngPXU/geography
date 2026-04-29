@@ -255,66 +255,68 @@ function PresenterMode({ check, onClose }: { check: IOldLessonCheck; onClose: ()
   const score = Math.round((correctCount / check.questions.length) * 10);
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center p-8 select-none"
+    <div className="fixed inset-0 z-[9999] flex flex-col select-none overflow-hidden"
       style={{ background: 'linear-gradient(135deg, #E0F2FE 0%, #DCFCE7 100%)' }}>
 
       {/* Header */}
-      <div className="absolute top-6 left-8 right-8 flex justify-between items-center z-10">
-        <h1 className="text-2xl font-black text-[#082F49] drop-shadow-sm">{check.title}</h1>
-        <button onClick={onClose} className="px-6 py-2 rounded-full bg-white/50 hover:bg-white text-slate-600 font-bold backdrop-blur-md transition shadow-sm flex items-center gap-2">
-          <FaTimes /> Đóng trình chiếu
+      <div className="flex-none p-4 lg:p-8 flex justify-between items-center z-20">
+        <h1 className="text-xl lg:text-2xl font-black text-[#082F49] drop-shadow-sm truncate pr-4">{check.title}</h1>
+        <button onClick={onClose} className="px-4 lg:px-6 py-2 rounded-full bg-white/50 hover:bg-white text-slate-600 font-bold backdrop-blur-md transition shadow-sm flex items-center gap-2 shrink-0">
+          <FaTimes /> <span className="hidden sm:inline">Đóng trình chiếu</span>
         </button>
       </div>
 
       {isFinished ? (
-        <div className="w-full max-w-2xl bg-white/80 backdrop-blur-[30px] border-2 border-white rounded-[40px] shadow-[0_20px_60px_rgba(14,165,233,0.15)] p-12 text-center relative z-10 animate-in zoom-in duration-500">
-          <div className="text-6xl mb-6">🎉</div>
-          <h2 className="text-4xl font-black text-[#082F49] mb-8">Tổng kết Điểm số</h2>
+        <div className="flex-1 overflow-y-auto p-4 flex items-center justify-center">
+          <div className="w-full max-w-2xl bg-white/80 backdrop-blur-[30px] border-2 border-white rounded-[40px] shadow-[0_20px_60px_rgba(14,165,233,0.15)] p-8 lg:p-12 text-center relative z-10 animate-in zoom-in duration-500">
+            <div className="text-5xl lg:text-6xl mb-6">🎉</div>
+            <h2 className="text-3xl lg:text-4xl font-black text-[#082F49] mb-8">Tổng kết Điểm số</h2>
 
-          <div className="w-56 h-56 mx-auto bg-gradient-to-tr from-cyan-400 to-emerald-400 rounded-full flex flex-col items-center justify-center shadow-[0_15px_30px_rgba(16,185,129,0.3)] mb-10 border-[6px] border-white">
-            <div className="flex items-baseline">
-              <span className="text-7xl font-black text-white drop-shadow-md">{score}</span>
-              <span className="text-2xl font-bold text-white/80 ml-1">/10</span>
+            <div className="w-48 h-48 lg:w-56 lg:h-56 mx-auto bg-gradient-to-tr from-cyan-400 to-emerald-400 rounded-full flex flex-col items-center justify-center shadow-[0_15px_30px_rgba(16,185,129,0.3)] mb-10 border-[6px] border-white">
+              <div className="flex items-baseline">
+                <span className="text-6xl lg:text-7xl font-black text-white drop-shadow-md">{score}</span>
+                <span className="text-xl lg:text-2xl font-bold text-white/80 ml-1">/10</span>
+              </div>
+              <span className="text-white/90 font-bold mt-1 text-xs lg:text-sm uppercase tracking-widest">Điểm số</span>
             </div>
-            <span className="text-white/90 font-bold mt-1 text-sm uppercase tracking-widest">Điểm số</span>
-          </div>
 
-          <div className="flex justify-center gap-12 mb-10">
-            <div className="text-center">
-              <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Số câu đúng</p>
-              <p className="text-4xl font-black text-emerald-500">{correctCount}</p>
+            <div className="flex justify-center gap-8 lg:gap-12 mb-10">
+              <div className="text-center">
+                <p className="text-xs lg:text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Số câu đúng</p>
+                <p className="text-3xl lg:text-4xl font-black text-emerald-500">{correctCount}</p>
+              </div>
+              <div className="w-px bg-slate-200"></div>
+              <div className="text-center">
+                <p className="text-xs lg:text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Số câu sai</p>
+                <p className="text-3xl lg:text-4xl font-black text-rose-500">{check.questions.length - correctCount}</p>
+              </div>
             </div>
-            <div className="w-px bg-slate-200"></div>
-            <div className="text-center">
-              <p className="text-sm font-bold text-slate-400 uppercase tracking-wider mb-2">Số câu sai</p>
-              <p className="text-4xl font-black text-rose-500">{check.questions.length - correctCount}</p>
-            </div>
+            <button onClick={onClose} className="px-8 lg:px-10 py-4 lg:py-5 rounded-full bg-[#082F49] hover:bg-slate-800 text-white font-black text-lg lg:text-xl flex items-center justify-center gap-3 w-full transition shadow-[0_10px_20px_rgba(8,47,73,0.2)] hover:-translate-y-1">
+              <FaCheck /> Hoàn thành
+            </button>
           </div>
-          <button onClick={onClose} className="px-10 py-5 rounded-full bg-[#082F49] hover:bg-slate-800 text-white font-black text-xl flex items-center justify-center gap-3 w-full transition shadow-[0_10px_20px_rgba(8,47,73,0.2)] hover:-translate-y-1">
-            <FaCheck /> Hoàn thành
-          </button>
         </div>
       ) : (
-        <>
+        <div className="flex-1 overflow-y-auto overflow-x-hidden flex flex-col items-center pt-2 lg:pt-8 pb-40 px-4 relative">
           {/* Progress */}
-          <div className="absolute top-24 left-1/2 -translate-x-1/2 flex gap-2 z-10">
+          <div className="flex gap-2 mb-6 z-10">
             {check.questions.map((_, i) => (
-              <div key={i} className={`h-2 rounded-full transition-all duration-500 ${i === currentIndex ? 'w-12 bg-cyan-500' : i < currentIndex ? 'w-6 bg-emerald-400' : 'w-6 bg-slate-300/50'}`} />
+              <div key={i} className={`h-2 rounded-full transition-all duration-500 ${i === currentIndex ? 'w-10 lg:w-12 bg-cyan-500' : i < currentIndex ? 'w-4 lg:w-6 bg-emerald-400' : 'w-4 lg:w-6 bg-slate-300/50'}`} />
             ))}
           </div>
 
           {/* Question Card */}
-          <div className="w-full max-w-5xl w-full z-10 relative"
+          <div className="w-full max-w-5xl z-10 relative"
             style={{ background: 'rgba(255, 255, 255, 0.8)', backdropFilter: 'blur(30px)', border: '2px solid white', borderRadius: '40px', boxShadow: '0 20px 60px rgba(14, 165, 233, 0.15)' }}>
 
-            <div className="p-12 text-center border-b border-white/50">
-              <span className="inline-block px-4 py-1 rounded-full bg-cyan-100 text-cyan-600 font-black tracking-widest text-sm mb-6">CÂU HỎI {currentIndex + 1} / {check.questions.length}</span>
-              <h2 className="text-4xl md:text-5xl font-black text-[#082F49] leading-tight drop-shadow-sm">
+            <div className="p-6 lg:p-12 text-center border-b border-white/50">
+              <span className="inline-block px-4 py-1 rounded-full bg-cyan-100 text-cyan-600 font-black tracking-widest text-xs lg:text-sm mb-4 lg:mb-6">CÂU HỎI {currentIndex + 1} / {check.questions.length}</span>
+              <h2 className="text-2xl sm:text-3xl lg:text-5xl font-black text-[#082F49] leading-tight drop-shadow-sm">
                 {question.text}
               </h2>
             </div>
 
-            <div className="p-12 grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="p-4 lg:p-12 grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
               {question.options.map((opt, index) => {
                 const isSelected = selectedAnswers[currentIndex] === index;
                 const hasAnswered = selectedAnswers[currentIndex] !== undefined;
@@ -325,10 +327,10 @@ function PresenterMode({ check, onClose }: { check: IOldLessonCheck; onClose: ()
 
                 if (hasAnswered) {
                   if (isCorrect) {
-                    btnStyle = 'bg-emerald-500 border-emerald-400 text-white shadow-[0_10px_30px_rgba(16,185,129,0.4)] scale-[1.02] cursor-default';
+                    btnStyle = 'bg-emerald-500 border-emerald-400 text-white shadow-[0_10px_30px_rgba(16,185,129,0.4)] lg:scale-[1.02] cursor-default';
                     idxStyle = 'bg-white text-emerald-500';
                   } else if (isSelected) {
-                    btnStyle = 'bg-rose-500 border-rose-400 text-white shadow-[0_10px_30px_rgba(225,29,72,0.4)] scale-[1.02] cursor-default';
+                    btnStyle = 'bg-rose-500 border-rose-400 text-white shadow-[0_10px_30px_rgba(225,29,72,0.4)] lg:scale-[1.02] cursor-default';
                     idxStyle = 'bg-white text-rose-500';
                   } else {
                     btnStyle = 'bg-slate-100/50 border-transparent text-slate-400 opacity-50 cursor-default';
@@ -341,37 +343,41 @@ function PresenterMode({ check, onClose }: { check: IOldLessonCheck; onClose: ()
                 return (
                   <div key={index}
                     onClick={() => handleSelectOption(index)}
-                    className={`flex items-center gap-6 p-6 rounded-3xl transition-all duration-500 border-2 ${btnStyle}`}
+                    className={`flex items-center gap-4 lg:gap-6 p-4 lg:p-6 rounded-[24px] transition-all duration-500 border-2 ${btnStyle}`}
                   >
-                    <div className={`w-12 h-12 flex-shrink-0 flex items-center justify-center rounded-2xl text-xl font-black transition-colors ${idxStyle}`}>
+                    <div className={`w-10 h-10 lg:w-12 lg:h-12 flex-shrink-0 flex items-center justify-center rounded-xl text-lg lg:text-xl font-black transition-colors ${idxStyle}`}>
                       {labels[index]}
                     </div>
-                    <span className="text-2xl font-bold">{opt}</span>
+                    <span className="text-lg lg:text-2xl font-bold">{opt}</span>
                   </div>
                 );
               })}
             </div>
           </div>
 
-          {/* Controls */}
-          <div className="absolute bottom-8 left-1/2 -translate-x-1/2 flex items-center gap-4 bg-white/70 backdrop-blur-xl p-3 rounded-full shadow-lg border border-white z-10">
-            <button onClick={prevQuestion} disabled={isFirst} className="p-4 rounded-full hover:bg-white disabled:opacity-30 text-[#082F49] transition"><FaArrowLeft size={24} /></button>
+          <p className="mt-8 text-slate-500 font-semibold text-xs lg:text-sm z-10 text-center">Phím A, B, C, D để chọn · Enter để tiếp tục</p>
+        </div>
+      )}
+
+      {/* Controls Container - Fixed at bottom */}
+      {!isFinished && (
+        <div className="absolute bottom-6 left-0 right-0 flex justify-center px-4 pointer-events-none z-20">
+          <div className="pointer-events-auto flex items-center gap-2 lg:gap-4 bg-white/80 backdrop-blur-xl p-2 lg:p-3 rounded-full shadow-lg border border-white">
+            <button onClick={prevQuestion} disabled={isFirst} className="p-3 lg:p-4 rounded-full hover:bg-white disabled:opacity-30 text-[#082F49] transition shrink-0"><FaArrowLeft size={20} className="lg:text-2xl" /></button>
 
             {selectedAnswers[currentIndex] === undefined ? (
-              <button onClick={() => setSelectedAnswers(prev => ({ ...prev, [currentIndex]: -1 }))} className="px-10 py-4 rounded-full bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-xl flex items-center gap-3 transition shadow-[0_5px_15px_rgba(251,191,36,0.4)] hover:-translate-y-1">
+              <button onClick={() => setSelectedAnswers(prev => ({ ...prev, [currentIndex]: -1 }))} className="px-6 lg:px-10 py-3 lg:py-4 rounded-full bg-amber-400 hover:bg-amber-300 text-amber-950 font-black text-sm lg:text-xl flex items-center gap-2 lg:gap-3 transition shadow-[0_5px_15px_rgba(251,191,36,0.4)] hover:-translate-y-1 shrink-0 whitespace-nowrap">
                 Hiển thị đáp án
               </button>
             ) : (
-              <button onClick={nextQuestion} className="px-10 py-4 rounded-full bg-cyan-500 hover:bg-cyan-400 text-white font-black text-xl flex items-center gap-3 transition shadow-[0_5px_15px_rgba(6,182,212,0.4)] hover:-translate-y-1">
+              <button onClick={nextQuestion} className="px-6 lg:px-10 py-3 lg:py-4 rounded-full bg-cyan-500 hover:bg-cyan-400 text-white font-black text-sm lg:text-xl flex items-center gap-2 lg:gap-3 transition shadow-[0_5px_15px_rgba(6,182,212,0.4)] hover:-translate-y-1 shrink-0 whitespace-nowrap">
                 {isLast ? 'Tổng kết' : 'Câu tiếp theo'} <FaArrowRight />
               </button>
             )}
 
-            <button onClick={nextQuestion} disabled={isLast} className="p-4 rounded-full hover:bg-white disabled:opacity-30 text-[#082F49] transition"><FaArrowRight size={24} /></button>
+            <button onClick={nextQuestion} disabled={isLast} className="p-3 lg:p-4 rounded-full hover:bg-white disabled:opacity-30 text-[#082F49] transition shrink-0"><FaArrowRight size={20} className="lg:text-2xl" /></button>
           </div>
-
-          <p className="absolute bottom-4 right-6 text-slate-500 font-semibold text-sm z-10">Phím A, B, C, D để chọn · Enter để chuyển đổi</p>
-        </>
+        </div>
       )}
     </div>,
     document.body
@@ -432,11 +438,11 @@ function LuckyWheelModal({ classId, onClose }: { classId: string; onClose: () =>
 
   return createPortal(
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4" style={{ background: 'rgba(8,47,73,0.7)', backdropFilter: 'blur(12px)' }}>
-      <div className="w-full max-w-2xl bg-[rgba(255,255,255,0.85)] backdrop-blur-[24px] border border-white rounded-[40px] p-8 shadow-[0_20px_60px_rgba(14,165,233,0.2)] text-center relative overflow-hidden">
-        <button onClick={onClose} className="absolute top-6 right-6 w-10 h-10 bg-white/50 hover:bg-red-100 text-slate-400 hover:text-red-500 rounded-full flex items-center justify-center transition-colors z-30 shadow-sm border border-white"><FaTimes /></button>
+      <div className="w-full max-w-2xl bg-[rgba(255,255,255,0.85)] backdrop-blur-[24px] border border-white rounded-[40px] p-6 lg:p-8 shadow-[0_20px_60px_rgba(14,165,233,0.2)] text-center relative overflow-hidden">
+        <button onClick={onClose} className="absolute top-4 right-4 sm:top-6 sm:right-6 w-10 h-10 bg-white/50 hover:bg-red-100 text-slate-400 hover:text-red-500 rounded-full flex items-center justify-center transition-colors z-30 shadow-sm border border-white"><FaTimes /></button>
 
-        <h2 className="text-3xl font-black text-[#082F49] mb-6 flex items-center justify-center gap-3 relative z-10">
-          <span className="text-4xl">🎡</span> Vòng quay may mắn
+        <h2 className="text-2xl sm:text-3xl font-black text-[#082F49] mb-6 flex items-center justify-center gap-2 sm:gap-3 relative z-10 pr-10">
+          <span className="text-3xl sm:text-4xl">🎡</span> Vòng quay may mắn
         </h2>
 
         {loading ? (
@@ -446,9 +452,9 @@ function LuckyWheelModal({ classId, onClose }: { classId: string; onClose: () =>
         ) : students.length === 0 ? (
           <div className="py-20 text-[#082F49] font-bold text-lg relative z-10">Lớp học này chưa có học sinh nào.</div>
         ) : (
-          <div className="relative mx-auto w-[420px] h-[420px] mb-8 z-10">
+          <div className="relative mx-auto w-full max-w-[300px] sm:max-w-[420px] aspect-square mb-8 z-10">
             {/* Pointer */}
-            <div className="absolute top-[-20px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[20px] border-l-transparent border-r-[20px] border-r-transparent border-t-[40px] border-t-[#082F49] z-20 drop-shadow-md"></div>
+            <div className="absolute top-[-15px] sm:top-[-20px] left-1/2 -translate-x-1/2 w-0 h-0 border-l-[15px] sm:border-l-[20px] border-l-transparent border-r-[15px] sm:border-r-[20px] border-r-transparent border-t-[30px] sm:border-t-[40px] border-t-[#082F49] z-20 drop-shadow-md"></div>
 
             {/* Wheel */}
             <div className="w-full h-full rounded-full border-8 border-white shadow-[0_15px_30px_rgba(0,0,0,0.15)] relative overflow-hidden"
@@ -476,7 +482,7 @@ function LuckyWheelModal({ classId, onClose }: { classId: string; onClose: () =>
 
             {/* Center Spin Button */}
             <button onClick={handleSpin} disabled={isSpinning}
-              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-white border-4 border-slate-100 shadow-xl flex items-center justify-center font-black text-[#082F49] text-xl z-30 hover:scale-105 active:scale-95 disabled:scale-100 transition-transform">
+              className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white border-4 border-slate-100 shadow-xl flex items-center justify-center font-black text-[#082F49] text-lg sm:text-xl z-30 hover:scale-105 active:scale-95 disabled:scale-100 transition-transform">
               Quay
             </button>
           </div>
@@ -517,6 +523,15 @@ function MysteryCardsModal({ classId, onClose }: { classId: string; onClose: () 
     setPickedIndex(null);
   };
 
+  const [containerWidth, setContainerWidth] = useState(1000);
+
+  useEffect(() => {
+    setContainerWidth(window.innerWidth - 40);
+    const handleResize = () => setContainerWidth(window.innerWidth - 40);
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
   useEffect(() => {
     fetch(`/api/homeclass/${classId}`)
       .then(r => r.json())
@@ -543,16 +558,16 @@ function MysteryCardsModal({ classId, onClose }: { classId: string; onClose: () 
     <div className="fixed inset-0 z-[9999] flex flex-col p-4" style={{ background: 'rgba(8,47,73,0.85)', backdropFilter: 'blur(16px)' }}>
       {/* Header */}
       <div className="flex justify-between items-center w-full max-w-7xl mx-auto p-4 relative z-20">
-        <h2 className="text-3xl font-black text-white flex items-center gap-3 drop-shadow-md">
-          <span className="text-4xl">🃏</span> Rút thẻ bài may mắn
+        <h2 className="text-2xl sm:text-3xl font-black text-white flex items-center gap-2 sm:gap-3 drop-shadow-md">
+          <span className="text-3xl sm:text-4xl">🃏</span> Rút thẻ bài
         </h2>
-        <div className="flex gap-4">
+        <div className="flex gap-2 sm:gap-4">
           {pickedIndex !== null && (
-            <button onClick={() => shuffleAndDeal(students)} className="px-6 py-2 rounded-full bg-violet-500 hover:bg-violet-400 text-white font-bold transition shadow-lg flex items-center gap-2">
+            <button onClick={() => shuffleAndDeal(students)} className="px-4 sm:px-6 py-2 rounded-full bg-violet-500 hover:bg-violet-400 text-white font-bold text-sm sm:text-base transition shadow-lg flex items-center gap-2">
               Trộn lại bài
             </button>
           )}
-          <button onClick={onClose} className="w-10 h-10 bg-white/20 hover:bg-white/40 text-white rounded-full flex items-center justify-center transition-colors shadow-sm"><FaTimes /></button>
+          <button onClick={onClose} className="w-10 h-10 bg-white/20 hover:bg-white/40 text-white rounded-full flex items-center justify-center transition-colors shadow-sm shrink-0"><FaTimes /></button>
         </div>
       </div>
 
@@ -565,12 +580,18 @@ function MysteryCardsModal({ classId, onClose }: { classId: string; onClose: () 
         ) : cards.length === 0 ? (
           <div className="text-white/80 font-bold text-xl">Lớp học này chưa có học sinh nào.</div>
         ) : (
-          <div className="relative w-full flex items-end justify-center" style={{ height: '320px', perspective: '1200px' }}>
+          <div className="relative w-full flex items-end justify-center origin-bottom scale-[0.7] sm:scale-100" style={{ height: '320px', perspective: '1200px' }}>
             {cards.map((s, i) => {
               const total = cards.length;
               const spread = Math.min(8, 120 / total);
               const angle = (i - (total - 1) / 2) * spread;
-              const overlapPx = Math.max(28, Math.min(60, 900 / total));
+              
+              // Scale overlap dynamically so total deck width fits inside screen
+              const deckScale = containerWidth < 640 ? 0.7 : 1; 
+              const cardWidth = 120 * deckScale;
+              const maxOverlapPx = Math.min(60, (containerWidth - cardWidth) / Math.max(1, total - 1));
+              const overlapPx = Math.max(8, maxOverlapPx) / deckScale; // Divide by scale because transform applies after
+              
               const xOffset = (i - (total - 1) / 2) * overlapPx;
               const yOffset = Math.abs(angle) * 1.8;
 
@@ -776,12 +797,12 @@ function SheepRaceModal({ classId, onClose }: { classId: string; onClose: () => 
 
       {/* Header */}
       <div className="relative z-20 flex items-center justify-between px-6 pt-4 pb-2">
-        <h2 className="text-2xl font-black text-[#082F49] drop-shadow flex items-center gap-2">
+        <h2 className="text-xl sm:text-2xl font-black text-[#082F49] drop-shadow flex items-center gap-2 truncate pr-4">
           🐑 Đua Cừu May Mắn
         </h2>
-        <div className="flex gap-3">
+        <div className="flex gap-3 shrink-0">
           {raceState === 'finished' && (
-            <button onClick={resetRace} className="px-5 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold transition shadow-lg">
+            <button onClick={resetRace} className="px-4 sm:px-5 py-2 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-sm sm:text-base transition shadow-lg">
               🔄 Chạy lại
             </button>
           )}
@@ -815,8 +836,8 @@ function SheepRaceModal({ classId, onClose }: { classId: string; onClose: () => 
               return (
                 <div key={i} className={`flex items-center gap-2 transition-all duration-300 ${isLoser ? 'opacity-50' : ''}`}>
                   {/* Name label */}
-                  <div className="w-28 shrink-0 text-right">
-                    <span className={`text-xs font-black truncate block ${isWinner ? 'text-emerald-700' : 'text-[#082F49]'}`}>
+                  <div className="w-20 sm:w-28 shrink-0 text-right">
+                    <span className={`text-[10px] sm:text-xs font-black truncate block ${isWinner ? 'text-emerald-700' : 'text-[#082F49]'}`}>
                       {s.fullName || s.username}
                     </span>
                   </div>
@@ -850,7 +871,7 @@ function SheepRaceModal({ classId, onClose }: { classId: string; onClose: () => 
             {raceState === 'idle' && (
               <div className="flex justify-center mt-4">
                 <button onClick={startRace}
-                        className="px-12 py-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-black text-2xl shadow-[0_8px_24px_rgba(16,185,129,0.4)] transition hover:-translate-y-1 flex items-center gap-3">
+                        className="px-8 sm:px-12 py-3 sm:py-4 rounded-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white font-black text-xl sm:text-2xl shadow-[0_8px_24px_rgba(16,185,129,0.4)] transition hover:-translate-y-1 flex items-center gap-2 sm:gap-3">
                   🚩 Bắt đầu Đua!
                 </button>
               </div>

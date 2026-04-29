@@ -505,50 +505,59 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
 
             {/* MAP ACTION BLOCK */}
             {block.type === 'mapAction' && (
-              <div className="bg-slate-800 rounded-2xl p-6 text-white flex gap-6 items-center shadow-inner relative overflow-hidden">
+              <div className="bg-slate-800 rounded-2xl p-4 lg:p-6 text-white flex flex-col lg:flex-row gap-4 lg:gap-6 lg:items-center shadow-inner relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-cyan-900/40 to-transparent pointer-events-none"></div>
 
-                <div className="w-20 h-20 rounded-full bg-slate-700 border-2 border-cyan-400 flex items-center justify-center text-3xl shadow-[0_0_15px_rgba(34,211,238,0.3)] z-10">
+                {/* Mobile Header */}
+                <div className="flex lg:hidden items-center gap-3 z-10">
+                  <div className="w-10 h-10 rounded-full bg-slate-700 border border-cyan-400 flex items-center justify-center text-lg shadow-[0_0_10px_rgba(34,211,238,0.3)]">
+                    🌍
+                  </div>
+                  <span className="bg-cyan-500 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase tracking-wider">Hành động Bản đồ</span>
+                </div>
+
+                {/* Desktop Globe Icon */}
+                <div className="hidden lg:flex w-20 h-20 shrink-0 rounded-full bg-slate-700 border-2 border-cyan-400 items-center justify-center text-3xl shadow-[0_0_15px_rgba(34,211,238,0.3)] z-10">
                   🌍
                 </div>
 
-                <div className="flex-1 z-10 flex flex-col gap-3">
+                <div className="flex-1 z-10 flex flex-col gap-3 lg:gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="bg-cyan-500 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase">Hành động Bản đồ</span>
+                    <span className="hidden lg:inline-block bg-cyan-500 text-white text-[10px] px-2 py-0.5 rounded font-bold uppercase shrink-0">Hành động Bản đồ</span>
                     <input
                       type="text"
                       value={block.description || ''}
                       onChange={e => updateBlock(block.id, { description: e.target.value })}
-                      className="flex-1 bg-transparent border-b border-slate-600 outline-none text-sm font-medium focus:border-cyan-400"
+                      className="flex-1 bg-transparent border-b border-slate-600 outline-none text-sm font-medium focus:border-cyan-400 pb-1"
                       placeholder="Mô tả hành động (vd: Xoay đến VN)..."
                     />
                   </div>
 
-                  <div className="grid grid-cols-3 gap-3">
+                  <div className="grid grid-cols-2 lg:grid-cols-3 gap-3">
                     <div className="flex flex-col">
                       <label className="text-[10px] text-slate-400 font-bold mb-1">VĨ ĐỘ (LAT)</label>
-                      <input type="number" step="0.0001" value={block.lat} onChange={e => updateBlock(block.id, { lat: parseFloat(e.target.value) })} className="bg-slate-700 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-cyan-400 font-mono" />
+                      <input type="number" step="0.0001" value={block.lat} onChange={e => updateBlock(block.id, { lat: parseFloat(e.target.value) })} className="bg-slate-700 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-cyan-400 font-mono w-full" />
                     </div>
                     <div className="flex flex-col">
                       <label className="text-[10px] text-slate-400 font-bold mb-1">KINH ĐỘ (LNG)</label>
-                      <input type="number" step="0.0001" value={block.lng} onChange={e => updateBlock(block.id, { lng: parseFloat(e.target.value) })} className="bg-slate-700 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-cyan-400 font-mono" />
+                      <input type="number" step="0.0001" value={block.lng} onChange={e => updateBlock(block.id, { lng: parseFloat(e.target.value) })} className="bg-slate-700 rounded-lg px-3 py-1.5 text-sm outline-none focus:ring-1 focus:ring-cyan-400 font-mono w-full" />
                     </div>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col col-span-2 lg:col-span-1">
                       <label className="text-[10px] text-slate-400 font-bold mb-1">ZOOM ({block.zoom})</label>
-                      <input type="range" min="1" max="15" value={block.zoom} onChange={e => updateBlock(block.id, { zoom: parseInt(e.target.value) })} className="mt-2 accent-cyan-400" />
+                      <input type="range" min="1" max="15" value={block.zoom} onChange={e => updateBlock(block.id, { zoom: parseInt(e.target.value) })} className="mt-2 accent-cyan-400 w-full" />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <label className="flex items-center gap-2 cursor-pointer p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors">
-                      <input type="checkbox" checked={block.showGrid || false} onChange={e => updateBlock(block.id, { showGrid: e.target.checked })} className="w-5 h-5 accent-emerald-500 rounded" />
-                      <span className="font-bold text-[#082F49] text-sm">🌐 Bật Lưới Tọa độ</span>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 mb-2 lg:mb-0">
+                    <label className="flex items-center gap-3 cursor-pointer p-3 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition-colors w-full">
+                      <input type="checkbox" checked={block.showGrid || false} onChange={e => updateBlock(block.id, { showGrid: e.target.checked })} className="w-5 h-5 accent-emerald-500 rounded shrink-0" />
+                      <span className="font-bold text-[#082F49] text-sm truncate">🌐 Bật Lưới Tọa độ</span>
                     </label>
-                    <div className="flex flex-col">
+                    <div className="flex flex-col w-full">
                       <select
                         value={block.annotationPreset || (block.showAnnotations ? 'latlng' : 'none')}
                         onChange={e => updateBlock(block.id, { annotationPreset: e.target.value })}
-                        className="w-full bg-white border border-slate-200 rounded-xl p-3 outline-none text-sm focus:border-emerald-400 text-slate-700 font-bold h-full cursor-pointer"
+                        className="w-full bg-white border border-slate-200 rounded-xl p-3 outline-none text-sm focus:border-emerald-400 text-slate-700 font-bold h-full cursor-pointer truncate"
                       >
                         <option value="none">Không có Chú thích</option>
                         <option value="latlng">Hệ thống Kinh/Vĩ tuyến</option>
@@ -598,7 +607,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                 </div>
 
                 {/* Headers row */}
-                <div className="overflow-x-auto">
+                <div className="overflow-x-auto custom-scrollbar pb-2">
                   <table className="w-full border-collapse text-sm">
                     <thead>
                       <tr className="bg-violet-100">
@@ -613,7 +622,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                                   hs[ci] = e.target.value;
                                   updateBlock(block.id, { tableHeaders: hs });
                                 }}
-                                className="bg-transparent outline-none font-black text-violet-700 w-full min-w-[80px]"
+                                className="bg-transparent outline-none font-black text-violet-700 w-full min-w-[120px]"
                                 placeholder={`Cột ${ci + 1}`}
                               />
                               {(block.tableHeaders || []).length > 1 && (
@@ -657,14 +666,14 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                                   );
                                   updateBlock(block.id, { tableRows: rows });
                                 }}
-                                className="bg-white/70 border border-violet-100 rounded px-2 py-1 outline-none w-full text-[#334155] focus:border-violet-400"
+                                className="bg-white/70 border border-violet-100 rounded px-2 py-1.5 outline-none w-full min-w-[120px] text-[#334155] focus:border-violet-400"
                               />
                             </td>
                           ))}
-                          <td className="p-1">
+                          <td className="p-1 text-center">
                             <button
                               onClick={() => updateBlock(block.id, { tableRows: (block.tableRows || []).filter((_, i) => i !== ri) })}
-                              className="text-red-400 hover:text-red-600 font-bold px-1"
+                              className="text-red-400 hover:text-red-600 font-bold px-2 py-1"
                               title="Xóa hàng"
                             >✕</button>
                           </td>
@@ -675,21 +684,21 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                 </div>
 
                 {/* Controls */}
-                <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-violet-200">
+                <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6 pt-4 border-t border-violet-200">
                   <button
                     onClick={() => {
                       const emptyRow = (block.tableHeaders || []).map(() => '');
                       updateBlock(block.id, { tableRows: [...(block.tableRows || []), emptyRow] });
                     }}
-                    className="text-sm font-bold text-violet-600 hover:text-violet-800 px-3 py-1.5 bg-white rounded-lg border border-violet-200 hover:border-violet-400 transition-all"
+                    className="self-start lg:self-auto text-sm font-bold text-violet-600 hover:text-violet-800 px-4 py-2 bg-white rounded-xl border-2 border-violet-200 hover:border-violet-400 transition-all shrink-0"
                   >+ Thêm hàng</button>
 
-                  <div className="flex items-center gap-2 text-sm">
-                    <label className="font-bold text-violet-700">Cột nổi bật (thanh bar):</label>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm w-full lg:w-auto">
+                    <label className="font-bold text-violet-700 shrink-0">Cột nổi bật (thanh bar):</label>
                     <select
                       value={block.tableHighlightCol ?? 1}
                       onChange={e => updateBlock(block.id, { tableHighlightCol: parseInt(e.target.value) })}
-                      className="bg-white border border-violet-200 rounded-lg px-2 py-1 outline-none text-sm font-bold text-violet-700 focus:border-violet-500"
+                      className="bg-white border-2 border-violet-200 rounded-xl px-3 py-2 outline-none text-sm font-bold text-violet-700 focus:border-violet-500 w-full sm:w-auto truncate cursor-pointer"
                     >
                       {(block.tableHeaders || []).map((h, i) => (
                         <option key={i} value={i}>{h || `Cột ${i + 1}`}</option>
@@ -697,14 +706,14 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                     </select>
                   </div>
 
-                  <div className="flex items-center gap-2 text-sm">
-                    <label className="font-bold text-violet-700">Đơn vị:</label>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 text-sm w-full lg:w-auto">
+                    <label className="font-bold text-violet-700 shrink-0">Đơn vị:</label>
                     <input
                       type="text"
                       value={block.tableUnit || ''}
                       onChange={e => updateBlock(block.id, { tableUnit: e.target.value })}
                       placeholder="VD: triệu người"
-                      className="bg-white border border-violet-200 rounded-lg px-2 py-1 outline-none text-sm focus:border-violet-500 w-32"
+                      className="bg-white border-2 border-violet-200 rounded-xl px-3 py-2 outline-none text-sm focus:border-violet-500 w-full sm:w-32"
                     />
                   </div>
                 </div>
@@ -765,48 +774,48 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
     );
   };
 
-  const glassPanel = "bg-white/60 backdrop-blur-xl border border-white/80 shadow-[0_8px_30px_rgba(14,165,233,0.1)] rounded-[24px]";
+  const glassPanel = "bg-white/60 backdrop-blur-xl border border-white/80 shadow-[0_8px_30px_rgba(14,165,233,0.1)] rounded-none lg:rounded-[24px]";
 
   if (!mounted) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex gap-6 p-6 bg-gradient-to-br from-[#E0F2FE] via-white to-[#DCFCE7] animate-in zoom-in-95 duration-500">
+    <div className="fixed inset-0 z-[9999] flex flex-col lg:flex-row lg:gap-6 lg:p-6 bg-gradient-to-br from-[#E0F2FE] via-white to-[#DCFCE7] animate-in zoom-in-95 duration-500 overflow-hidden">
 
       {/* ── LEFT: ARTICLE BUILDER (Notion-style) ── */}
       <div className={`flex-1 flex flex-col ${glassPanel} overflow-hidden relative`}>
         {/* Header */}
-        <div className="px-8 py-5 border-b border-white/60 bg-white/40 flex items-center justify-between z-10 relative">
-          <div className="flex items-center gap-4">
+        <div className="px-4 lg:px-8 py-3 lg:py-5 border-b border-white/60 bg-white/40 flex flex-col lg:flex-row lg:items-center justify-between z-10 relative gap-3">
+          <div className="flex items-center gap-3 w-full lg:w-auto">
             {onBack && (
               <button
                 onClick={onBack}
-                className="p-2 bg-white/50 hover:bg-cyan-100 rounded-lg text-slate-500 hover:text-cyan-600 transition-colors font-bold"
+                className="p-2 bg-white/50 hover:bg-cyan-100 rounded-lg text-slate-500 hover:text-cyan-600 transition-colors font-bold shrink-0"
                 title="Quay lại danh sách"
               >
-                ← Trở về
+                ← <span className="hidden lg:inline">Trở về</span>
               </button>
             )}
-            <div>
+            <div className="flex-1 min-w-0">
               <input
                 type="text"
                 value={presentationTitle}
                 onChange={(e) => setPresentationTitle(e.target.value)}
-                className="text-2xl font-black text-[#082F49] bg-transparent outline-none border-b-2 border-transparent focus:border-cyan-400 focus:bg-white/50 rounded transition-all w-[500px]"
+                className="text-lg lg:text-2xl font-black text-[#082F49] bg-transparent outline-none border-b-2 border-transparent focus:border-cyan-400 focus:bg-white/50 rounded transition-all w-full lg:w-[500px]"
               />
-              <p className="text-sm text-slate-500 font-medium">Viết nội dung như một bài báo tương tác (Scrollytelling)</p>
+              <p className="text-sm text-slate-500 font-medium hidden lg:block">Viết nội dung như một bài báo tương tác (Scrollytelling)</p>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 w-full lg:w-auto">
             <button
               onClick={() => setShowPreview(true)}
-              className="px-6 py-2.5 rounded-full bg-slate-100 text-slate-600 font-bold text-sm hover:bg-slate-200 transition-all"
+              className="flex-1 lg:flex-none px-6 py-2.5 rounded-full bg-slate-100 text-slate-600 font-bold text-sm hover:bg-slate-200 transition-all"
             >
               Trình chiếu
             </button>
             <button
               onClick={handlePublish}
               disabled={isPublishing}
-              className={`px-6 py-2.5 rounded-full text-white font-bold text-sm shadow-md transition-all ${isPublishing ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#06B6D4] hover:bg-[#0369A1]'}`}
+              className={`flex-1 lg:flex-none px-6 py-2.5 rounded-full text-white font-bold text-sm shadow-md transition-all ${isPublishing ? 'bg-slate-400 cursor-not-allowed' : 'bg-[#06B6D4] hover:bg-[#0369A1]'}`}
             >
               {isPublishing ? 'Đang lưu...' : 'Lưu dữ liệu'}
             </button>
@@ -814,7 +823,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
         </div>
 
         {/* Editor Stream */}
-        <div className="flex-1 overflow-y-auto px-12 py-8 custom-scrollbar scroll-smooth">
+        <div className="flex-1 overflow-y-auto px-4 lg:px-12 py-4 lg:py-8 custom-scrollbar scroll-smooth">
           <div className="w-full space-y-6 pb-32">
 
             {blocks.map(block => renderBlockEditor(block))}
@@ -840,10 +849,12 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
       </div>
 
       {/* ── RIGHT: REAL MAP PREVIEW (DEVICE MOCKUP) ── */}
-      <div className={`w-[450px] flex flex-col p-4 bg-white/40 backdrop-blur-3xl border-l border-white/80 shadow-[-20px_0_40px_rgba(14,165,233,0.1)] relative overflow-hidden shrink-0`}>
+      <div 
+        className={`w-full flex flex-col p-2 lg:p-4 bg-white/40 backdrop-blur-3xl lg:border-l border-t lg:border-t-0 border-white/80 lg:shadow-[-20px_0_40px_rgba(14,165,233,0.1)] relative overflow-hidden shrink-0 rounded-t-[24px] lg:rounded-none lg:rounded-[24px] right-panel-preview`}
+      >
 
         {/* MAC OS STYLE HEADER */}
-        <div className="flex items-center justify-between mb-4 bg-white/80 backdrop-blur-md rounded-2xl p-3 border border-white/60 shadow-sm">
+        <div className="flex items-center justify-between mb-2 lg:mb-4 bg-white/80 backdrop-blur-md rounded-xl lg:rounded-2xl p-2 lg:p-3 border border-white/60 shadow-sm">
           <h3 className="font-black text-[#082F49] uppercase tracking-widest text-[10px]">Mô phỏng Đa phương tiện</h3>
           <div className="flex gap-1.5">
             <div className="w-2.5 h-2.5 rounded-full bg-red-400 shadow-inner"></div>
@@ -853,7 +864,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
         </div>
 
         {/* DEVICE MOCKUP CONTAINER */}
-        <div className="flex-1 flex flex-col items-center justify-center relative rounded-[32px] overflow-hidden border-[6px] border-white/80 shadow-[0_20px_50px_rgba(14,165,233,0.2)] bg-[#082F49]">
+        <div className="flex-1 flex flex-col items-center justify-center relative rounded-xl lg:rounded-[32px] overflow-hidden border-4 lg:border-[6px] border-white/80 shadow-[0_20px_50px_rgba(14,165,233,0.2)] bg-[#082F49]">
           <div className="w-full h-full flex items-center justify-center relative overflow-hidden pointer-events-auto">
 
             {/* LỚP 1: CESIUM GLOBE */}
@@ -881,7 +892,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
         </div>
 
         {/* STATUS CARD */}
-        <div className="mt-4 bg-white/90 backdrop-blur-xl rounded-2xl p-5 border border-white/60 shadow-lg relative overflow-hidden">
+        <div className="hidden lg:block mt-4 bg-white/90 backdrop-blur-xl rounded-2xl p-5 border border-white/60 shadow-lg relative overflow-hidden">
           <div className="absolute top-0 left-0 w-1 h-full bg-cyan-400"></div>
           <h4 className="text-[10px] font-black text-[#94A3B8] uppercase tracking-widest mb-3">Trạng thái khối hiện tại</h4>
 
@@ -905,6 +916,18 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
           )}
         </div>
       </div>
+      
+      <style dangerouslySetInnerHTML={{__html: `
+        .right-panel-preview {
+          height: 35vh;
+        }
+        @media (min-width: 1024px) {
+          .right-panel-preview {
+            width: 450px !important;
+            height: auto !important;
+          }
+        }
+      `}} />
 
       {showPreview && <PresentationPreview blocks={blocks} onClose={() => setShowPreview(false)} />}
     </div>,
