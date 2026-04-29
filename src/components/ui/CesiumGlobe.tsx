@@ -3,9 +3,8 @@
 import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState, useCallback } from 'react';
 
 // ─── Load Cesium from pre-built static file (NOT bundled via webpack) ─────────
-// This avoids "Octal escape sequences" SyntaxError caused by Cesium's legacy
-// source code being processed by strict-mode bundlers (webpack / Turbopack).
-// Cesium is loaded as a global script (/cesium/Cesium.js) and accessed via window.Cesium.
+// Loading via script tag avoids "Octal escape sequences" SyntaxError caused
+// by Cesium's legacy source code being processed by strict-mode bundlers.
 // ─────────────────────────────────────────────────────────────────────────────
 
 export interface CesiumGlobeHandle {
@@ -28,23 +27,26 @@ interface CesiumGlobeProps {
   className?: string;
 }
 
-// Helper: load a script tag once and return a promise
 function loadScript(src: string): Promise<void> {
   return new Promise((resolve, reject) => {
+    if ((window as any).__cesiumScriptLoaded) { resolve(); return; }
     if (document.querySelector(`script[src="${src}"]`)) {
-      resolve(); // already loaded
+      // Script tag exists but may still be loading
+      const existing = document.querySelector(`script[src="${src}"]`) as HTMLScriptElement;
+      if ((window as any).Cesium) { resolve(); return; }
+      existing.addEventListener('load', () => resolve());
+      existing.addEventListener('error', () => reject(new Error(`Failed to load: ${src}`)));
       return;
     }
     const s = document.createElement('script');
     s.src = src;
-    s.async = true;
-    s.onload = () => resolve();
+    s.async = false;
+    s.onload = () => { (window as any).__cesiumScriptLoaded = true; resolve(); };
     s.onerror = () => reject(new Error(`Failed to load script: ${src}`));
     document.head.appendChild(s);
   });
 }
 
-// Helper: load a stylesheet once
 function loadStyle(href: string) {
   if (!document.querySelector(`link[href="${href}"]`)) {
     const link = document.createElement('link');
@@ -85,21 +87,21 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
     initRef.current = true;
 
     try {
-      // Set base URL so Cesium Workers find their static assets
+      // Set base URL BEFORE loading the script
       (window as any).CESIUM_BASE_URL = '/cesium';
 
-      // Load the pre-built Cesium bundle and CSS (not via webpack)
+      // Load pre-built Cesium (bypasses webpack bundling — fixes Vercel SyntaxError)
       loadStyle('/cesium/Widgets/widgets.css');
       await loadScript('/cesium/Cesium.js');
 
       const Cesium = (window as any).Cesium;
       if (!Cesium) throw new Error('Cesium global not found after script load');
 
-      // Disable Cesium Ion with an empty token (setter requires a string, not undefined)
-      try { Cesium.Ion.defaultAccessToken = ''; } catch (_) { /* ignore */ }
+      // ✅ Do NOT touch Ion.defaultAccessToken — Cesium's built-in demo token
+      //    handles Bing Maps & other providers automatically
 
       const viewer = new Cesium.Viewer(containerRef.current, {
-        terrainProvider: new Cesium.EllipsoidTerrainProvider(),
+        terrain: Cesium.Terrain.fromWorldTerrain(),
         animation: false,
         timeline: false,
         fullscreenButton: false,
@@ -107,9 +109,6 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
         infoBox: false,
         selectionIndicator: false,
       });
-
-      // Remove ALL default imagery layers (prevents Bing Maps / Ion 401 calls)
-      viewer.imageryLayers.removeAll();
 
       // Hide Cesium credit watermark
       if (viewer.cesiumWidget?.creditContainer) {
@@ -134,7 +133,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
       setReady(true);
     } catch (err) {
       console.error('[CesiumGlobe] Initialization failed:', err);
-      initRef.current = false; // allow retry
+      initRef.current = false;
     }
   }, [initialLat, initialLng, initialAltitude, showLayerPicker]);
 
@@ -160,7 +159,7 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
     const viewer = viewerRef.current;
 
     if (viewer.baseLayerPicker) {
-      // Builder mode: use the built-in picker
+      // Builder mode: use the built-in picker to switch layers
       const picker = viewer.baseLayerPicker;
       let attempts = 0;
       const interval = setInterval(() => {
@@ -221,7 +220,8 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
     const viewer = viewerRef.current;
     if (showGrid && !gridLayerRef.current) {
       gridLayerRef.current = viewer.imageryLayers.addImageryProvider(
-        new Cesium.GridImageryProvider({ cells: 24,
+        new Cesium.GridImageryProvider({
+          cells: 24,
           color: Cesium.Color.WHITE.withAlpha(0.3),
           glowColor: Cesium.Color.WHITE.withAlpha(0.05),
           glowWidth: 1,
@@ -236,8 +236,10 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
   // ── IMPERATIVE HANDLE ─────────────────────────────────────────────────────────
   useImperativeHandle(ref, () => ({
     flyTo(lat, lng, altitude = 15000000, duration = 2) {
-      viewerRef.current?.camera.flyTo({
-        destination: (window as any).Cesium?.Cartesian3.fromDegrees(lng, lat, altitude),
+      const Cesium = (window as any).Cesium;
+      if (!viewerRef.current || !Cesium) return;
+      viewerRef.current.camera.flyTo({
+        destination: Cesium.Cartesian3.fromDegrees(lng, lat, altitude),
         duration,
       });
     },

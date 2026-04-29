@@ -866,7 +866,6 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                   'ArcGIS World Imagery'
                 }
                 showGrid={activeBlock?.showGrid || false}
-                showLayerPicker={false}
                 onLayerChange={(id) => {
                   setBlocks(prevBlocks => prevBlocks.map(b => ({ ...b, globeStyle: id })));
                 }}
