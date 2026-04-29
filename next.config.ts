@@ -1,5 +1,4 @@
 import type { NextConfig } from "next";
-import webpack from "webpack";
 
 const nextConfig: NextConfig = {
   // Turbopack config
@@ -14,13 +13,9 @@ const nextConfig: NextConfig = {
     config.resolve.alias.canvas = false;
     config.resolve.alias.encoding = false;
 
-    // Inject CESIUM_BASE_URL at compile-time so Cesium Workers
-    // can locate static assets regardless of deployment environment
-    config.plugins.push(
-      new webpack.DefinePlugin({
-        CESIUM_BASE_URL: JSON.stringify('/cesium'),
-      })
-    );
+    // Cesium is loaded as a global script (/cesium/Cesium.js), NOT bundled.
+    // Mark it as external so webpack doesn't touch it.
+    config.externals = [...(config.externals || []), { cesium: 'Cesium' }];
 
     return config;
   },

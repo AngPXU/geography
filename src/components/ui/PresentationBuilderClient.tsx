@@ -863,7 +863,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                 imageryLayer={
                   activeBlock?.globeStyle ||
                   (blocks.find(b => b.globeStyle)?.globeStyle) ||
-                  'ESRI World Imagery'
+                  'ArcGIS World Imagery'
                 }
                 showGrid={activeBlock?.showGrid || false}
                 showLayerPicker={false}

@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useEffect, useRef, useImperativeHandle, forwardRef, useState, useCallback } from 'react';
-import * as Cesium from 'cesium';
 
-// CESIUM_BASE_URL will be set at runtime before Viewer init
+// ─── Load Cesium from pre-built static file (NOT bundled via webpack) ─────────
+// This avoids "Octal escape sequences" SyntaxError caused by Cesium's legacy
+// source code being processed by strict-mode bundlers (webpack / Turbopack).
+// Cesium is loaded as a global script (/cesium/Cesium.js) and accessed via window.Cesium.
+// ─────────────────────────────────────────────────────────────────────────────
 
 export interface CesiumGlobeHandle {
   flyTo: (lat: number, lng: number, altitude?: number, duration?: number) => void;
@@ -25,6 +28,32 @@ interface CesiumGlobeProps {
   className?: string;
 }
 
+// Helper: load a script tag once and return a promise
+function loadScript(src: string): Promise<void> {
+  return new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${src}"]`)) {
+      resolve(); // already loaded
+      return;
+    }
+    const s = document.createElement('script');
+    s.src = src;
+    s.async = true;
+    s.onload = () => resolve();
+    s.onerror = () => reject(new Error(`Failed to load script: ${src}`));
+    document.head.appendChild(s);
+  });
+}
+
+// Helper: load a stylesheet once
+function loadStyle(href: string) {
+  if (!document.querySelector(`link[href="${href}"]`)) {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = href;
+    document.head.appendChild(link);
+  }
+}
+
 const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
   initialLat = 16,
   initialLng = 106,
@@ -40,76 +69,73 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
   const viewerRef    = useRef<any>(null);
   const gridLayerRef = useRef<any>(null);
   const initRef      = useRef(false);
-
-  const onLayerChangeRef = useRef(onLayerChange);
-  const onPinClickRef = useRef(onPinClick);
-  useEffect(() => {
-    onLayerChangeRef.current = onLayerChange;
-    onPinClickRef.current = onPinClick;
-  }, [onLayerChange, onPinClick]);
-
   const [ready, setReady] = useState(false);
   const [initialized, setInitialized] = useState(false);
 
-  const initViewer = useCallback(() => {
+  const onLayerChangeRef = useRef(onLayerChange);
+  const onPinClickRef    = useRef(onPinClick);
+  useEffect(() => {
+    onLayerChangeRef.current = onLayerChange;
+    onPinClickRef.current    = onPinClick;
+  }, [onLayerChange, onPinClick]);
+
+  // ── INIT VIEWER ─────────────────────────────────────────────────────────────
+  const initViewer = useCallback(async () => {
     if (!containerRef.current || initRef.current) return;
     initRef.current = true;
 
-    // Inject CSS for the built-in Cesium UI Widgets
-    if (!document.getElementById('cesium-widget-css')) {
-      const link = document.createElement('link');
-      link.id = 'cesium-widget-css';
-      link.rel = 'stylesheet';
-      link.href = '/cesium/Widgets/widgets.css';
-      document.head.appendChild(link);
-    }
+    try {
+      // Set base URL so Cesium Workers find their static assets
+      (window as any).CESIUM_BASE_URL = '/cesium';
 
-    // Set CESIUM_BASE_URL before Viewer init (works for both Turbopack local dev and Vercel)
-    (window as any).CESIUM_BASE_URL = '/cesium';
+      // Load the pre-built Cesium bundle and CSS (not via webpack)
+      loadStyle('/cesium/Widgets/widgets.css');
+      await loadScript('/cesium/Cesium.js');
 
-    // Initialize the viewer — no Ion services, no external requests
-    const viewer = new Cesium.Viewer(containerRef.current, {
-      terrainProvider: new Cesium.EllipsoidTerrainProvider(),
-      animation: false,
-      timeline: false,
-      fullscreenButton: false,
-      baseLayerPicker: showLayerPicker,
-      infoBox: false,
-      selectionIndicator: false,
-    });
+      const Cesium = (window as any).Cesium;
+      if (!Cesium) throw new Error('Cesium global not found after script load');
 
-    // When not using the picker, remove ALL default imagery layers immediately
-    // (prevents any automatic Bing Maps/Ion calls)
-    if (!showLayerPicker) {
+      // Disable Cesium Ion with an empty token (setter requires a string, not undefined)
+      try { Cesium.Ion.defaultAccessToken = ''; } catch (_) { /* ignore */ }
+
+      const viewer = new Cesium.Viewer(containerRef.current, {
+        terrainProvider: new Cesium.EllipsoidTerrainProvider(),
+        animation: false,
+        timeline: false,
+        fullscreenButton: false,
+        baseLayerPicker: showLayerPicker,
+        infoBox: false,
+        selectionIndicator: false,
+      });
+
+      // Remove ALL default imagery layers (prevents Bing Maps / Ion 401 calls)
       viewer.imageryLayers.removeAll();
-    }
 
-    // Hide the Cesium logo and default token warning at the bottom
-    if (viewer.cesiumWidget.creditContainer) {
-      (viewer.cesiumWidget.creditContainer as HTMLElement).style.display = 'none';
-    }
-
-    // Set initial view
-    viewer.camera.setView({
-      destination: Cesium.Cartesian3.fromDegrees(initialLng, initialLat, initialAltitude),
-    });
-
-    // Add click event listener for pins
-    const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
-    handler.setInputAction((click: any) => {
-      const pickedObject = viewer.scene.pick(click.position);
-      if (Cesium.defined(pickedObject) && pickedObject.id) {
-        const entity = pickedObject.id;
-        if (entity._customPinData) {
-          if (onPinClickRef.current) {
-            onPinClickRef.current(entity._customPinData);
-          }
-        }
+      // Hide Cesium credit watermark
+      if (viewer.cesiumWidget?.creditContainer) {
+        (viewer.cesiumWidget.creditContainer as HTMLElement).style.display = 'none';
       }
-    }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
-    viewerRef.current = viewer;
-    setReady(true);
+      // Set initial camera position
+      viewer.camera.setView({
+        destination: Cesium.Cartesian3.fromDegrees(initialLng, initialLat, initialAltitude),
+      });
+
+      // Pin click handler
+      const handler = new Cesium.ScreenSpaceEventHandler(viewer.scene.canvas);
+      handler.setInputAction((click: any) => {
+        const picked = viewer.scene.pick(click.position);
+        if (Cesium.defined(picked) && picked.id?._customPinData) {
+          onPinClickRef.current?.(picked.id._customPinData);
+        }
+      }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
+
+      viewerRef.current = viewer;
+      setReady(true);
+    } catch (err) {
+      console.error('[CesiumGlobe] Initialization failed:', err);
+      initRef.current = false; // allow retry
+    }
   }, [initialLat, initialLng, initialAltitude, showLayerPicker]);
 
   useEffect(() => {
@@ -123,108 +149,83 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
     };
   }, [initViewer]);
 
-  // Áp dụng lớp bản đồ đã lưu từ database vào Cesium
+  // ── APPLY IMAGERY LAYER ──────────────────────────────────────────────────────
   useEffect(() => {
     if (!ready || !viewerRef.current) return;
+    if (!imageryLayer) { setInitialized(true); return; }
 
-    if (!imageryLayer) {
-      setInitialized(true);
-      return;
-    }
+    const Cesium = (window as any).Cesium;
+    if (!Cesium) return;
 
     const viewer = viewerRef.current;
-    
-    // ALWAYS USE BASELAYERPICKER
+
     if (viewer.baseLayerPicker) {
+      // Builder mode: use the built-in picker
       const picker = viewer.baseLayerPicker;
       let attempts = 0;
-      
-      const applyInterval = setInterval(() => {
+      const interval = setInterval(() => {
         try {
           const models = picker.viewModel.imageryProviderViewModels;
-          if (models && models.length > 0) {
-            const targetModel = models.find((m: any) => m.name === imageryLayer);
-            if (targetModel && picker.viewModel.selectedImagery?.name !== imageryLayer) {
-              picker.viewModel.selectedImagery = targetModel;
+          if (models?.length > 0) {
+            const target = models.find((m: any) => m.name === imageryLayer);
+            if (target && picker.viewModel.selectedImagery?.name !== imageryLayer) {
+              picker.viewModel.selectedImagery = target;
             }
             setInitialized(true);
-            clearInterval(applyInterval);
+            clearInterval(interval);
           }
-        } catch (e) {
-          console.warn("Cesium BaseLayerPicker update failed:", e);
-          setInitialized(true);
-          clearInterval(applyInterval);
-        }
-        attempts++;
-        if (attempts > 40) { // Timeout sau 8 giây
-          setInitialized(true);
-          clearInterval(applyInterval);
-        }
+        } catch { setInitialized(true); clearInterval(interval); }
+        if (++attempts > 40) { setInitialized(true); clearInterval(interval); }
       }, 200);
-      
-      return () => clearInterval(applyInterval);
-    } 
-    // NẾU KHÔNG CÓ BASELAYERPICKER (Preview)
-    else {
-      const applyManual = async () => {
+      return () => clearInterval(interval);
+    } else {
+      // Preview mode: apply layer manually
+      (async () => {
         try {
-          // @ts-ignore - Cesium 1.122 might not expose this in types, but it's there
           const models = Cesium.createDefaultImageryProviderViewModels();
-          const targetModel = models.find((m: any) => m.name === imageryLayer);
-          
-          if (targetModel) {
-            const providerOrPromise = targetModel.creationCommand();
+          const target = models.find((m: any) => m.name === imageryLayer);
+          if (target) {
+            const providerOrPromise = target.creationCommand();
             const provider = await Promise.resolve(providerOrPromise);
-            
-            // Sử dụng false để KHÔNG destroy provider, tránh lỗi khi load lại map lần 2
             viewer.imageryLayers.removeAll(false);
             viewer.imageryLayers.addImageryProvider(provider);
           }
         } catch (e) {
-          console.error("Lỗi khi áp dụng layer thủ công:", e);
+          console.error('[CesiumGlobe] Layer apply failed:', e);
         } finally {
           setInitialized(true);
         }
-      };
-      
-      applyManual();
+      })();
     }
   }, [imageryLayer, ready]);
 
-  // Lắng nghe sự thay đổi layer (Sử dụng Polling vòng lặp cực kỳ an toàn)
+  // ── LAYER CHANGE LISTENER ────────────────────────────────────────────────────
   useEffect(() => {
-    if (!ready || !initialized || !viewerRef.current || !viewerRef.current.baseLayerPicker) return;
-    
+    if (!ready || !initialized || !viewerRef.current?.baseLayerPicker) return;
     let lastSeen = viewerRef.current.baseLayerPicker.viewModel.selectedImagery?.name;
-
     const interval = setInterval(() => {
-      const currentSelection = viewerRef.current.baseLayerPicker.viewModel.selectedImagery?.name;
-      // Chỉ lưu nếu thực sự khác và không phải do đang set lại state
-      if (currentSelection && currentSelection !== lastSeen) {
-        lastSeen = currentSelection;
-        // Báo lên trên nếu user đổi
-        if (onLayerChangeRef.current && currentSelection !== imageryLayer) {
-          onLayerChangeRef.current(currentSelection);
-        }
+      const cur = viewerRef.current?.baseLayerPicker?.viewModel?.selectedImagery?.name;
+      if (cur && cur !== lastSeen) {
+        lastSeen = cur;
+        if (onLayerChangeRef.current && cur !== imageryLayer) onLayerChangeRef.current(cur);
       }
     }, 500);
-
     return () => clearInterval(interval);
   }, [ready, initialized, imageryLayer]);
 
-  // Handle grid overlay
+  // ── GRID OVERLAY ─────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (!viewerRef.current || !ready) return;
+    if (!ready || !viewerRef.current) return;
+    const Cesium = (window as any).Cesium;
+    if (!Cesium) return;
     const viewer = viewerRef.current;
-
     if (showGrid && !gridLayerRef.current) {
       gridLayerRef.current = viewer.imageryLayers.addImageryProvider(
-        new Cesium.GridImageryProvider({
-          cells: 24,
+        new Cesium.GridImageryProvider({ cells: 24,
           color: Cesium.Color.WHITE.withAlpha(0.3),
           glowColor: Cesium.Color.WHITE.withAlpha(0.05),
           glowWidth: 1,
-        }),
+        })
       );
     } else if (!showGrid && gridLayerRef.current) {
       viewer.imageryLayers.remove(gridLayerRef.current);
@@ -232,21 +233,21 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
     }
   }, [showGrid, ready]);
 
+  // ── IMPERATIVE HANDLE ─────────────────────────────────────────────────────────
   useImperativeHandle(ref, () => ({
     flyTo(lat, lng, altitude = 15000000, duration = 2) {
-      if (!viewerRef.current) return;
-      viewerRef.current.camera.flyTo({
-        destination: Cesium.Cartesian3.fromDegrees(lng, lat, altitude),
+      viewerRef.current?.camera.flyTo({
+        destination: (window as any).Cesium?.Cartesian3.fromDegrees(lng, lat, altitude),
         duration,
       });
     },
-    setLayer(layerId) {
-      // Bỏ qua vì hiện tại dùng bộ chọn layer mặc định của Cesium
-    },
+    setLayer() {},
     setGrid() {},
     addPin(lat, lng, title, info, image) {
       if (!viewerRef.current) return;
-      
+      const Cesium = (window as any).Cesium;
+      if (!Cesium) return;
+
       const entityData: any = {
         position: Cesium.Cartesian3.fromDegrees(lng, lat, 1000),
         point: {
@@ -256,10 +257,9 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
           outlineWidth: new Cesium.CallbackProperty(() => 2 + Math.abs(Math.sin(Date.now() / 250)) * 4, false),
           disableDepthTestDistance: Number.POSITIVE_INFINITY,
         },
-        description: info,
       };
 
-      if (title && title.trim().length > 0) {
+      if (title?.trim()) {
         entityData.label = {
           text: title,
           font: 'bold 16pt Nunito, sans-serif',
@@ -283,27 +283,10 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
 
   return (
     <div className={`relative w-full h-full ${className}`}>
-      {/* 
-        Sử dụng div này cho Cesium, nó sẽ tự động chèn các nút
-        chọn Layer, màn hình full, home, animation, timeline vào đây! 
-      */}
       <div ref={containerRef} className="w-full h-full" />
       <style>{`
-        .cesium-viewer-bottom {
-          display: none !important;
-        }
-        ${!showLayerPicker ? `
-        .cesium-baseLayerPicker-dropDown {
-          display: none !important;
-        }
-        .cesium-button.cesium-toolbar-button {
-           /* Ẩn riêng cái nút chọn layer nếu cần, mặc dù nó được gói trong div của Cesium.
-              Tuy nhiên .cesium-baseLayerPicker-dropDown chứa toàn bộ cục UI nút bấm + list. */
-        }
-        .cesium-viewer-toolbar {
-           /* Tùy chỉnh nếu bạn muốn ẩn cả nút Home, Tìm kiếm ở Preview */
-        }
-        ` : ''}
+        .cesium-viewer-bottom { display: none !important; }
+        ${!showLayerPicker ? '.cesium-viewer-toolbar { display: none !important; }' : ''}
       `}</style>
     </div>
   );

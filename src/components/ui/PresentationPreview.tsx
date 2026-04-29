@@ -432,7 +432,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
               imageryLayer={
                 activeMediaBlock?.globeStyle ||
                 (blocks.find(b => b.globeStyle)?.globeStyle) ||
-                'ESRI World Imagery'
+                'ArcGIS World Imagery'
               }
               showGrid={activeMediaBlock?.grid || false}
               showLayerPicker={false}
