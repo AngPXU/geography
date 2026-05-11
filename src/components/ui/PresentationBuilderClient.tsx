@@ -312,7 +312,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
       pinTitle: type === 'mapAction' ? '' : undefined,
       pinInfo: type === 'mapAction' ? '' : undefined,
       pinImage: type === 'mapAction' ? '' : undefined,
-      globeStyle: type === 'mapAction' ? 'esri-imagery' : undefined,
+      globeStyle: type === 'mapAction' ? 'Sentinel-2' : undefined,
       // DataTable defaults
       tableTitle: type === 'dataTable' ? 'Bảng số liệu' : undefined,
       tableHeaders: type === 'dataTable' ? ['Khu vực', 'Diện tích (km²)', 'Dân số (triệu)'] : undefined,
@@ -565,6 +565,25 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                         <option value="oceans">Tên các Đại dương</option>
                       </select>
                     </div>
+                  </div>
+                  <div className="flex flex-col w-full">
+                    <label className="text-[10px] text-slate-400 font-bold mb-1">🗺️ LOẠI BẢN ĐỒ</label>
+                    <select
+                      value={block.globeStyle || 'Sentinel-2'}
+                      onChange={e => updateBlock(block.id, { globeStyle: e.target.value })}
+                      className="w-full bg-slate-700 border border-slate-600 rounded-xl px-3 py-2 outline-none text-sm focus:border-cyan-400 text-white font-bold cursor-pointer"
+                    >
+                      <option value="Sentinel-2">🛰️ Sentinel-2 (Ảnh vệ tinh EU)</option>
+                      <option value="Blue Marble">🌏 Blue Marble (Quả địa cầu xanh)</option>
+                      <option value="Earth at night">🌃 Earth at night (Trái Đất ban đêm)</option>
+                      <option value="Natural Earth II">🌍 Natural Earth II (Địa hình tự nhiên)</option>
+                      <option value="Google Maps Satellite">📡 Google Maps Vệ tinh</option>
+                      <option value="Google Maps Satellite with Labels">📡 Google Maps Vệ tinh có nhãn</option>
+                      <option value="Google Maps Roadmap">🗺️ Google Maps Đường phố</option>
+                      <option value="Google Maps Contour">📐 Google Maps Địa hình</option>
+                      <option value="Azure Maps Aerial">🛩️ Azure Maps Vệ tinh</option>
+                      <option value="Azure Maps Roads">🛣️ Azure Maps Đường phố</option>
+                    </select>
                   </div>
                   <div className="mt-2 flex flex-col gap-2 bg-slate-700/50 p-3 rounded-lg">
                     <div className="flex items-center gap-2">
@@ -873,13 +892,15 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                 ref={builderGlobeRef}
                 imageryLayer={
                   activeBlock?.globeStyle ||
-                  (blocks.find(b => b.globeStyle)?.globeStyle) ||
-                  'ArcGIS World Imagery'
+                  'Sentinel-2'
                 }
                 showGrid={activeBlock?.showGrid || false}
-                onLayerChange={(id) => {
-                  setBlocks(prevBlocks => prevBlocks.map(b => ({ ...b, globeStyle: id })));
-                }}
+                showLayerPicker={false}
+                annotations={
+                  activeBlock?.type === 'mapAction'
+                    ? (ANNOTATION_PRESETS[activeBlock.annotationPreset || 'none'] || [])
+                    : []
+                }
               />
             </div>
 

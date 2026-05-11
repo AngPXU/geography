@@ -112,7 +112,7 @@ export default function CesiumMapView({ initialScene = '3d', className = '' }: C
       animation: false,
       timeline: false,
       fullscreenButton: false,
-      baseLayerPicker: true,
+      baseLayerPicker: false,        // tắt picker tích hợp — giảm lag
       navigationHelpButton: false,
       infoBox: false,
       selectionIndicator: false,
@@ -124,8 +124,28 @@ export default function CesiumMapView({ initialScene = '3d', className = '' }: C
       maximumRenderTimeChange: Infinity,
     });
 
-    // Giảm độ phân giải tile để tải nhanh hơn (default: 2, tăng lên 4)
-    viewer.scene.globe.maximumScreenSpaceError = 4;
+    // Áp dụng Google Maps Satellite làm imagery mặc định
+    try {
+      const models = Cesium.createDefaultImageryProviderViewModels();
+      const gmSat = models.find((m: any) => m.name === 'Google Maps Satellite');
+      if (gmSat) {
+        const providerOrPromise = gmSat.creationCommand();
+        const provider = await Promise.resolve(providerOrPromise);
+        viewer.imageryLayers.removeAll(false);
+        viewer.imageryLayers.addImageryProvider(provider);
+      }
+    } catch (e) {
+      console.warn('[CesiumMapView] Could not apply Google Maps Satellite, using default');
+    }
+
+    // Giữ độ phân giải tile ở mức sắc nét (default = 2)
+    viewer.scene.globe.maximumScreenSpaceError = 2;
+    // Giới hạn tile đồng thời — giảm băng thông
+    viewer.scene.globe.tileCacheSize = 50;
+    // Tắt atmosphere và fog khi ở chế độ 2D để nhẹ hơn
+    viewer.scene.globe.showGroundAtmosphere = false;
+    viewer.scene.fog.enabled = false;
+    viewer.scene.skyAtmosphere.show = false;
 
     // Ẩn credit bar
     if (viewer.cesiumWidget?.creditContainer) {

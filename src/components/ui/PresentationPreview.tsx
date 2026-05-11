@@ -329,7 +329,15 @@ export function PresentationPreview({ blocks, onClose }: Props) {
               const altitude = Math.max(0.1, 5 / zoom);
 
               setActiveMediaBlock((prev: any) => {
-                if (prev?.type === 'mapAction' && prev.lat === lat && prev.lng === lng && prev.altitude === altitude) {
+                if (
+                  prev?.type === 'mapAction' &&
+                  prev.lat === lat &&
+                  prev.lng === lng &&
+                  prev.altitude === altitude &&
+                  prev.annotationPreset === annotationPreset &&
+                  prev.grid === grid &&
+                  prev.globeStyle === globeStyle
+                ) {
                   return prev;
                 }
                 return {
@@ -422,7 +430,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
       </div>
 
       {/* LEFT: SCROLLABLE CONTENT WRAPPER */}
-      <div className="left-panel-preview flex flex-col relative z-20 bg-white/70 backdrop-blur-2xl border-b lg:border-b-0 lg:border-r border-white/80 shadow-[20px_0_50px_rgba(14,165,233,0.1)] w-full lg:w-1/2 lg:min-w-[500px] lg:max-w-3xl overflow-hidden">
+      <div className="left-panel-preview flex flex-col relative z-20 bg-white/70 backdrop-blur-2xl border-b lg:border-b-0 lg:border-r border-white/80 shadow-[20px_0_50px_rgba(14,165,233,0.1)] w-full lg:w-1/2 lg:min-w-[500px] overflow-hidden">
         {/* Thêm class để ẩn scrollbar hiển thị ở giữa màn hình */}
         <div ref={scrollContainerRef} className="flex-1 overflow-y-auto overflow-x-hidden pt-16 lg:pt-32 pb-16 lg:pb-64 px-4 lg:px-16 space-y-6 lg:space-y-10 [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
           {blocks.map((block) => {
@@ -582,7 +590,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
       </div>
 
       {/* RIGHT: GLOBE & MEDIA BACKGROUND */}
-      <div className="right-panel-preview w-full flex flex-col p-2 lg:p-0 relative lg:absolute lg:right-0 lg:top-0 lg:bottom-0 lg:w-1/2 lg:h-full shrink-0 z-10 bg-white/40 lg:bg-transparent backdrop-blur-3xl lg:backdrop-blur-none border-t lg:border-0 border-white/80 rounded-t-[24px] lg:rounded-none">
+      <div className="right-panel-preview w-full flex flex-col p-2 lg:p-0 relative shrink-0 z-10 bg-white/40 lg:bg-[#0a1628] backdrop-blur-3xl lg:backdrop-blur-none border-t lg:border-0 border-white/80 rounded-t-[24px] lg:rounded-none">
         
         {/* MAC OS STYLE HEADER (Mobile Only) */}
         <div className="flex lg:hidden items-center justify-between mb-2 bg-white/80 backdrop-blur-md rounded-xl p-2 border border-white/60 shadow-sm shrink-0">
@@ -605,10 +613,11 @@ export function PresentationPreview({ blocks, onClose }: Props) {
                 imageryLayer={
                   activeMediaBlock?.globeStyle ||
                   (blocks.find(b => b.globeStyle)?.globeStyle) ||
-                  'ArcGIS World Imagery'
+                  'Sentinel-2'
                 }
                 showGrid={activeMediaBlock?.grid || false}
                 showLayerPicker={false}
+                annotations={ANNOTATION_PRESETS[activeMediaBlock?.annotationPreset || 'none'] || []}
                 onPinClick={(pin) => setSelectedPin(pin)}
               />
             </div>
@@ -619,7 +628,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
             </div>
 
           </div>
-          <div className="hidden lg:block absolute inset-0 bg-gradient-to-r from-[#E0F2FE] via-transparent to-transparent pointer-events-none" />
+
 
           {/* HIỂN THỊ POPUP THÔNG TIN KHI BẤM VÀO GHIM */}
           {selectedPin && (
@@ -648,10 +657,13 @@ export function PresentationPreview({ blocks, onClose }: Props) {
         @media (min-width: 1024px) {
           .left-panel-preview {
             height: 100% !important;
-            flex: 1 1 0% !important;
+            width: 50% !important;
+            max-width: 50% !important;
+            flex: none !important;
           }
           .right-panel-preview {
             height: 100% !important;
+            flex: 1 1 0% !important;
           }
         }
       `}} />

@@ -143,7 +143,17 @@ export function ClassroomTabs({ user }: Props) {
         {tab === 'online'       && <ClassroomClient user={user} />}
         {tab === 'home'         && <HomeClassClient user={user} />}
         {tab === 'test'         && <OldLessonCheckClient user={user} />}
-        {tab === 'presentation' && <PresentationManagerClient />}
+        {tab === 'presentation' && (
+          (user.role === 1 || user.role === 2)
+            ? <PresentationManagerClient />
+            : (
+              <div className="text-center py-20 rounded-[32px]" style={{ background: 'rgba(255, 255, 255, 0.65)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 0.8)', boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1)' }}>
+                <div className="text-6xl mb-4">👨‍🏫</div>
+                <p className="font-bold text-[#082F49] text-xl mb-2">Phần này dành cho giáo viên</p>
+                <p className="text-[#94A3B8]">Giáo viên sẽ sử dụng tính năng này để soạn và trình chiếu bài giảng trên lớp học.</p>
+              </div>
+            )
+        )}
       </div>
     </div>
   );

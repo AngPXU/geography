@@ -1,9 +1,10 @@
-'use client';
-
-import { useParams } from 'next/navigation';
+import { auth } from '@/auth';
+import { redirect } from 'next/navigation';
 import AssignmentDetailPage from '@/components/ui/AssignmentDetailPage';
 
-export default function Page() {
-  const { cid, aid } = useParams() as { cid: string; aid: string };
-  return <AssignmentDetailPage classId={cid} assignmentId={aid} />;
+export default async function Page({ params }: { params: Promise<{ cid: string; aid: string }> }) {
+  const session = await auth();
+  if (!session?.user) redirect('/login');
+  const { cid, aid } = await params;
+  return <AssignmentDetailPage classId={cid} assignmentId={aid} session={session} />;
 }

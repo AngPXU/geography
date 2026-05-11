@@ -2,7 +2,6 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { useSession } from 'next-auth/react';
 import {
   FaArrowLeft, FaClock, FaStar, FaSpinner, FaCheckCircle,
   FaTimesCircle, FaChevronDown, FaChevronUp, FaSave,
@@ -606,11 +605,11 @@ function TeacherView({
 interface Props {
   classId: string;
   assignmentId: string;
+  session: any;
 }
 
-export default function AssignmentDetailPage({ classId, assignmentId }: Props) {
+export default function AssignmentDetailPage({ classId, assignmentId, session }: Props) {
   const router             = useRouter();
-  const { data: session }  = useSession();
   const [assignment, setAssignment] = useState<AssignmentDetail | null>(null);
   const [isTeacher, setIsTeacher]   = useState(false);
   const [loading, setLoading]       = useState(true);
@@ -682,7 +681,7 @@ export default function AssignmentDetailPage({ classId, assignmentId }: Props) {
 
   return (
     <div style={bgStyle} className="font-[Nunito,Quicksand,sans-serif]">
-      <div className="max-w-2xl mx-auto px-4 pt-6 pb-12 space-y-5">
+      <div className="w-[90%] mx-auto px-4 pt-6 pb-12 space-y-5">
         {/* Back button */}
         <button onClick={() => router.back()}
           className="flex items-center gap-2 text-[#94A3B8] hover:text-[#334155] font-bold text-sm

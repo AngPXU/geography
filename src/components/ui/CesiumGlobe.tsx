@@ -15,12 +15,21 @@ export interface CesiumGlobeHandle {
   clearPins: () => void;
 }
 
+export interface AnnotationItem {
+  lat: number;
+  lng: number;
+  label: string;
+  color?: string; // hex color string, e.g. '#FF4444'
+  isSmall?: boolean;
+}
+
 interface CesiumGlobeProps {
   initialLat?: number;
   initialLng?: number;
   initialAltitude?: number;
   showGrid?: boolean;
   imageryLayer?: string;
+  annotations?: AnnotationItem[];
   onLayerChange?: (layerName: string) => void;
   onPinClick?: (pinData: { title: string, info: string, image?: string }) => void;
   showLayerPicker?: boolean;
@@ -66,10 +75,12 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
   onPinClick,
   showLayerPicker = true,
   className = '',
+  annotations,
 }, ref) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const viewerRef    = useRef<any>(null);
   const gridLayerRef = useRef<any>(null);
+  const annotationEntitiesRef = useRef<any[]>([]);
   const initRef      = useRef(false);
   const [ready, setReady] = useState(false);
   const [initialized, setInitialized] = useState(false);
@@ -213,26 +224,156 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
     return () => clearInterval(interval);
   }, [ready, initialized, imageryLayer]);
 
-  // ── GRID OVERLAY ─────────────────────────────────────────────────────────────
+  // ── GRID OVERLAY (Graticule địa lý chuẩn: 36 kinh tuyến × 18 vĩ tuyến / 10°) ─
   useEffect(() => {
     if (!ready || !viewerRef.current) return;
     const Cesium = (window as any).Cesium;
     if (!Cesium) return;
     const viewer = viewerRef.current;
+
     if (showGrid && !gridLayerRef.current) {
-      gridLayerRef.current = viewer.imageryLayers.addImageryProvider(
-        new Cesium.GridImageryProvider({
-          cells: 24,
-          color: Cesium.Color.WHITE.withAlpha(0.3),
-          glowColor: Cesium.Color.WHITE.withAlpha(0.05),
-          glowWidth: 1,
+      const instances: any[] = [];
+
+      // ── Màu sắc các đường đặc biệt ──────────────────────────────────────────
+      const COLOR_EQUATOR   = Cesium.Color.fromCssColorString('#FF4444').withAlpha(1.0);   // Xích đạo - đỏ tươi
+      const COLOR_PRIME     = Cesium.Color.fromCssColorString('#22D3EE').withAlpha(1.0);   // Kinh tuyến gốc - cyan
+      const COLOR_TROPIC    = Cesium.Color.fromCssColorString('#FBBF24').withAlpha(0.9);   // Chí tuyến - vàng cam
+      const COLOR_ARCTIC    = Cesium.Color.fromCssColorString('#60A5FA').withAlpha(0.85);  // Vòng cực - xanh dương
+      const COLOR_MAJOR     = Cesium.Color.WHITE.withAlpha(0.50);                          // Bội số 30° - trắng đậm
+      const COLOR_MINOR     = Cesium.Color.WHITE.withAlpha(0.22);                          // Đường 10° thông thường
+
+      // Các vĩ độ đặc biệt
+      const SPECIAL_LATS: Record<number, { color: any; width: number }> = {
+        0:     { color: COLOR_EQUATOR, width: 2.5 },  // Xích đạo
+        23.5:  { color: COLOR_TROPIC,  width: 1.8 },  // Chí tuyến Bắc
+        [-23.5 as any]: { color: COLOR_TROPIC,  width: 1.8 },  // Chí tuyến Nam
+        66.5:  { color: COLOR_ARCTIC,  width: 1.5 },  // Vòng cực Bắc
+        [-66.5 as any]: { color: COLOR_ARCTIC,  width: 1.5 },  // Vòng cực Nam
+      };
+
+      // ── Vĩ tuyến: mỗi 10° từ -90° → 90° ──────────────────────────────────
+      // Thêm các đường đặc biệt: ±23.5° (chí tuyến), ±66.5° (vòng cực)
+      const latList = [
+        ...Array.from({ length: 19 }, (_, i) => -90 + i * 10), // -90,-80,...,90
+        23.5, -23.5, 66.5, -66.5,                              // đường đặc biệt
+      ];
+
+      for (const lat of latList) {
+        const positions: any[] = [];
+        for (let lng = -180; lng <= 180; lng += 1) {
+          positions.push(Cesium.Cartesian3.fromDegrees(lng, lat));
+        }
+
+        const special = SPECIAL_LATS[lat];
+        const isMajor = lat % 30 === 0;
+        const color = special ? special.color : isMajor ? COLOR_MAJOR : COLOR_MINOR;
+        const width = special ? special.width : isMajor ? 1.2 : 0.8;
+
+        instances.push(new Cesium.GeometryInstance({
+          geometry: new Cesium.PolylineGeometry({
+            positions,
+            width,
+            vertexFormat: Cesium.PolylineColorAppearance.VERTEX_FORMAT,
+          }),
+          attributes: {
+            color: Cesium.ColorGeometryInstanceAttribute.fromColor(color),
+          },
+        }));
+      }
+
+      // ── Kinh tuyến: mỗi 10° → 36 đường (đại diện cho 360 kinh tuyến) ──────
+      for (let lng = -180; lng < 180; lng += 10) {
+        const positions: any[] = [];
+        for (let lat = -90; lat <= 90; lat += 1) {
+          positions.push(Cesium.Cartesian3.fromDegrees(lng, lat));
+        }
+
+        const isPrime   = lng === 0;
+        const isMajor   = lng % 30 === 0;
+        const color = isPrime ? COLOR_PRIME : isMajor ? COLOR_MAJOR : COLOR_MINOR;
+        const width = isPrime ? 2.5 : isMajor ? 1.2 : 0.8;
+
+        instances.push(new Cesium.GeometryInstance({
+          geometry: new Cesium.PolylineGeometry({
+            positions,
+            width,
+            vertexFormat: Cesium.PolylineColorAppearance.VERTEX_FORMAT,
+          }),
+          attributes: {
+            color: Cesium.ColorGeometryInstanceAttribute.fromColor(color),
+          },
+        }));
+      }
+
+      gridLayerRef.current = viewer.scene.primitives.add(
+        new Cesium.Primitive({
+          geometryInstances: instances,
+          appearance: new Cesium.PolylineColorAppearance(),
+          asynchronous: false,
         })
       );
     } else if (!showGrid && gridLayerRef.current) {
-      viewer.imageryLayers.remove(gridLayerRef.current);
+      viewer.scene.primitives.remove(gridLayerRef.current);
       gridLayerRef.current = null;
     }
   }, [showGrid, ready]);
+
+  // ── ANNOTATION LABELS ────────────────────────────────────────────────────────
+  useEffect(() => {
+    if (!ready || !viewerRef.current) return;
+    const Cesium = (window as any).Cesium;
+    if (!Cesium) return;
+    const viewer = viewerRef.current;
+
+    // Xóa các chú thích cũ
+    annotationEntitiesRef.current.forEach(e => viewer.entities.remove(e));
+    annotationEntitiesRef.current = [];
+
+    if (!annotations || annotations.length === 0) return;
+
+    for (const ann of annotations) {
+      // Parse màu từ Tailwind class hoặc hex string
+      let cesiumColor = Cesium.Color.WHITE;
+      if (ann.color) {
+        const colorMap: Record<string, string> = {
+          'text-red-500':     '#EF4444',
+          'text-red-400':     '#F87171',
+          'text-blue-600':    '#2563EB',
+          'text-blue-400':    '#60A5FA',
+          'text-blue-700':    '#1D4ED8',
+          'text-slate-700':   '#334155',
+          'text-emerald-700': '#047857',
+          'text-orange-700':  '#C2410C',
+          'text-rose-700':    '#BE123C',
+          'text-green-700':   '#15803D',
+          'text-purple-700':  '#7E22CE',
+          'text-cyan-700':    '#0E7490',
+          'text-white':       '#FFFFFF',
+        };
+        const hex = colorMap[ann.color] || ann.color;
+        try { cesiumColor = Cesium.Color.fromCssColorString(hex); } catch {}
+      }
+
+      const fontSize = ann.isSmall ? '12pt' : '14pt';
+      const entity = viewer.entities.add({
+        position: Cesium.Cartesian3.fromDegrees(ann.lng, ann.lat, 500000),
+        label: {
+          text: ann.label,
+          font: `bold ${fontSize} Nunito, sans-serif`,
+          fillColor: cesiumColor,
+          outlineColor: Cesium.Color.fromCssColorString('#082F49').withAlpha(0.85),
+          outlineWidth: 3,
+          style: Cesium.LabelStyle.FILL_AND_OUTLINE,
+          verticalOrigin: Cesium.VerticalOrigin.CENTER,
+          horizontalOrigin: Cesium.HorizontalOrigin.CENTER,
+          disableDepthTestDistance: Number.POSITIVE_INFINITY,
+          scaleByDistance: new Cesium.NearFarScalar(1.5e6, 1.2, 1.5e8, 0.4),
+          translucencyByDistance: new Cesium.NearFarScalar(1.5e7, 1.0, 1.5e8, 0.3),
+        },
+      });
+      annotationEntitiesRef.current.push(entity);
+    }
+  }, [annotations, ready]);
 
   // ── IMPERATIVE HANDLE ─────────────────────────────────────────────────────────
   useImperativeHandle(ref, () => ({
@@ -280,7 +421,12 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
       entity._customPinData = { title, info, image };
     },
     clearPins() {
-      viewerRef.current?.entities.removeAll();
+      if (!viewerRef.current) return;
+      // Chỉ xóa pin entities, giữ lại annotation entities
+      const pinEntities = viewerRef.current.entities.values.filter(
+        (e: any) => e._customPinData
+      );
+      pinEntities.forEach((e: any) => viewerRef.current.entities.remove(e));
     },
   }), []);
 
