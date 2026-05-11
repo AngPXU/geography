@@ -7,17 +7,28 @@ export const metadata: Metadata = {
   description: "Khám phá bản đồ 3D, học tập qua các câu hỏi trắc nghiệm và theo dõi tiến trình học tập của bạn.",
 };
 import Link from 'next/link';
+import dynamic from 'next/dynamic';
 import { Navbar } from "@/layouts/Navbar";
 import { EarthGlobe } from "@/components/ui/EarthGlobe";
 import { FaRocket, FaMap } from "react-icons/fa";
-import { EarthRecords } from "@/components/ui/EarthRecords";
-import { DashboardOverview } from "@/components/ui/DashboardOverview";
-import { GeoQuestions } from "@/components/ui/GeoQuestions";
-import { GeoFunFacts } from "@/components/ui/GeoFunFacts";
-import { Footer } from "@/layouts/Footer";
 import dbConnect from "@/utils/db";
 import User from "@/models/User";
 import { getVietnamDateStr } from "@/utils/missions";
+
+// Lazy-load các section bên dưới màn hình đầu — defer JS bundle, không block FCP
+const DashboardOverview = dynamic(() => import('@/components/ui/DashboardOverview').then(m => ({ default: m.DashboardOverview })), {
+  loading: () => <div className="w-full h-64 rounded-3xl bg-white/40 animate-pulse" />,
+});
+const EarthRecords = dynamic(() => import('@/components/ui/EarthRecords').then(m => ({ default: m.EarthRecords })), {
+  loading: () => <div className="w-full h-48 rounded-3xl bg-white/40 animate-pulse" />,
+});
+const GeoQuestions = dynamic(() => import('@/components/ui/GeoQuestions').then(m => ({ default: m.GeoQuestions })), {
+  loading: () => <div className="w-full h-48 rounded-3xl bg-white/40 animate-pulse" />,
+});
+const GeoFunFacts = dynamic(() => import('@/components/ui/GeoFunFacts').then(m => ({ default: m.GeoFunFacts })), {
+  loading: () => <div className="w-full h-48 rounded-3xl bg-white/40 animate-pulse" />,
+});
+const Footer = dynamic(() => import('@/layouts/Footer').then(m => ({ default: m.Footer })));
 
 export default async function HomePage() {
   const session = await auth();

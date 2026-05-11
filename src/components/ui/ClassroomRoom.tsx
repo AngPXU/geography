@@ -1,15 +1,25 @@
 'use client';
 
 import { useState, useEffect, useRef, useCallback } from 'react';
+import dynamic from 'next/dynamic';
 import { FaDoorOpen, FaChalkboard, FaBullhorn, FaCheck, FaUserGraduate, FaPlay } from 'react-icons/fa';
 import { QuizQuestion } from './QuizCreator';
 import { ChatPanel } from './ChatPanel';
 import { ScorePanel } from './ScorePanel';
 import { QuizCreator } from './QuizCreator';
 import { QuizPanel, IActiveQuiz } from './QuizPanel';
-import { LiveKitPanel } from './LiveKitPanel';
-import { LiveKitQuizPanel } from './LiveKitQuizPanel';
 import { Room, RoomEvent, ConnectionState } from 'livekit-client';
+
+// LiveKit panels chứa nhiều UI nặng + WebRTC tracks. Lazy-load để chunk
+// chính của ClassroomRoom nhẹ hơn (LiveKit client core vẫn được dùng cho
+// kết nối nên không thể tách hoàn toàn, nhưng tách UI panels giúp shell
+// load nhanh hơn rõ rệt trên mobile).
+const LiveKitPanel = dynamic(() => import('./LiveKitPanel').then(m => ({ default: m.LiveKitPanel })), {
+  ssr: false,
+});
+const LiveKitQuizPanel = dynamic(() => import('./LiveKitQuizPanel').then(m => ({ default: m.LiveKitQuizPanel })), {
+  ssr: false,
+});
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

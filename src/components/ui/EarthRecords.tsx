@@ -131,10 +131,16 @@ export function EarthRecords() {
             >
 
               {/* Image Background */}
-              <div
-                className="absolute inset-0 bg-cover bg-center group-hover:scale-110 transition-transform duration-700 ease-out"
-                style={{ backgroundImage: `url('${rec.bg}')` }}
-              />
+              <div className="absolute inset-0 group-hover:scale-110 transition-transform duration-700 ease-out overflow-hidden">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={rec.bg}
+                  alt={rec.name}
+                  loading="lazy"
+                  decoding="async"
+                  className="w-full h-full object-cover"
+                />
+              </div>
 
               {/* Gradient Overlay */}
               <div className={`absolute inset-0 bg-gradient-to-t ${rec.gradient} opacity-80 group-hover:opacity-90 transition-opacity duration-300`} />

@@ -1,9 +1,29 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import VirtualPet from './VirtualPet';
+import dynamic from 'next/dynamic';
 import { getPetInfo } from '@/utils/petSystem';
 import { PetInfoModal } from './PetInfoModal';
+
+// VirtualPet kéo three + @react-three/fiber + @react-three/drei (~600KB).
+// Lazy-load để không nặng dashboard ban đầu.
+const VirtualPet = dynamic(() => import('./VirtualPet'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center">
+      <div
+        style={{
+          width: 36,
+          height: 36,
+          borderRadius: '50%',
+          border: '3px solid rgba(6,182,212,0.2)',
+          borderTopColor: '#06B6D4',
+          animation: 'spin 0.8s linear infinite',
+        }}
+      />
+    </div>
+  ),
+});
 
 interface PetGardenProps {
   initialPetExp: number;

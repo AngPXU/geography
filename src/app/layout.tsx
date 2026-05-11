@@ -5,6 +5,7 @@ import PwaRegister from "@/components/PwaRegister";
 import { OnlineTimer } from "@/components/OnlineTimer";
 import { BadgeUnlockWatcher } from "@/components/ui/BadgeUnlockWatcher";
 import ThreeWarningSuppress from "@/components/ThreeWarningSuppress";
+import { NavigationLoader } from "@/components/ui/NavigationLoader";
 
 const beVietnamPro = Be_Vietnam_Pro({
   weight: ["400", "500", "600", "700", "800", "900"],
@@ -89,17 +90,16 @@ export const metadata: Metadata = {
     site: "@vuihocdialy",
   },
 
-  // ── Icons ──
+  // ── Icons (chỉ tham chiếu file thật sự tồn tại trong /public) ──
   icons: {
     icon: [
-      { url: "/favicon.png", sizes: "any" },
       { url: "/icon-192x192.png", type: "image/png", sizes: "192x192" },
       { url: "/icon-512x512.png", type: "image/png", sizes: "512x512" },
     ],
     apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+      { url: "/icon-192x192.png", sizes: "192x192", type: "image/png" },
     ],
-    shortcut: "/favicon.png",
+    shortcut: "/icon-192x192.png",
   },
 
   // ── PWA manifest ──
@@ -199,12 +199,15 @@ export default function RootLayout({
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
+        {/* Xoá 300ms tap delay trên tất cả trình duyệt mobile cũ */}
+        <meta name="HandheldFriendly" content="true" />
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-full flex flex-col" style={{ touchAction: 'manipulation' }}>
         <ThreeWarningSuppress />
         <PwaRegister />
         <OnlineTimer />
         <BadgeUnlockWatcher />
+        <NavigationLoader />
         {children}
       </body>
     </html>

@@ -2,10 +2,42 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
-import { ClassroomClient } from './ClassroomClient';
-import { HomeClassClient } from './HomeClassClient';
-import { OldLessonCheckClient } from './OldLessonCheckClient';
-import { PresentationManagerClient } from './PresentationManagerClient';
+import dynamic from 'next/dynamic';
+
+// Mỗi tab là một subapp riêng (LiveKit, MapBox, RichText, Cesium...).
+// Lazy-load theo tab để khi user chỉ vào "online" thì không phải tải code
+// của 3 tab còn lại. Đây là cải thiện hiệu năng lớn nhất ở màn lớp học.
+const TabFallback = () => (
+  <div className="flex items-center justify-center py-20">
+    <div
+      style={{
+        width: 40,
+        height: 40,
+        borderRadius: '50%',
+        border: '4px solid rgba(6,182,212,0.2)',
+        borderTopColor: '#06B6D4',
+        animation: 'spin 0.8s linear infinite',
+      }}
+    />
+  </div>
+);
+
+const ClassroomClient = dynamic(
+  () => import('./ClassroomClient').then(m => ({ default: m.ClassroomClient })),
+  { ssr: false, loading: TabFallback }
+);
+const HomeClassClient = dynamic(
+  () => import('./HomeClassClient').then(m => ({ default: m.HomeClassClient })),
+  { ssr: false, loading: TabFallback }
+);
+const OldLessonCheckClient = dynamic(
+  () => import('./OldLessonCheckClient').then(m => ({ default: m.OldLessonCheckClient })),
+  { ssr: false, loading: TabFallback }
+);
+const PresentationManagerClient = dynamic(
+  () => import('./PresentationManagerClient').then(m => ({ default: m.PresentationManagerClient })),
+  { ssr: false, loading: TabFallback }
+);
 
 interface Props {
   user: {

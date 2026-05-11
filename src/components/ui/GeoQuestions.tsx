@@ -25,12 +25,16 @@ export function GeoQuestions() {
   const [history, setHistory]               = useState<QAItem[]>([]);
   const [historyLoading, setHistoryLoading] = useState(true);
   const [expandedId, setExpandedId]         = useState<string | number | null>(null);
+  const sectionRef  = useRef<HTMLElement | null>(null);
+  const fetchedRef  = useRef(false);
 
   const qaInputRef  = useRef<HTMLTextAreaElement>(null);
   const qaBottomRef = useRef<HTMLDivElement>(null);
 
   // Tải lịch sử của user từ DB
   const fetchHistory = useCallback(async () => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
     setHistoryLoading(true);
     try {
       const res = await fetch('/api/geo-questions/history');
@@ -56,7 +60,17 @@ export function GeoQuestions() {
     }
   }, []);
 
-  useEffect(() => { fetchHistory(); }, [fetchHistory]);
+  // Chỉ fetch khi section cuộn vào viewport
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) { fetchHistory(); return; }
+    const observer = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) { fetchHistory(); observer.disconnect(); } },
+      { rootMargin: '200px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [fetchHistory]);
 
   const handleAsk = useCallback(async () => {
     const q = qaInput.trim();
@@ -111,7 +125,7 @@ export function GeoQuestions() {
   };
 
   return (
-    <section className="w-[95%] md:w-[90%] max-w-[1400px] mx-auto py-20 relative z-10">
+    <section ref={sectionRef} className="w-[95%] md:w-[90%] max-w-[1400px] mx-auto py-20 relative z-10">
       {/* Decorative blobs */}
       <div className="absolute top-0 right-[20%] w-[30rem] h-[30rem] bg-gradient-to-tr from-cyan-200/50 to-blue-200/50 rounded-full blur-[100px] opacity-60 z-[-1] pointer-events-none" />
       <div className="absolute bottom-10 left-[10%] w-[35rem] h-[35rem] bg-gradient-to-bl from-rose-200/40 to-orange-100/40 rounded-full blur-[120px] opacity-60 z-[-1] pointer-events-none" />

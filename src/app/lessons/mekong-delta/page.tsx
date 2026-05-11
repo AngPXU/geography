@@ -1,13 +1,29 @@
 'use client';
 
-import React, { useRef, useEffect, useState, useMemo } from 'react';
-import Map, { Marker, NavigationControl } from 'react-map-gl/maplibre';
-import maplibregl from 'maplibre-gl';
-import 'maplibre-gl/dist/maplibre-gl.css';
+import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { Navbar } from '@/layouts/Navbar';
+import type { MekongChapter } from './MekongMap';
 
-// Dữ liệu Bài giảng Scrollytelling
-const LESSON_CHAPTERS = [
+const MekongMap = dynamic(() => import('./MekongMap'), {
+  ssr: false,
+  loading: () => (
+    <div className="w-full h-full flex items-center justify-center bg-sky-50/60">
+      <div
+        style={{
+          width: 44,
+          height: 44,
+          borderRadius: '50%',
+          border: '4px solid rgba(6,182,212,0.2)',
+          borderTopColor: '#06B6D4',
+          animation: 'spin 0.8s linear infinite',
+        }}
+      />
+    </div>
+  ),
+});
+
+const LESSON_CHAPTERS: MekongChapter[] = [
   {
     id: 'intro',
     title: 'Đồng bằng Sông Cửu Long',
@@ -19,7 +35,7 @@ const LESSON_CHAPTERS = [
     id: 'cairang',
     title: 'Chợ nổi Cái Răng (Cần Thơ)',
     content: 'Một trong những chợ nổi lớn nhất miền Tây Nam Bộ. Nét văn hóa độc đáo nhất là việc giao thương trên sông với những cây "Bẹo" treo loại nông sản mà ghe muốn bán. Thời điểm nhộn nhịp nhất của chợ là vào sáng sớm (từ 5h đến 8h sáng).',
-    image: 'https://images.unsplash.com/photo-1601662973719-2182069eddc0?q=80&w=800&auto=format&fit=crop', // A river market proxy
+    image: 'https://images.unsplash.com/photo-1601662973719-2182069eddc0?q=80&w=800&auto=format&fit=crop',
     viewState: { longitude: 105.748, latitude: 10.016, zoom: 12, pitch: 60, bearing: 30 }
   },
   {
@@ -39,10 +55,8 @@ const LESSON_CHAPTERS = [
 ];
 
 export default function MekongDeltaScrollytelling() {
-  const mapRef = useRef<any>(null);
   const [activeChapter, setActiveChapter] = useState('intro');
 
-  // Gắn Intersection Observer để phát hiện lúc người dùng cuộn đến chap nào
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
@@ -52,7 +66,7 @@ export default function MekongDeltaScrollytelling() {
           }
         });
       },
-      { threshold: 0.5 } // Khi thẻ chiếm 50% màn hình thì Active
+      { threshold: 0.5 }
     );
 
     LESSON_CHAPTERS.forEach((chapter) => {
@@ -63,86 +77,43 @@ export default function MekongDeltaScrollytelling() {
     return () => observer.disconnect();
   }, []);
 
-  // Lắng nghe sự thay đổi của activeChapter để gọi flyTo trên MapLibre
-  useEffect(() => {
-    const chapter = LESSON_CHAPTERS.find(c => c.id === activeChapter);
-    if (chapter && mapRef.current) {
-      mapRef.current.flyTo({
-        center: [chapter.viewState.longitude, chapter.viewState.latitude],
-        zoom: chapter.viewState.zoom,
-        pitch: chapter.viewState.pitch,
-        bearing: chapter.viewState.bearing,
-        duration: 2500, // Hiệu ứng bay dài 2.5 giây
-        essential: true
-      });
-    }
-  }, [activeChapter]);
-
-  const activeChapData = useMemo(() => LESSON_CHAPTERS.find(c => c.id === activeChapter), [activeChapter]);
-
   return (
     <div className="bg-[#f8fafc] text-slate-800 font-sans min-h-screen">
-      <Navbar user={undefined} /> {/* User dummy cho Navbar */}
+      <Navbar user={undefined} />
 
-      {/* Split Screen Layout */}
       <div className="flex flex-col lg:flex-row w-full bg-white relative top-0 mt-[80px]">
-        
-        {/* RIGHT SIDE: Bản Đồ MapLibre (Sticky) */}
+
         <div className="w-full lg:w-1/2 h-[50vh] lg:h-[calc(100vh-80px)] sticky top-[80px] order-1 lg:order-2">
-          {/* @ts-ignore mapLib is correct prop */}
-          <Map
-            ref={mapRef}
-            initialViewState={LESSON_CHAPTERS[0].viewState}
-            mapStyle="https://basemaps.cartocdn.com/gl/positron-gl-style/style.json" // Carto Positron (Miễn phí, Giao diện Gọn gàng hợp cho giáo dục)
-            mapLib={maplibregl}
-            style={{ width: '100%', height: '100%' }}
-            interactive={true}
-          >
-            {/* Custom Marker chỉ hiện thị ở vị trí của Chapter đang Active */}
-            {activeChapData && (
-              <Marker longitude={activeChapData.viewState.longitude} latitude={activeChapData.viewState.latitude} anchor="bottom">
-                <div className="animate-bounce">
-                  <div className="w-8 h-8 flex items-center justify-center rounded-full bg-white text-lg shadow-[0_5px_15px_rgba(225,29,72,0.6)] border-2 border-rose-500">
-                    📍
-                  </div>
-                  <div className="w-0 h-0 border-l-[6px] border-l-transparent border-r-[6px] border-r-transparent border-t-[8px] border-t-rose-500 mx-auto -mt-[2px]" />
-                </div>
-              </Marker>
-            )}
-            <NavigationControl position="bottom-right" />
-          </Map>
+          <MekongMap chapters={LESSON_CHAPTERS} activeChapterId={activeChapter} />
         </div>
 
-        {/* LEFT SIDE: Kéo cuộn (Scroller) chứa nội dung */}
         <div className="w-full lg:w-1/2 p-6 lg:p-12 overflow-y-auto hide-scroll pt-20 order-2 lg:order-1 relative z-10" style={{ paddingBottom: '50vh' }}>
-          
+
           {LESSON_CHAPTERS.map((chapter, index) => {
             const isActive = chapter.id === activeChapter;
-            
+
             return (
-              <div 
-                key={chapter.id} 
-                id={chapter.id} 
+              <div
+                key={chapter.id}
+                id={chapter.id}
                 className={`min-h-[80vh] flex flex-col justify-center mb-32 transition-all duration-700 ${isActive ? 'opacity-100 scale-100' : 'opacity-10 scale-95 blur-sm'}`}
               >
                 <div className="p-8 md:p-12 rounded-[40px] bg-white/70 backdrop-blur-2xl shadow-[0_20px_40px_-15px_rgba(14,165,233,0.15)] border-2 border-white relative overflow-hidden group">
-                  {/* Trang trí vòng sáng bắt mắt phía sau text */}
                   <div className="absolute top-[-50px] right-[-50px] w-32 h-32 bg-cyan-200/50 rounded-full blur-2xl z-0 pointer-events-none"></div>
-                  
+
                   <div className="relative z-10">
                     <div className="inline-block px-4 py-1.5 rounded-full bg-slate-100 text-[#334155] font-bold text-xs uppercase tracking-widest mb-6">
                       Trạm {index + 1}
                     </div>
-                    
+
                     <h2 className="text-3xl lg:text-4xl font-black text-[#082F49] mb-6 leading-tight">
                       {chapter.title}
                     </h2>
-                    
+
                     <p className="text-slate-600 text-lg leading-relaxed font-medium mb-8">
                       {chapter.content}
                     </p>
-                    
-                    {/* Ảnh minh họa bài giảng */}
+
                     <div className="w-full h-64 rounded-3xl overflow-hidden shadow-lg border border-slate-100 relative group-hover:shadow-[0_15px_30px_rgba(8,47,73,0.2)] transition-all">
                       <img src={chapter.image} alt={chapter.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000 ease-out" />
                     </div>

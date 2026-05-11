@@ -69,19 +69,50 @@ h1, h2, h3, h4, h5, h6 {
 
 /* ── Mobile performance: giảm GPU load ── */
 @media (max-width: 768px) {
-  /* Tắt backdrop-blur trên card/panel thứ cấp — chỉ giữ lại Navbar & Modal */
+
+  /* 1. Xoá hoàn toàn gaussian blur lớn trên các blob trang trí.
+        blur-[80px]/[100px]/[120px] tạo ra texture riêng trên GPU mobile → đơ máy.
+        Dùng CSS class name escaped như Tailwind tạo ra. */
+  .blur-\[80px\], .blur-\[100px\], .blur-\[120px\],
+  .blur-\[60px\], .blur-\[150px\], .blur-\[180px\] {
+    filter: none !important;
+    will-change: auto !important;
+  }
+
+  /* 2. Tắt animation liquid-blob (selector cũ [style*=] sai — phải dùng [class*=]) */
+  [class*="liquid-blob"],
+  .animate-\[float_6s_ease-in-out_infinite\] {
+    animation: none !important;
+  }
+
+  /* 3. Giảm backdrop-blur trên card thứ cấp — giữ lại Navbar & Modal */
   .backdrop-blur-xl,
   .backdrop-blur-2xl,
   .backdrop-blur-3xl {
-    backdrop-filter: blur(8px) !important;
-    -webkit-backdrop-filter: blur(8px) !important;
+    backdrop-filter: blur(6px) !important;
+    -webkit-backdrop-filter: blur(6px) !important;
   }
-  /* Tắt hoàn toàn animation float/blob tốn CPU */
-  .animate-\[float\], [style*="liquid-blob"] {
-    animation: none !important;
+  .backdrop-blur-md {
+    backdrop-filter: blur(4px) !important;
+    -webkit-backdrop-filter: blur(4px) !important;
   }
-  /* Giúp browser biết element sẽ thay đổi transform — tạo compositing layer riêng */
+
+  /* 4. transition-all theo dõi TẤT CẢ properties (gồm box-shadow, filter, backdrop-filter)
+        → rất tốn kém. Giới hạn lại chỉ opacity + transform trên mobile. */
   .transition-all {
+    transition-property: opacity, transform !important;
+    transition-duration: 0.2s !important;
     will-change: auto;
+  }
+
+  /* 5. Loại bỏ 300ms tap-delay trên toàn bộ interactive elements.
+        Đây là nguyên nhân chính khiến mọi lần nhấn có độ trễ 300ms trước khi vào. */
+  a, button, [role="button"], input, select, textarea, label {
+    touch-action: manipulation;
+  }
+
+  /* 6. Tắt animate-pulse trên blob trang trí (tốn repaint) */
+  .pointer-events-none.animate-pulse {
+    animation: none !important;
   }
 }

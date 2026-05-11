@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 
 interface FunFact {
   _id: string;
@@ -45,10 +45,14 @@ export function GeoFunFacts() {
   const [loading, setLoading]         = useState(true);
   const [nextUpdateAt, setNextUpdate] = useState<string | null>(null);
   const [justGenerated, setJustGenerated] = useState(false);
+  const sectionRef = useRef<HTMLElement>(null);
+  const fetchedRef = useRef(false);
 
   const timeLeft = useCountdown(nextUpdateAt);
 
   const fetchFact = useCallback(async () => {
+    if (fetchedRef.current) return;
+    fetchedRef.current = true;
     setLoading(true);
     try {
       const res = await fetch('/api/geo-funfacts/auto');
@@ -63,10 +67,20 @@ export function GeoFunFacts() {
     }
   }, []);
 
-  useEffect(() => { fetchFact(); }, [fetchFact]);
+  // Chỉ fetch khi section cuộn vào viewport
+  useEffect(() => {
+    const el = sectionRef.current;
+    if (!el) { fetchFact(); return; }
+    const observer = new IntersectionObserver(
+      (entries) => { if (entries[0].isIntersecting) { fetchFact(); observer.disconnect(); } },
+      { rootMargin: '200px' }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [fetchFact]);
 
   return (
-    <section className="w-full py-20 px-4 md:px-8 relative overflow-hidden">
+    <section ref={sectionRef} className="w-full py-20 px-4 md:px-8 relative overflow-hidden">
       <style>{`
         @keyframes float {
           0% { transform: translateY(0px) rotate(0deg); }

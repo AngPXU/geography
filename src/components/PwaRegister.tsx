@@ -4,18 +4,16 @@ import { useEffect } from 'react';
 
 export default function PwaRegister() {
   useEffect(() => {
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js').then(
-          (registration) => {
-            console.log('Service Worker registration successful with scope: ', registration.scope);
-          },
-          (err) => {
-            console.log('Service Worker registration failed: ', err);
-          }
-        );
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return;
+
+    const onLoad = () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {
+        // Im lặng — SW failure không nên làm app crash hoặc spam console production
       });
-    }
+    };
+
+    window.addEventListener('load', onLoad);
+    return () => window.removeEventListener('load', onLoad);
   }, []);
 
   return null;

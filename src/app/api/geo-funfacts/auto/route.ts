@@ -144,7 +144,12 @@ export async function GET() {
       generated = true;
     }
 
-    return NextResponse.json({ fact, nextUpdateAt, generated, session });
+    return NextResponse.json({ fact, nextUpdateAt, generated, session }, {
+      headers: {
+        // Fact chỉ thay đổi 2 lần/ngày — cache 30 phút ở Vercel Edge CDN
+        'Cache-Control': 'public, s-maxage=1800, stale-while-revalidate=86400',
+      },
+    });
   } catch (err: any) {
     console.error('[GeoFunFact Auto]', err);
     return NextResponse.json({ error: err.message }, { status: 500 });

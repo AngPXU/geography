@@ -5,8 +5,10 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-// Dùng unpkg với đúng version pdfjs-dist đang cài
-pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// Self-host worker (copy bởi scripts/copy-public-assets.js từ node_modules
+// trong prebuild). Không phụ thuộc CDN bên ngoài → tránh rủi ro CDN
+// compromise và hoạt động trong mạng nội bộ trường học chặn CDN.
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf-worker/pdf.worker.min.mjs';
 
 interface Props {
   pdfUrl: string;

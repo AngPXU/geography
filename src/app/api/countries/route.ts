@@ -152,7 +152,11 @@ export async function GET() {
     countries = await Country.find().sort({ name: 1 }).lean();
   }
 
-  return NextResponse.json({ countries });
+  return NextResponse.json({ countries }, {
+    headers: {
+      'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+    },
+  });
 }
 
 // ── POST: create a new country (role=1 only) ──────────────────────────────────

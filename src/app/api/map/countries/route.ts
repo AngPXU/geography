@@ -29,8 +29,11 @@ export async function GET() {
       }
     ).lean();
 
-
-    return NextResponse.json({ seeded: true, count, countries });
+    return NextResponse.json({ seeded: true, count, countries }, {
+      headers: {
+        'Cache-Control': 'public, s-maxage=3600, stale-while-revalidate=86400',
+      },
+    });
   } catch (err: any) {
     return NextResponse.json({ error: err.message }, { status: 500 });
   }

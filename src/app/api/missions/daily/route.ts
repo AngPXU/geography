@@ -67,5 +67,10 @@ export async function GET() {
     missions: (doc as any).missions,
     streak: effectiveStreak,
     last7Days,
+  }, {
+    headers: {
+      // Private: per-user. Re-validate sau 30s, stale ok trong 5ph
+      'Cache-Control': 'private, max-age=30, stale-while-revalidate=300',
+    },
   });
 }

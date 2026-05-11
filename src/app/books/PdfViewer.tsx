@@ -6,8 +6,8 @@ import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import dynamic from 'next/dynamic';
 
-pdfjs.GlobalWorkerOptions.workerSrc =
-  `https://unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+// Self-host worker (xem scripts/copy-public-assets.js)
+pdfjs.GlobalWorkerOptions.workerSrc = '/pdf-worker/pdf.worker.min.mjs';
 
 const AiChatPanel = dynamic(() => import('./AiChatPanel'), {
   ssr: false,

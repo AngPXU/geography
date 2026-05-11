@@ -15,5 +15,9 @@ export async function GET() {
     .limit(50)
     .lean();
 
-  return NextResponse.json({ items });
+  return NextResponse.json({ items }, {
+    headers: {
+      'Cache-Control': 'private, max-age=30, stale-while-revalidate=120',
+    },
+  });
 }
