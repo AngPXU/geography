@@ -36,6 +36,8 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
   useEffect(() => {
     if (!user?.name) return;
     const poll = async () => {
+      // Không poll khi tab ẩn — tiết kiệm CPU/pin mobile
+      if (document.visibilityState === 'hidden') return;
       try {
         const res = await fetch('/api/notifications?poll=1');
         if (res.ok) {
@@ -45,7 +47,8 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
       } catch (e) {}
     };
     poll();
-    const intv = setInterval(poll, 5000);
+    // Tăng từ 5s → 30s — giảm 6x số network request mỗi phút
+    const intv = setInterval(poll, 30_000);
     return () => clearInterval(intv);
   }, [user]);
 
@@ -312,7 +315,7 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
       {/* =========== FULL NAVBAR =========== */}
       <nav className={`navbar-full ${scrolled ? 'hidden-bar' : ''}`}>
         <div className="max-w-7xl mx-auto">
-          <div className="bg-white/80 backdrop-blur-[24px] border border-white rounded-[24px] px-5 py-3 flex items-center justify-between shadow-[0_8px_32px_rgba(14,165,233,0.10),0_2px_8px_rgba(14,165,233,0.06)]">
+          <div className="bg-white/85 backdrop-blur-sm border border-white rounded-[24px] px-5 py-3 flex items-center justify-between shadow-[0_8px_32px_rgba(14,165,233,0.10),0_2px_8px_rgba(14,165,233,0.06)]">
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 group shrink-0 min-w-0">

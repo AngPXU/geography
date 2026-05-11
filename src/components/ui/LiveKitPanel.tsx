@@ -173,14 +173,15 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
 
   // ── Giáo viên: cho phép 1 học sinh phát biểu ────────────────────────────
   const allowSpeak = useCallback(async (participantIdentity: string) => {
-    // 1. Gửi data message để client biết ngay
-    await sendData({ type: 'allow-speak', identity: participantIdentity });
-    // 2. Cấp quyền thật sự qua LiveKit server API
+    // 1. Cấp quyền thật sự trước — đợi server xử lý xong
+    //    (không send data trước: tránh race condition học sinh bấm mic khi server chưa grant)
     await fetch(`/api/classroom/${classroomId}/livekit-permission`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ participantIdentity, canPublish: true }),
-    }).catch(() => {});
+    });
+    // 2. Sau khi server đã grant → mới thông báo client
+    await sendData({ type: 'allow-speak', identity: participantIdentity });
     setRaisedHands((prev) => { const m = new Map(prev); m.delete(participantIdentity); return m; });
   }, [classroomId, sendData]);
 
@@ -333,8 +334,13 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
     const room = roomRef.current;
     if (!room) return;
     const next = !isMicOn;
-    await room.localParticipant.setMicrophoneEnabled(next).catch(() => {});
-    setIsMicOn(next);
+    try {
+      await room.localParticipant.setMicrophoneEnabled(next);
+      // Chỉ cập nhật UI khi lệnh thành công — tránh indicator nhấp nháy giả
+      setIsMicOn(next);
+    } catch {
+      // Server từ chối publish (chưa được cấp quyền) — giữ nguyên trạng thái cũ
+    }
   }, [isMicOn]);
 
   // ── Screen share ─────────────────────────────────────────────────────────

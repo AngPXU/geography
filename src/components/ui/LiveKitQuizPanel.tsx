@@ -546,8 +546,8 @@ export function LiveKitQuizPanel({
     setPhase('idle');
     stopTimer();
     // Giờ mới gọi onQuizSaved — đảm bảo panel không unmount trước khi broadcast xong
-    onQuizSaved?.(finalScores, finalScores.length);
-  }, [broadcast, stopTimer, onQuizSaved, finalScores]);
+    onQuizSaved?.(finalScores, questions.length);
+  }, [broadcast, stopTimer, onQuizSaved, finalScores, questions.length]);
 
   /** Teacher: tạm dừng */
   const handlePause = useCallback(async () => {
@@ -570,7 +570,8 @@ export function LiveKitQuizPanel({
     if (myAnswer || myAnswerSent || inResultPhase || timeLeft <= 0 || isPaused) return;
     setMyAnswer(opt);
     setMyAnswerSent(true);
-    await sendToTeacher({
+    // Dùng broadcast thay vì destinationIdentities để tránh lỗi delivery khi teacher identity không khớp
+    await broadcast({
       type: 'quiz-answer',
       questionIndex: currentIndex,
       answer: opt,
@@ -578,7 +579,7 @@ export function LiveKitQuizPanel({
       studentName: currentUserName,
       answeredAt: Date.now(),
     });
-  }, [myAnswer, myAnswerSent, inResultPhase, timeLeft, isPaused, currentIndex, currentUserId, currentUserName, sendToTeacher]);
+  }, [myAnswer, myAnswerSent, inResultPhase, timeLeft, isPaused, currentIndex, currentUserId, currentUserName, broadcast]);
 
   // ─── Render guard ─────────────────────────────────────────────────────────
   // Đang kết nối (teacher chưa vào voice, đang tự connect)

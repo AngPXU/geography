@@ -221,7 +221,10 @@ export function BadgeUnlockWatcher() {
   useEffect(() => {
     setMounted(true);
     fetchStats();
-    const iv = setInterval(fetchStats, 30_000);
+    // Tăng từ 30s → 60s + dừng khi tab ẩn
+    const iv = setInterval(() => {
+      if (document.visibilityState !== 'hidden') fetchStats();
+    }, 60_000);
     return () => clearInterval(iv);
   }, [fetchStats]);
 

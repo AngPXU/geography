@@ -66,3 +66,22 @@ h1, h2, h3, h4, h5, h6 {
     padding-right: 2.5% !important;
   }
 }
+
+/* ── Mobile performance: giảm GPU load ── */
+@media (max-width: 768px) {
+  /* Tắt backdrop-blur trên card/panel thứ cấp — chỉ giữ lại Navbar & Modal */
+  .backdrop-blur-xl,
+  .backdrop-blur-2xl,
+  .backdrop-blur-3xl {
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+  }
+  /* Tắt hoàn toàn animation float/blob tốn CPU */
+  .animate-\[float\], [style*="liquid-blob"] {
+    animation: none !important;
+  }
+  /* Giúp browser biết element sẽ thay đổi transform — tạo compositing layer riêng */
+  .transition-all {
+    will-change: auto;
+  }
+}

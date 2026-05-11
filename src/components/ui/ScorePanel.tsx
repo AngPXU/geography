@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useCallback } from 'react';
-import { FaTrophy, FaCheck, FaTimes, FaClock, FaRedo, FaUserTimes } from 'react-icons/fa';
+import { FaTrophy, FaCheck, FaTimes, FaClock, FaRedo, FaUserTimes, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -38,6 +38,7 @@ function medal(rank: number) {
 export function ScorePanel({ roomId, currentUserId, isTeacher, scores: rawScores, totalQuestionsAsked, onlineIds, kickedIds, onRefresh }: Props) {
   const [resetting, setResetting] = useState(false);
   const [kickingId, setKickingId] = useState<string | null>(null);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const scores = [...rawScores].sort((a, b) =>
     b.totalScore !== a.totalScore ? b.totalScore - a.totalScore : b.correctCount - a.correctCount,
@@ -109,7 +110,7 @@ export function ScorePanel({ roomId, currentUserId, isTeacher, scores: rawScores
       {/* Column headers */}
       <div
         className="flex-shrink-0 px-3 py-2 border-b border-white/50 text-[9px] font-bold uppercase tracking-wide text-[#94A3B8]"
-        style={{ display: 'grid', gridTemplateColumns: '1.5rem 1fr 2rem 2rem 2rem 2.5rem auto' }}
+        style={{ display: 'grid', gridTemplateColumns: '1.5rem 1fr 2rem 2rem 2rem 2.5rem' }}
       >
         <span />
         <span>Học sinh</span>
@@ -117,7 +118,6 @@ export function ScorePanel({ roomId, currentUserId, isTeacher, scores: rawScores
         <span className="text-center text-red-400"><FaTimes size={8} className="inline" /></span>
         <span className="text-center text-[#94A3B8]"><FaClock size={8} className="inline" /></span>
         <span className="text-center text-amber-500">Điểm</span>
-        {isTeacher && <span />}
       </div>
 
       {/* Score list */}
@@ -136,72 +136,99 @@ export function ScorePanel({ roomId, currentUserId, isTeacher, scores: rawScores
               const isMine = entry.studentId === currentUserId;
               const isOnline = onlineIds.has(entry.studentId);
               const notAns = notAnsweredBase(entry);
+              const isExpanded = expandedId === entry.studentId;
 
               return (
-                <div
-                  key={entry.studentId}
-                  className={`items-center gap-1 px-3 py-2.5 transition-all duration-200 ${
-                    isMine ? 'bg-[#E0F2FE]/60' : 'hover:bg-white/50'
-                  }`}
-                  style={{ display: 'grid', gridTemplateColumns: '1.5rem 1fr 2rem 2rem 2rem 2.5rem auto' }}
-                >
-                  {/* Rank */}
-                  <div className="text-center">
-                    {m ? (
-                      <span className="text-sm leading-none">{m}</span>
-                    ) : (
-                      <span className="text-[10px] font-bold text-[#CBD5E1]">{rank}</span>
-                    )}
-                  </div>
-
-                  {/* Name + online dot */}
-                  <div className="min-w-0 flex items-center gap-1.5">
-                    <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                      isOnline ? 'bg-[#22C55E]' : 'bg-[#CBD5E1]'
-                    }`} title={isOnline ? 'Đang online' : 'Đã rời phòng'} />
-                    <p className={`text-xs font-semibold truncate leading-tight ${
-                      isMine ? 'text-[#06B6D4]' : 'text-[#082F49]'
-                    }`}>
-                      {entry.studentName}
-                      {isMine && <span className="ml-1 text-[8px] text-[#06B6D4]/70">(bạn)</span>}
-                    </p>
-                  </div>
-
-                  {/* Correct */}
-                  <div className="text-center">
-                    <span className="text-xs font-bold text-[#22C55E]">{entry.correctCount}</span>
-                  </div>
-
-                  {/* Wrong */}
-                  <div className="text-center">
-                    <span className="text-xs font-bold text-red-400">{entry.wrongCount}</span>
-                  </div>
-
-                  {/* Not answered */}
-                  <div className="text-center">
-                    <span className="text-xs font-bold text-[#94A3B8]">{notAns}</span>
-                  </div>
-
-                  {/* Total score */}
-                  <div className="text-center">
-                    <span className={`text-sm font-extrabold ${
-                      rank === 1 ? 'text-amber-500' : rank === 2 ? 'text-slate-400' : rank === 3 ? 'text-amber-700' : 'text-[#082F49]'
-                    }`}>
-                      {entry.totalScore}
-                    </span>
-                  </div>
-
-                  {/* Kick button (teacher only, not self) */}
-                  {isTeacher && (
+                <div key={entry.studentId}>
+                  {/* Main row */}
+                  <div
+                    className={`items-center gap-1 px-3 py-2.5 transition-all duration-200 ${
+                      isMine ? 'bg-[#E0F2FE]/60' : 'hover:bg-white/50'
+                    }`}
+                    style={{ display: 'grid', gridTemplateColumns: '1.5rem 1fr 2rem 2rem 2rem 2.5rem' }}
+                  >
+                    {/* Rank */}
                     <div className="text-center">
-                      <button
-                        onClick={() => handleKick(entry.studentId, entry.studentName)}
-                        disabled={kickingId === entry.studentId}
-                        className="w-6 h-6 rounded-lg flex items-center justify-center text-[#CBD5E1] hover:text-red-400 hover:bg-red-50 transition-all duration-200 disabled:opacity-40"
-                        title={`Đá ${entry.studentName} ra`}
-                      >
-                        <FaUserTimes size={10} />
-                      </button>
+                      {m ? (
+                        <span className="text-sm leading-none">{m}</span>
+                      ) : (
+                        <span className="text-[10px] font-bold text-[#CBD5E1]">{rank}</span>
+                      )}
+                    </div>
+
+                    {/* Name + online dot — clickable to expand */}
+                    <div
+                      className={`min-w-0 flex items-center gap-1.5 ${isTeacher ? 'cursor-pointer select-none' : ''}`}
+                      onClick={() => isTeacher && setExpandedId(isExpanded ? null : entry.studentId)}
+                      title={isTeacher ? (isExpanded ? 'Thu gọn' : 'Xem đầy đủ tên') : undefined}
+                    >
+                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                        isOnline ? 'bg-[#22C55E]' : 'bg-[#CBD5E1]'
+                      }`} />
+                      <p className={`text-xs font-semibold truncate leading-tight flex-1 ${
+                        isMine ? 'text-[#06B6D4]' : 'text-[#082F49]'
+                      }`}>
+                        {entry.studentName}
+                        {isMine && <span className="ml-1 text-[8px] text-[#06B6D4]/70">(bạn)</span>}
+                      </p>
+                      {isTeacher && (
+                        <span className="flex-shrink-0 text-[#CBD5E1]">
+                          {isExpanded ? <FaChevronUp size={8} /> : <FaChevronDown size={8} />}
+                        </span>
+                      )}
+                    </div>
+
+                    {/* Correct */}
+                    <div className="text-center">
+                      <span className="text-xs font-bold text-[#22C55E]">{entry.correctCount}</span>
+                    </div>
+
+                    {/* Wrong */}
+                    <div className="text-center">
+                      <span className="text-xs font-bold text-red-400">{entry.wrongCount}</span>
+                    </div>
+
+                    {/* Not answered */}
+                    <div className="text-center">
+                      <span className="text-xs font-bold text-[#94A3B8]">{notAns}</span>
+                    </div>
+
+                    {/* Total score */}
+                    <div className="text-center">
+                      <span className={`text-sm font-extrabold ${
+                        rank === 1 ? 'text-amber-500' : rank === 2 ? 'text-slate-400' : rank === 3 ? 'text-amber-700' : 'text-[#082F49]'
+                      }`}>
+                        {entry.totalScore}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Expanded panel — full name + kick button */}
+                  {isExpanded && isTeacher && (
+                    <div
+                      className="mx-3 mb-2 px-3 py-2.5 rounded-2xl flex items-center justify-between gap-3"
+                      style={{
+                        background: 'rgba(224,242,254,0.85)',
+                        border: '1px solid rgba(6,182,212,0.2)',
+                      }}
+                    >
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
+                          isOnline ? 'bg-[#22C55E]' : 'bg-[#CBD5E1]'
+                        }`} />
+                        <p className="text-xs font-bold text-[#082F49] break-all leading-snug">
+                          {entry.studentName}
+                        </p>
+                      </div>
+                      {entry.studentId !== currentUserId && (
+                        <button
+                          onClick={() => { handleKick(entry.studentId, entry.studentName); setExpandedId(null); }}
+                          disabled={kickingId === entry.studentId}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 rounded-xl text-[10px] font-bold text-red-400 border border-red-200 bg-red-50 hover:bg-red-100 flex-shrink-0 transition-all duration-200 disabled:opacity-40"
+                        >
+                          <FaUserTimes size={9} /> Đá ra
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
