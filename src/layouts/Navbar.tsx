@@ -7,13 +7,14 @@ import { useRouter } from 'next/navigation';
 
 import { FaGlobeAsia, FaMapMarkedAlt, FaGamepad, FaUsers, FaBell, FaBook, FaUserCircle, FaSignOutAlt, FaCog, FaShieldAlt } from 'react-icons/fa';
 import { SettingsDrawer } from '@/components/ui/SettingsDrawer';
+import { Icon } from '@iconify/react';
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Trang chủ', icon: '🏠', color: 'text-blue-500', bg: 'bg-blue-50', dot: 'bg-blue-500' },
-  { href: '/classroom', label: 'Lớp học', icon: '🏫', color: 'text-cyan-500', bg: 'bg-cyan-50', dot: 'bg-cyan-500' },
-  { href: '/map', label: 'Bản đồ', icon: '🗺️', color: 'text-green-500', bg: 'bg-green-50', dot: 'bg-green-500' },
-  { href: '/arena', label: 'Đấu trường', icon: '⚔️', color: 'text-rose-500', bg: 'bg-rose-50', dot: 'bg-rose-500' },
-  { href: '/books', label: 'Sách', icon: '📚', color: 'text-violet-500', bg: 'bg-violet-50', dot: 'bg-violet-500' },
+  { href: '/', label: 'Trang chủ', icon: <Icon icon="material-symbols:dashboard-rounded" width={22} />, color: 'text-blue-500', bg: 'bg-blue-50', dot: 'bg-blue-500' },
+  { href: '/classroom', label: 'Lớp học', icon: <Icon icon="material-symbols:home-work-rounded" width={22} />, color: 'text-cyan-500', bg: 'bg-cyan-50', dot: 'bg-cyan-500' },
+  { href: '/map', label: 'Bản đồ', icon: <Icon icon="material-symbols:map-search-rounded" width={22} />, color: 'text-green-500', bg: 'bg-green-50', dot: 'bg-green-500' },
+  { href: '/arena', label: 'Đấu trường', icon: <Icon icon="material-symbols:toys-and-games" width={22} />, color: 'text-rose-500', bg: 'bg-rose-50', dot: 'bg-rose-500' },
+  { href: '/books', label: 'Sách', icon: <Icon icon="material-symbols:book-4-rounded" width={22} />, color: 'text-violet-500', bg: 'bg-violet-50', dot: 'bg-violet-500' },
 ];
 
 
@@ -350,7 +351,7 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
                   className="relative w-10 h-10 rounded-[14px] bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-500 hover:bg-amber-100 hover:text-amber-600 hover:shadow-md transition-all duration-200 group"
                   title="Quản trị viên"
                 >
-                  <FaShieldAlt className="text-[15px] group-hover:scale-110 transition-transform" />
+                  <Icon icon="material-symbols:admin-panel-settings-rounded" width={22} />
                 </Link>
               )}
 
@@ -360,7 +361,7 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
                   onClick={toggleNotif}
                   className="relative w-10 h-10 rounded-[14px] bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-500 hover:bg-white hover:text-slate-700 hover:shadow-md transition-all duration-200 group"
                 >
-                  <FaBell className="text-[15px] group-hover:scale-110 transition-transform" />
+                  <Icon icon="material-symbols:notifications-sharp" width={22} />
                   {unreadCount > 0 && (
                     <span className="absolute top-2 right-2 w-2.5 h-2.5 bg-red-500 rounded-full border-[1.5px] border-white animate-pulse" />
                   )}

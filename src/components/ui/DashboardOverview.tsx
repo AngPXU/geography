@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useCallback, JSX } from 'react';
 import Link from 'next/link';
 import { ALL_MISSIONS } from '@/utils/missions';
 import { STREAK_MILESTONES } from '@/utils/streakSystem';
@@ -12,13 +12,14 @@ import { QuizStudyPanel } from '@/components/ui/QuizStudyPanel';
 import { BadgeSummaryCard } from '@/components/ui/BadgesPanel';
 import { PetGarden } from '@/components/pet/PetGarden';
 import { StreakModal } from '@/components/ui/StreakModal';
+import { Icon } from '@iconify/react';
 
 type ActiveTab = 'overview' | 'flashcard' | 'quiz';
 
-const MODULES: { id: ActiveTab | string; label: string; sub: string; icon: string; href?: string; isTab?: boolean }[] = [
-  { id: 'overview', label: 'Tổng quan', sub: 'Tiến độ & Hoạt động', icon: '🏠', isTab: true },
-  { id: 'flashcard', label: 'Thẻ Ghi Nhớ', sub: 'Luyện tập thẻ 3D', icon: '📝', isTab: true },
-  { id: 'quiz', label: 'Kiểm Tra', sub: 'Luyện đề thi', icon: '📋', isTab: true },
+const MODULES: { id: ActiveTab | string; label: string; sub: string; icon: JSX.Element; href?: string; isTab?: boolean }[] = [
+  { id: 'overview', label: 'Tổng quan', sub: 'Tiến độ & Hoạt động', icon: <Icon icon="material-symbols:dashboard-2-gear-outline-rounded" width={40} />, isTab: true },
+  { id: 'flashcard', label: 'Thẻ Ghi Nhớ', sub: 'Luyện tập thẻ 3D', icon: <Icon icon="material-symbols:note-alt" width={40} />, isTab: true },
+  { id: 'quiz', label: 'Kiểm Tra', sub: 'Luyện đề thi', icon: <Icon icon="material-symbols:quiz" width={40} />, isTab: true },
 ];
 
 const DAYS = ['CN', 'TH 2', 'TH 3', 'TH 4', 'TH 5', 'TH 6', 'TH 7'];

@@ -7,6 +7,7 @@ import {
 } from 'react-icons/fa';
 import { ClassroomRoom } from './ClassroomRoom';
 import { trackMission } from '@/utils/missionTracker';
+import { Icon } from '@iconify/react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -297,7 +298,7 @@ export function ClassroomClient({ user }: ClassroomClientProps) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-[#082F49] flex items-center gap-3">
-              <span className="text-3xl">🏫</span>
+              <span className="text-3xl"><Icon icon="material-symbols:school" width={32} /></span>
               {isTeacher ? 'Lớp học của tôi' : 'Phòng học'}
             </h1>
             <p className="text-[#94A3B8] text-sm mt-1">
@@ -309,7 +310,7 @@ export function ClassroomClient({ user }: ClassroomClientProps) {
               onClick={() => setShowCreateModal(true)}
               className="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-white bg-[#06B6D4] hover:bg-[#22D3EE] shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:shadow-[0_15px_30px_rgba(34,211,238,0.5)] transition-all duration-300 whitespace-nowrap hover:-translate-y-0.5 border-[2px] border-[#06B6D4]"
             >
-              <FaPlus size={13} /> Tạo lớp học mới
+              <Icon icon="material-symbols:add-circle-rounded" width={22} /> Tạo lớp học mới
             </button>
           )}
         </div>
@@ -352,10 +353,10 @@ export function ClassroomClient({ user }: ClassroomClientProps) {
                     <div className="px-6 py-4 space-y-3">
                       <div className="flex items-center gap-4 text-sm">
                         <span className="flex items-center gap-1.5 text-[#94A3B8]">
-                          <FaUsers size={11} /> {c.participants.length}/{c.rows * c.cols} học sinh
+                          <Icon icon="ic:round-people-alt" width={20} /> {c.participants.length}/{c.rows * c.cols} học sinh
                         </span>
                         <span className="flex items-center gap-1.5 text-[#94A3B8]">
-                          {c.passwordHash ? <FaLock size={11} /> : <FaLockOpen size={11} />}
+                          {c.passwordHash ? <Icon icon="material-symbols:lock-open-rounded" width={20} /> : <Icon icon="material-symbols:lock-open-right-rounded" width={20} />}
                           {c.passwordHash ? 'Có mật khẩu' : 'Mở'}
                         </span>
                       </div>

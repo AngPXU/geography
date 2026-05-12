@@ -8,6 +8,7 @@ import {
   FaEdit, FaClock, FaStar, FaChevronRight,
   FaSearch, FaSortAmountDown, FaSortAmountUp, FaPencilAlt,
 } from 'react-icons/fa';
+import { Icon } from '@iconify/react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1297,7 +1298,7 @@ export function HomeClassClient({ user }: HomeClassClientProps) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-black text-[#082F49] flex items-center gap-3">
-              <span className="text-3xl">🏡</span>
+              <span className="text-3xl"><Icon icon="material-symbols:home-work-rounded" width={32} /></span>
               {isTeacher ? 'Lớp học ở nhà' : 'Bài tập về nhà'}
             </h1>
             <p className="text-[#94A3B8] text-sm mt-1 font-semibold">
@@ -1311,7 +1312,7 @@ export function HomeClassClient({ user }: HomeClassClientProps) {
               className="flex items-center gap-2 px-5 py-3 rounded-[18px] font-bold text-white
                 bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-400
                 hover:to-purple-400 shadow-lg transition-all duration-300 whitespace-nowrap">
-              <FaPlus size={12} /> Tạo lớp học mới
+              <Icon icon="material-symbols:add-circle-rounded" width={22} /> Tạo lớp học mới
             </button>
           )}
         </div>
@@ -1321,7 +1322,7 @@ export function HomeClassClient({ user }: HomeClassClientProps) {
           <div className="rounded-[24px] py-20 flex flex-col items-center gap-4 text-center"
             style={{ ...GLASS, border: '2px dashed rgba(139,92,246,0.3)' }}>
             <span className="text-6xl">
-              {isTeacher ? '🏡' : '📋'}
+              {isTeacher ? <Icon icon="material-symbols:home-work-rounded" width={32} /> : <Icon icon="material-symbols:assignment-rounded" width={32} />}
             </span>
             <p className="font-bold text-[#082F49] text-base">
               {isTeacher ? 'Chưa có lớp học nào' : 'Bạn chưa được thêm vào lớp học nào'}
@@ -1336,7 +1337,7 @@ export function HomeClassClient({ user }: HomeClassClientProps) {
                 className="flex items-center gap-2 px-5 py-3 rounded-[16px] font-bold text-white
                   bg-gradient-to-r from-violet-500 to-purple-500 hover:from-violet-400 hover:to-purple-400
                   transition-all shadow-md">
-                <FaPlus size={12} /> Tạo lớp học
+                <Icon icon="material-symbols:add-circle-rounded" width={22} /> Tạo lớp học
               </button>
             )}
           </div>
@@ -1366,7 +1367,7 @@ export function HomeClassClient({ user }: HomeClassClientProps) {
                         <button onClick={e => { e.stopPropagation(); setDeletingId(c._id); }}
                           className="w-8 h-8 rounded-xl bg-white/10 hover:bg-red-400/30 flex items-center
                             justify-center text-white/70 hover:text-white transition-all shrink-0 ml-3">
-                          <FaTrash size={11} />
+                          <Icon icon="material-symbols:delete-rounded" width={22} />
                         </button>
                       )}
                     </div>
@@ -1375,10 +1376,10 @@ export function HomeClassClient({ user }: HomeClassClientProps) {
                   <div className="px-6 py-4">
                     <div className="flex items-center gap-4 text-sm mb-4">
                       <span className="flex items-center gap-1.5 text-[#94A3B8] font-semibold">
-                        <FaUsers size={11} /> {c.members.length} học sinh
+                        <Icon icon="ic:round-people-alt" width={20} /> {c.members.length} học sinh
                       </span>
                       <span className="flex items-center gap-1.5 text-[#94A3B8] font-semibold">
-                        <FaBook size={11} /> GV: {c.teacherName}
+                        <Icon icon="ic:baseline-person-2" width={20} /> GV: {c.teacherName}
                       </span>
                     </div>
                     {c.description && (
@@ -1388,7 +1389,7 @@ export function HomeClassClient({ user }: HomeClassClientProps) {
                       className="w-full py-2.5 rounded-[14px] bg-gradient-to-r from-violet-500 to-purple-500
                         hover:from-violet-400 hover:to-purple-400 text-white text-sm font-bold
                         flex items-center justify-center gap-2 transition-all shadow-sm">
-                      Vào lớp <FaChevronRight size={10} />
+                      Vào lớp <Icon icon="material-symbols:keyboard-double-arrow-right-rounded" width={22} />
                     </button>
                   </div>
                 </div>

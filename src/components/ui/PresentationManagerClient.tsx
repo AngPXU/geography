@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { PresentationBuilderClient } from './PresentationBuilderClient';
+import { Icon } from '@iconify/react';
 
 export function PresentationManagerClient() {
   const [activeGrade, setActiveGrade] = useState<number>(6); // Default to 6
@@ -33,10 +34,10 @@ export function PresentationManagerClient() {
   };
 
   const grades = [
-    { id: 6, title: 'Lớp 6', icon: '🌍', color: 'from-cyan-400 to-blue-400', activeBg: 'bg-gradient-to-r from-cyan-500 to-blue-500', textColors: 'text-cyan-700' },
-    { id: 7, title: 'Lớp 7', icon: '🌱', color: 'from-emerald-400 to-green-400', activeBg: 'bg-gradient-to-r from-emerald-500 to-green-500', textColors: 'text-emerald-700' },
-    { id: 8, title: 'Lớp 8', icon: '🌋', color: 'from-amber-400 to-orange-400', activeBg: 'bg-gradient-to-r from-amber-500 to-orange-500', textColors: 'text-amber-700' },
-    { id: 9, title: 'Lớp 9', icon: '🏙️', color: 'from-fuchsia-400 to-purple-400', activeBg: 'bg-gradient-to-r from-fuchsia-500 to-purple-500', textColors: 'text-fuchsia-700' },
+    { id: 6, title: 'Lớp 6', icon: <Icon icon="material-symbols:filter-6-rounded" width={22} />, color: 'from-cyan-400 to-blue-400', activeBg: 'bg-gradient-to-r from-cyan-500 to-blue-500', textColors: 'text-cyan-700' },
+    { id: 7, title: 'Lớp 7', icon: <Icon icon="material-symbols:filter-7-rounded" width={22} />, color: 'from-emerald-400 to-green-400', activeBg: 'bg-gradient-to-r from-emerald-500 to-green-500', textColors: 'text-emerald-700' },
+    { id: 8, title: 'Lớp 8', icon: <Icon icon="material-symbols:filter-8-rounded" width={22} />, color: 'from-amber-400 to-orange-400', activeBg: 'bg-gradient-to-r from-amber-500 to-orange-500', textColors: 'text-amber-700' },
+    { id: 9, title: 'Lớp 9', icon: <Icon icon="material-symbols:filter-9-rounded" width={22} />, color: 'from-fuchsia-400 to-purple-400', activeBg: 'bg-gradient-to-r from-fuchsia-500 to-purple-500', textColors: 'text-fuchsia-700' },
   ];
 
   const fetchPresentations = async (grade: number, currentSearch = search, currentSort = sort, currentPage = page) => {
@@ -160,7 +161,7 @@ export function PresentationManagerClient() {
             disabled={isCreating}
             className="w-full md:w-auto px-6 py-3 bg-gradient-to-r from-[#06B6D4] to-[#22C55E] text-white font-bold rounded-[16px] shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:shadow-[0_15px_25px_rgba(6,182,212,0.4)] transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2 hover:-translate-y-0.5 whitespace-nowrap"
           >
-            <span className="text-xl leading-none">+</span> 
+            <span className="text-xl leading-none"><Icon icon="material-symbols:add-circle" width={22} /></span> 
             <span>Tạo bài giảng mới</span>
           </button>
         </div>
@@ -186,7 +187,7 @@ export function PresentationManagerClient() {
                     <div className={`absolute inset-0 ${grade.activeBg} rounded-[18px] opacity-100`}></div>
                   )}
                   
-                  <div className="relative z-10 text-xl">{grade.icon}</div>
+                  <div className={`relative z-10 ${isActive ? 'text-white' : grade.textColors}`}>{grade.icon}</div>
                   <span className={`relative z-10 font-bold whitespace-nowrap ${isActive ? 'text-white' : grade.textColors}`}>
                     {grade.title}
                   </span>
@@ -209,7 +210,7 @@ export function PresentationManagerClient() {
             className="w-full bg-white/75 backdrop-blur-[20px] pl-12 pr-5 py-3.5 rounded-[16px] border border-white shadow-[0_10px_30px_rgba(14,165,233,0.05)] focus:shadow-[0_10px_30px_rgba(14,165,233,0.1)] outline-none focus:border-[#06B6D4] focus:ring-2 focus:ring-[#06B6D4]/20 transition-all font-medium text-[#082F49] placeholder:text-[#94A3B8]"
           />
           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[#94A3B8] group-focus-within:text-[#06B6D4] transition-colors text-lg">
-            🔍
+            <Icon icon="material-symbols:saved-search-rounded" width={28} />
           </span>
         </div>
         <div className="relative shrink-0">
@@ -226,8 +227,8 @@ export function PresentationManagerClient() {
             <option value="az">Tên A-Z</option>
             <option value="za">Tên Z-A</option>
           </select>
-          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#94A3B8] pointer-events-none text-xs">
-            ▼
+          <span className="absolute right-4 top-1/2 -translate-y-1/2 text-[#082F49] pointer-events-none text-xs">
+            <Icon icon="material-symbols:keyboard-arrow-down-rounded" width={22} />
           </span>
         </div>
       </div>
@@ -248,7 +249,7 @@ export function PresentationManagerClient() {
               onClick={handleOpenCreateModal}
               className="px-6 py-3 bg-white hover:bg-cyan-50 text-[#06B6D4] font-bold rounded-[16px] shadow-sm border border-white transition-all hover:shadow-md"
             >
-              + Tạo bài giảng ngay
+              <Icon icon="material-symbols:add-circle" width={22} /> Tạo bài giảng ngay
             </button>
           </div>
         ) : (
@@ -264,14 +265,14 @@ export function PresentationManagerClient() {
                       className="w-8 h-8 rounded-full bg-white border border-slate-200 text-blue-500 flex items-center justify-center hover:bg-blue-50 hover:border-blue-300 shadow-sm transition-colors active:scale-95"
                       title="Đổi tên"
                     >
-                      ✏️
+                      <Icon icon="material-symbols:edit-square" width={22} />
                     </button>
                     <button 
                       onClick={(e) => handleDelete(pres._id, e)}
                       className="w-8 h-8 rounded-full bg-white border border-slate-200 text-red-500 flex items-center justify-center hover:bg-red-50 hover:border-red-300 shadow-sm transition-colors active:scale-95"
                       title="Xóa bài giảng"
                     >
-                      🗑️
+                      <Icon icon="material-symbols:delete-rounded" width={22} />
                     </button>
                   </div>
 
@@ -285,7 +286,7 @@ export function PresentationManagerClient() {
                   
                   <div className="flex items-center justify-between mt-auto pt-4 border-t border-slate-100 mb-4">
                     <span className="text-sm text-[#94A3B8] font-bold flex items-center gap-1.5">
-                      <span>🧱</span> {pres.blocks?.length || 0} block
+                      <span><Icon icon="material-symbols:book-4" width={22} /></span> {pres.blocks?.length || 0} khối
                     </span>
                     <span className="text-xs font-bold text-[#94A3B8] bg-slate-50 px-2 py-1 rounded-md">
                       {new Date(pres.updatedAt).toLocaleDateString('vi-VN')}
@@ -296,7 +297,7 @@ export function PresentationManagerClient() {
                     onClick={() => setActivePresentationId(pres._id)}
                     className="w-full py-3 bg-[#F0F9FF] hover:bg-[#E0F2FE] text-[#0284C7] font-bold rounded-[16px] transition-all duration-300 border border-white shadow-sm group-hover:shadow-md flex items-center justify-center gap-2"
                   >
-                    Mở Trình Soạn Thảo <span>→</span>
+                    Mở Trình Soạn Thảo <span><Icon icon="material-symbols:keyboard-double-arrow-right-rounded" width={22} /></span>
                   </button>
                 </div>
               ))}

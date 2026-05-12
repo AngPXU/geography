@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, JSX } from 'react';
 import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
+import { Icon } from '@iconify/react';
 
 // Mỗi tab là một subapp riêng (LiveKit, MapBox, RichText, Cesium...).
 // Lazy-load theo tab để khi user chỉ vào "online" thì không phải tải code
@@ -77,11 +78,11 @@ export function ClassroomTabs({ user }: Props) {
     router.replace(`${pathname}?${params.toString()}`, { scroll: false });
   };
   
-  const tabs: Array<{ key: TabKey, label: string, icon: string }> = [
-    { key: 'online',       label: 'Lớp học online',  icon: '🏫' },
-    { key: 'home',         label: 'Lớp học ở nhà',   icon: '🏡' },
-    { key: 'test',         label: 'Kiểm tra bài cũ', icon: '📝' },
-    { key: 'presentation', label: 'Soạn bài giảng',  icon: '📽️' },
+  const tabs: Array<{ key: TabKey, label: string, icon: JSX.Element }> = [
+    { key: 'online',       label: 'Lớp học online',  icon: <Icon icon="material-symbols:school" width={22} /> },
+    { key: 'home',         label: 'Lớp học ở nhà',   icon: <Icon icon="material-symbols:home-work-rounded" width={22} /> },
+    { key: 'test',         label: 'Kiểm tra bài cũ', icon: <Icon icon="material-symbols:clinical-notes-rounded" width={22} /> },
+    { key: 'presentation', label: 'Soạn bài giảng',  icon: <Icon icon="ic:baseline-find-in-page" width={22} /> },
   ];
 
   const scrollRef = useRef<HTMLDivElement>(null);

@@ -11,6 +11,7 @@ import {
   FaUserPlus, FaSortAmountDown, FaSortAmountUp, FaSchool,
 } from 'react-icons/fa';
 import QuizManager from './components/QuizManager';
+import { Icon } from '@iconify/react';
 
 /* ─────────────────────────── types ───────────────────────────── */
 
@@ -3107,10 +3108,10 @@ function OverviewTab() {
         <h3 className="text-sm font-black text-[#082F49] mb-3">🔗 Truy cập nhanh</h3>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
           {[
-            { href: '/',          icon: '🏠', label: 'Trang chủ', color: 'from-cyan-100 to-blue-100' },
-            { href: '/classroom', icon: '🏫', label: 'Lớp học',   color: 'from-violet-100 to-purple-100' },
-            { href: '/map',       icon: '🗺️', label: 'Bản đồ',  color: 'from-emerald-100 to-green-100' },
-            { href: '/books',     icon: '📚', label: 'Sách học',  color: 'from-amber-100 to-orange-100' },
+            { href: '/',          icon: <Icon icon="material-symbols:home-rounded" width={22} />, label: 'Trang chủ', color: 'from-cyan-100 to-blue-100' },
+            { href: '/classroom', icon: <Icon icon="material-symbols:school" width={22} />, label: 'Lớp học',   color: 'from-violet-100 to-purple-100' },
+            { href: '/map',       icon: <Icon icon="material-symbols:map" width={22} />, label: 'Bản đồ',  color: 'from-emerald-100 to-green-100' },
+            { href: '/books',     icon: <Icon icon="material-symbols:book" width={22} />, label: 'Sách học',  color: 'from-amber-100 to-orange-100' },
           ].map(lk => (
             <Link key={lk.href} href={lk.href}
               className={`flex flex-col items-center gap-2.5 p-4 rounded-[24px] bg-gradient-to-br ${lk.color} border border-white/80 hover:scale-[1.03] transition-all shadow-sm group`}>

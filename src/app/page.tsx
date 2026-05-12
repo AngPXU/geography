@@ -14,6 +14,7 @@ import { FaRocket, FaMap } from "react-icons/fa";
 import dbConnect from "@/utils/db";
 import User from "@/models/User";
 import { getVietnamDateStr } from "@/utils/missions";
+import { Icon } from "@iconify/react";
 
 // Lazy-load các section bên dưới màn hình đầu — defer JS bundle, không block FCP
 const DashboardOverview = dynamic(() => import('@/components/ui/DashboardOverview').then(m => ({ default: m.DashboardOverview })), {
@@ -83,7 +84,7 @@ export default async function HomePage() {
           <div className="lg:w-5/12 w-full text-center lg:text-left flex flex-col items-center lg:items-start gap-6 relative z-30 shrink-0">
             {/* New Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/60 backdrop-blur-md border border-white/80 shadow-[0_4px_12px_rgba(14,165,233,0.1)] mb-2">
-              <span className="text-xl">✨</span>
+              <span className="text-xl text-[#06B6D4]"><Icon icon="material-symbols:add-a-photo" width={22} /></span>
               <span className="text-[#06B6D4] font-black text-xs uppercase tracking-wider">Khám phá thế giới 3D</span>
             </div>
 
@@ -104,12 +105,12 @@ export default async function HomePage() {
             <div className="flex flex-wrap items-center justify-center lg:justify-start gap-4 mt-2 w-full">
               {/* Primary Button: Pill-shape (9999px) - chuẩn AGENTS.md */}
               <Link href="/map" className="group h-14 px-8 rounded-full bg-[#06B6D4] hover:bg-[#22D3EE] text-white font-black text-base shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:shadow-[0_15px_30px_rgba(34,211,238,0.5)] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2">
-                Bắt đầu hành trình <FaRocket className="text-lg group-hover:scale-125 group-hover:translate-x-1 group-hover:-translate-y-1 transition-transform duration-300" />
+                Bắt đầu hành trình <Icon icon="material-symbols:not-started-rounded" width={24} />
               </Link>
               
               {/* Secondary Button */}
               <Link href="/roadmap" className="h-14 px-8 rounded-full bg-white/50 backdrop-blur-md border-[2px] border-white/80 text-[#082F49] font-black text-base shadow-[0_8px_16px_rgba(0,0,0,0.05)] hover:bg-white hover:border-white hover:shadow-[0_12px_24px_rgba(14,165,233,0.15)] hover:-translate-y-1 transition-all duration-300 flex items-center justify-center gap-2">
-                Xem lộ trình <FaMap className="text-lg text-[#06B6D4]" />
+                Xem lộ trình <Icon icon="material-symbols:timeline" width={24} />
               </Link>
             </div>
           </div>

@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@iconify/react';
 import { useState, useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { FaPlus, FaTrash, FaPlay, FaArrowRight, FaArrowLeft, FaCheck, FaTimes, FaSpinner } from 'react-icons/fa';
@@ -107,7 +108,7 @@ function CreateCheckModal({ onClose, onSuccess }: { onClose: () => void; onSucce
         style={{ background: 'rgba(255, 255, 255, 0.85)', backdropFilter: 'blur(24px)', border: '1px solid rgba(255, 255, 255, 1)' }}>
         <div className="flex justify-between items-center mb-5">
           <h2 className="text-xl font-bold text-[#082F49] flex items-center gap-2">
-            <span className="text-2xl">📝</span> Tạo bài kiểm tra miệng
+            <span className="text-2xl"><Icon icon="material-symbols:clinical-notes-rounded" width={30} /></span> Tạo bài kiểm tra
           </h2>
           <button onClick={onClose} className="text-[#94A3B8] hover:text-red-500 transition"><FaTimes size={20} /></button>
         </div>
@@ -956,12 +957,12 @@ export function OldLessonCheckClient({ user }: Props) {
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <div>
             <h1 className="text-2xl md:text-3xl font-bold text-[#082F49] flex items-center gap-3">
-              <span className="text-3xl">📝</span> Kiểm tra bài cũ
+              <span className="text-3xl"><Icon icon="material-symbols:clinical-notes-rounded" width={32} /></span> Kiểm tra bài cũ
             </h1>
             <p className="text-[#94A3B8] text-sm mt-1">Tạo câu hỏi nhanh và trình chiếu lên màn hình lớp học</p>
           </div>
           <button onClick={() => setShowCreate(true)} className="flex items-center gap-2 px-6 py-3 rounded-full font-bold text-white bg-[#06B6D4] hover:bg-[#22D3EE] shadow-[0_10px_20px_rgba(6,182,212,0.3)] transition border-[2px] border-[#06B6D4]">
-            <FaPlus size={13} /> Tạo bài kiểm tra
+            <Icon icon="material-symbols:add-circle-rounded" width={22} /> Tạo bài kiểm tra
           </button>
         </div>
 
@@ -992,18 +993,18 @@ export function OldLessonCheckClient({ user }: Props) {
                     {check.classId && (
                       <>
                         <button onClick={() => setSheepClassId(check.classId!)} className="flex items-center justify-center w-10 h-10 rounded-full bg-green-100 hover:bg-green-200 text-green-700 shadow-[0_5px_15px_rgba(16,185,129,0.15)] transition hover:-translate-y-0.5" title="Đua Cừu May Mắn">
-                          🐑
+                          <Icon icon="material-symbols:chess-knight-rounded" width={22} />
                         </button>
                         <button onClick={() => setMysteryClassId(check.classId!)} className="flex items-center justify-center w-10 h-10 rounded-full bg-violet-100 hover:bg-violet-200 text-violet-600 shadow-[0_5px_15px_rgba(139,92,246,0.2)] transition hover:-translate-y-0.5" title="Rút thẻ bài">
-                          🃏
+                          <Icon icon="material-symbols:playing-cards-rounded" width={22} />
                         </button>
-                        <button onClick={() => setLuckyClassId(check.classId!)} className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-400 hover:bg-amber-300 text-amber-900 shadow-[0_5px_15px_rgba(251,191,36,0.3)] transition hover:-translate-y-0.5" title="Vòng quay may mắn">
-                          🎡
+                        <button onClick={() => setLuckyClassId(check.classId!)} className="flex items-center justify-center w-10 h-10 rounded-full bg-amber-100 hover:bg-amber-300 text-amber-900 shadow-[0_5px_15px_rgba(251,191,36,0.3)] transition hover:-translate-y-0.5" title="Vòng quay may mắn">
+                          <Icon icon="ic:sharp-3d-rotation" width={22} />
                         </button>
                       </>
                     )}
                     <button onClick={() => setPresentingCheck(check)} className="flex items-center gap-2 px-5 py-2.5 rounded-full bg-emerald-500 hover:bg-emerald-400 text-white font-bold text-sm shadow-[0_5px_15px_rgba(16,185,129,0.3)] transition hover:-translate-y-0.5">
-                      <FaPlay size={10} /> Trình chiếu ngay
+                      <Icon icon="material-symbols:slideshow-rounded" width={22} /> Trình chiếu
                     </button>
                   </div>
                 </div>
