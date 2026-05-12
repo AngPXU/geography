@@ -1,17 +1,18 @@
 ﻿'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback, useRef, JSX } from 'react';
 import { useRouter } from 'next/navigation';
+import { Icon } from '@iconify/react';
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants & helpers
 // ─────────────────────────────────────────────────────────────────────────────
 
-const GRADE_META: Record<number, { label: string; grad: string; shadow: string; icon: string }> = {
-  6: { label: 'Lớp 6', grad: 'from-cyan-400 to-blue-500',     shadow: 'shadow-cyan-200',   icon: '🌍' },
-  7: { label: 'Lớp 7', grad: 'from-emerald-400 to-teal-500',  shadow: 'shadow-emerald-200', icon: '🗺️' },
-  8: { label: 'Lớp 8', grad: 'from-violet-400 to-purple-500', shadow: 'shadow-violet-200',  icon: '🌐' },
-  9: { label: 'Lớp 9', grad: 'from-orange-400 to-rose-500',   shadow: 'shadow-orange-200',  icon: '🏔️' },
+const GRADE_META: Record<number, { label: string; grad: string; shadow: string; icon: JSX.Element }> = {
+  6: { label: 'Lớp 6', grad: 'from-cyan-400 to-blue-500',     shadow: 'shadow-cyan-200',   icon: <Icon icon="material-symbols:filter-6-rounded" width={22} />},
+  7: { label: 'Lớp 7', grad: 'from-emerald-400 to-teal-500',  shadow: 'shadow-emerald-200', icon: <Icon icon="material-symbols:filter-7-rounded" width={22} /> },
+  8: { label: 'Lớp 8', grad: 'from-violet-400 to-purple-500', shadow: 'shadow-violet-200',  icon: <Icon icon="material-symbols:filter-8-rounded" width={22} /> },
+  9: { label: 'Lớp 9', grad: 'from-orange-400 to-rose-500',   shadow: 'shadow-orange-200',  icon: <Icon icon="material-symbols:filter-9-rounded" width={22} /> },
 };
 
 const QUIZ_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
@@ -92,15 +93,16 @@ function ListScreen({
       {/* ── Filter bar ── */}
       <div className="p-5 md:p-6" style={{ position: 'relative', zIndex: 10 }}>
         <div className="mb-4">
-          <p className="text-[#082F49] font-black text-lg flex items-center gap-2">📋 Đề Kiểm Tra Địa Lý</p>
+          <p className="text-[#082F49] font-black text-lg flex items-center gap-2"><Icon icon="material-symbols:note-stack-rounded" width={30} /> Đề Kiểm Tra Địa Lý</p>
           <p className="text-slate-400 text-sm font-medium mt-0.5 hidden sm:block">Chọn lớp và loại đề để lọc danh sách bên dưới</p>
         </div>
-        <div className="flex items-center gap-2.5 flex-wrap">
+        {/* Grade pills — 2x2 on mobile, single row on sm+ */}
+        <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-2.5 mb-3">
           {([6, 7, 8, 9] as const).map(g => {
             const m = GRADE_META[g];
             return (
               <button key={g} onClick={() => { setSelectedGrade(g); setTypeFilter('all'); }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-[14px] font-black text-sm transition-all duration-300 border ${
+                className={`flex items-center justify-center sm:justify-start gap-2 px-3 sm:px-4 py-2.5 rounded-[14px] font-black text-sm transition-all duration-300 border ${
                   selectedGrade === g
                     ? `bg-gradient-to-r ${m.grad} text-white border-transparent shadow-md ${m.shadow}`
                     : 'bg-white/80 text-[#082F49] border-slate-100 hover:border-slate-200 hover:shadow-sm'}`}>
@@ -108,17 +110,20 @@ function ListScreen({
               </button>
             );
           })}
-          {types.length > 1 && (
-            <div ref={typeDropRef} className="ml-auto relative shrink-0">
-              <button onClick={() => setTypeDropOpen(o => !o)}
-                className={`flex items-center gap-2 px-3.5 py-2.5 rounded-[14px] border text-xs font-bold transition-all duration-200 min-w-[150px]
-                  ${typeDropOpen ? `bg-gradient-to-r ${meta.grad} text-white border-transparent shadow-lg` : 'bg-white/80 text-[#082F49] border-slate-200 hover:border-cyan-300 hover:shadow-md'}`}>
-                <span className="flex-1 text-left">{typeFilter === 'all' ? '📂 Tất cả loại đề' : getTypeLabel(typeFilter)}</span>
+        </div>
+
+        {/* Type filter dropdown — full width row below grades */}
+        {types.length > 1 && (
+          <div ref={typeDropRef} className="relative w-full">
+            <button onClick={() => setTypeDropOpen(o => !o)}
+              className={`w-full flex items-center gap-2 px-3.5 py-2.5 rounded-[14px] border text-xs font-bold transition-all duration-200
+                ${typeDropOpen ? `bg-gradient-to-r ${meta.grad} text-white border-transparent shadow-lg` : 'bg-white/80 text-[#082F49] border-slate-200 hover:border-cyan-300 hover:shadow-md'}`}>
+                <span className="flex-1 flex items-center gap-1.5">{typeFilter === 'all' ? <><Icon icon="material-symbols:note-stack-add-rounded" width={14} /> Tất cả loại đề</> : getTypeLabel(typeFilter)}</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
                   className={`shrink-0 transition-transform ${typeDropOpen ? 'rotate-180' : ''}`}><path d="M6 9l6 6 6-6" /></svg>
               </button>
               {typeDropOpen && (
-                <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-52 rounded-[20px] overflow-hidden border border-white/80"
+                <div className="absolute right-0 top-[calc(100%+8px)] z-50 w-[90%] rounded-[20px] overflow-hidden border border-white/80"
                   style={{ background: 'rgba(255,255,255,0.97)', backdropFilter: 'blur(24px)', boxShadow: '0 20px 60px rgba(8,47,73,0.15)' }}>
                   <div className={`px-4 py-3 bg-gradient-to-r ${meta.grad}`}>
                     <p className="text-white font-black text-xs uppercase tracking-wider">Lọc theo loại đề</p>
@@ -127,7 +132,7 @@ function ListScreen({
                     {types.map(t => (
                       <button key={t} onClick={() => { setTypeFilter(t); setTypeDropOpen(false); }}
                         className={`w-full flex items-center gap-3 px-4 py-2.5 text-left text-xs font-bold transition-all hover:bg-cyan-50 ${typeFilter === t ? 'bg-cyan-50/60 text-cyan-700' : 'text-[#082F49]'}`}>
-                        {t === 'all' ? '📂 Tất cả loại đề' : (
+                        {t === 'all' ? <span className="flex items-center gap-1.5"><Icon icon="material-symbols:note-stack-add-rounded" width={14} /> Tất cả loại đề</span> : (
                           <span className={`px-2 py-0.5 rounded-full border text-[10px] font-black ${getTypeColor(t)}`}>{getTypeLabel(t)}</span>
                         )}
                         {typeFilter === t && (
@@ -142,7 +147,6 @@ function ListScreen({
               )}
             </div>
           )}
-        </div>
       </div>
 
       {/* ── Divider ── */}
@@ -156,7 +160,7 @@ function ListScreen({
         </div>
       ) : filtered.length === 0 ? (
         <div className="p-12 flex flex-col items-center gap-4 text-center">
-          <span className="text-5xl">📭</span>
+          <span className="text-5xl text-yellow-300"><Icon icon="material-symbols:error-rounded" width={60} /> </span>
           <p className="text-[#082F49] font-black text-base">Chưa có đề thi nào</p>
           <p className="text-slate-400 text-sm">Hãy thử chọn lớp hoặc loại đề khác.</p>
         </div>
@@ -193,15 +197,15 @@ function ListScreen({
                         {getTypeLabel(s.quizType)}
                       </span>
                       <span className="text-[11px] font-semibold text-[#94A3B8]">Lớp {s.grade}</span>
-                      <span className="text-[11px] font-semibold text-[#94A3B8]">⏱ {s.timeLimit} phút</span>
+                      <span className="text-[11px] font-semibold text-[#94A3B8] flex items-center"><Icon icon="material-symbols:timer-pause-rounded" width={14} />  {s.timeLimit} phút</span>
                     </div>
                   </div>
                   {/* Start button */}
                   <button onClick={() => onStart(s)}
-                    className={`shrink-0 px-5 py-2 rounded-[12px] font-black text-xs text-white bg-gradient-to-r ${m.grad}
+                    className={`shrink-0 flex items-center gap-1.5 px-5 py-2 rounded-[12px] font-black text-xs text-white bg-gradient-to-r ${m.grad}
                       shadow-sm hover:shadow-md hover:scale-[1.04] active:scale-[0.97] transition-all duration-200
                       opacity-80 group-hover:opacity-100`}>
-                    🚀 Bắt đầu
+                      <Icon icon="material-symbols:not-started-rounded" width={16} /> Bắt đầu
                   </button>
                 </div>
               );

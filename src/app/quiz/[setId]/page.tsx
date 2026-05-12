@@ -1,17 +1,20 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef, use } from 'react';
+import React, { useState, useEffect, useCallback, useRef, use, JSX } from 'react';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
+import { Icon } from '@iconify/react';
+
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Constants
 // ─────────────────────────────────────────────────────────────────────────────
 
-const GRADE_META: Record<number, { label: string; grad: string; icon: string }> = {
-  6: { label: 'Lớp 6', grad: 'from-cyan-400 to-blue-500',     icon: '🌍' },
-  7: { label: 'Lớp 7', grad: 'from-emerald-400 to-teal-500',  icon: '🗺️' },
-  8: { label: 'Lớp 8', grad: 'from-violet-400 to-purple-500', icon: '🌐' },
-  9: { label: 'Lớp 9', grad: 'from-orange-400 to-rose-500',   icon: '🏔️' },
+const GRADE_META: Record<number, { label: string; grad: string; icon: JSX.Element }> = {
+  6: { label: 'Lớp 6', grad: 'from-cyan-400 to-blue-500',     icon: <Icon icon="material-symbols:filter-6-rounded" width={22} /> },
+  7: { label: 'Lớp 7', grad: 'from-emerald-400 to-teal-500',  icon: <Icon icon="material-symbols:filter-7-rounded" width={22} /> },
+  8: { label: 'Lớp 8', grad: 'from-violet-400 to-purple-500', icon: <Icon icon="material-symbols:filter-8-rounded" width={22} /> },
+  9: { label: 'Lớp 9', grad: 'from-orange-400 to-rose-500',   icon: <Icon icon="material-symbols:filter-9-rounded" width={22} /> },
 };
 
 const QUIZ_TYPE_CONFIG: Record<string, { label: string; color: string }> = {
@@ -44,6 +47,12 @@ interface ExamAnswers {
   mc: Record<string, number | null>;
   tf: Record<string, (boolean | null)[]>;
   essay: Record<string, string>;
+}
+
+interface FinishMeta {
+  exitCount: number;
+  exitLog: { id: number; time: string; reason: 'tab' | 'app' }[];
+  timeSpentSeconds: number;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -173,7 +182,7 @@ function ExamEssayQuestion({ q, index, value, onChange }: {
 
 function ExamScreen({ quizSet, questions, onFinish, onExit }: {
   quizSet: QuizSet; questions: QuizQuestion[];
-  onFinish: (answers: ExamAnswers) => void;
+  onFinish: (answers: ExamAnswers, meta: FinishMeta) => void;
   onExit: () => void;
 }) {
   const totalSec = quizSet.timeLimit * 60;
@@ -208,9 +217,23 @@ function ExamScreen({ quizSet, questions, onFinish, onExit }: {
   finishRef.current = onFinish;
   const collectRef = useRef(collectAnswers);
   collectRef.current = collectAnswers;
+  // Refs so timer auto-submit can read latest values without stale closure
+  const exitCountRef = useRef(0);
+  const exitLogRef   = useRef<{ id: number; time: string; reason: 'tab' | 'app' }[]>([]);
+  const timeLeftRef  = useRef(totalSec);
+  useEffect(() => { exitCountRef.current = exitCount; }, [exitCount]);
+  useEffect(() => { exitLogRef.current = exitLog; }, [exitLog]);
+  useEffect(() => { timeLeftRef.current = timeLeft; }, [timeLeft]);
 
   useEffect(() => {
-    if (timeLeft <= 0) { finishRef.current(collectRef.current()); return; }
+    if (timeLeft <= 0) {
+      finishRef.current(collectRef.current(), {
+        exitCount: exitCountRef.current,
+        exitLog:   exitLogRef.current,
+        timeSpentSeconds: totalSec,
+      });
+      return;
+    }
     const t = setTimeout(() => setTimeLeft(s => s - 1), 1000);
     return () => clearTimeout(t);
   }, [timeLeft]);
@@ -284,46 +307,50 @@ function ExamScreen({ quizSet, questions, onFinish, onExit }: {
       <div className="sticky top-0 z-50 border-b border-slate-200/60"
         style={{ background: 'rgba(255,255,255,0.92)', backdropFilter: 'blur(20px)' }}>
 
-        {/* Row 1: controls */}
-        <div className="px-4 py-3 flex items-center gap-3">
+        {/* Row 1: Thoát | title | timer | Hoàn thành */}
+        <div className="px-3 py-2 flex items-center gap-2">
           <button onClick={() => setConfirmSubmit(true)}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-100 hover:bg-red-50 hover:text-red-500 text-slate-500 text-xs font-black border border-slate-200 transition-all shrink-0">
+            className="flex items-center gap-1 px-2.5 py-1.5 rounded-full bg-slate-100 hover:bg-red-50 hover:text-red-500 text-slate-500 text-xs font-black border border-slate-200 transition-all shrink-0">
             ← Thoát
           </button>
-          <div className="flex-1 min-w-0">
-            <p className="font-black text-[#082F49] text-sm leading-tight truncate">{quizSet.icon} {quizSet.title}</p>
-            <div className="flex items-center gap-2 mt-0.5">
-              <span className={`px-2 py-0.5 rounded-full border text-[10px] font-black ${getTypeColor(quizSet.quizType)}`}>
-                {getTypeLabel(quizSet.quizType)}
-              </span>
-              <span className="text-[11px] text-[#94A3B8] font-semibold">{questions.length} câu</span>
-            </div>
+
+          {/* Title + badge — center, truncated */}
+          <div className="flex-1 min-w-0 flex items-center gap-1.5 overflow-hidden">
+            <span className="text-base shrink-0">{quizSet.icon}</span>
+            <p className="font-black text-[#082F49] text-xs leading-tight truncate">{quizSet.title}</p>
+            {exitCount > 0 && (
+              <button
+                onClick={() => setShowExitAlert(true)}
+                className="shrink-0 flex items-center gap-0.5 px-1.5 py-0.5 rounded-full bg-red-50 border border-red-200 text-red-600 text-[10px] font-black transition-all hover:bg-red-100"
+                title="Lần thoát bị ghi lại">
+                🚨{exitCount}
+              </button>
+            )}
           </div>
-          {exitCount > 0 && (
-            <div className="shrink-0 flex items-center gap-1 px-2.5 py-1.5 rounded-[10px] bg-red-50 border border-red-200 cursor-pointer hover:bg-red-100 transition-all"
-              onClick={() => setShowExitAlert(true)} title="Lần thoát bị ghi lại">
-              <span className="text-base leading-none">🚨</span>
-              <span className="font-black text-red-600 text-xs">{exitCount}</span>
-            </div>
-          )}
-          <div className={`flex items-center gap-1.5 px-4 py-2 rounded-[14px] font-black text-lg tabular-nums shrink-0 transition-all
+
+          {/* Timer */}
+          <div className={`flex items-center gap-1 px-3 py-1.5 rounded-[12px] font-black text-sm tabular-nums shrink-0 transition-all
             ${urgent ? 'bg-red-50 text-red-600 border border-red-200 animate-pulse' : 'bg-cyan-50 text-cyan-700 border border-cyan-200'}`}>
             ⏱ {timeStr}
           </div>
+
           <button onClick={() => setConfirmSubmit(true)}
-            className={`shrink-0 px-4 py-2 rounded-[14px] font-black text-sm text-white bg-gradient-to-r ${meta.grad} shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] transition-all`}>
+            className={`shrink-0 px-3 py-1.5 rounded-[12px] font-black text-xs text-white bg-gradient-to-r ${meta.grad} shadow-md hover:shadow-lg active:scale-[0.98] transition-all`}>
             Hoàn thành
           </button>
         </div>
 
-        {/* Row 2: question progress palette */}
-        <div className="px-4 pb-2.5 flex items-center gap-3 border-t border-slate-100">
-          <div className="shrink-0 text-xs leading-snug">
-            <span className="font-black text-emerald-600">{answeredCount}</span>
-            <span className="font-black text-[#082F49]">/{questions.length}</span>
-            <span className="text-[#94A3B8] font-semibold"> đã làm</span>
+        {/* Row 2: badge + count | progress dots */}
+        <div className="px-3 pb-2 flex items-center gap-2 border-t border-slate-100">
+          {/* Badge + count */}
+          <div className="shrink-0 flex items-center gap-1.5">
+            <span className={`px-2 py-0.5 rounded-full border text-[10px] font-black ${getTypeColor(quizSet.quizType)}`}>
+              {getTypeLabel(quizSet.quizType)}
+            </span>
+            <span className="text-[11px] text-emerald-600 font-black">{answeredCount}</span>
+            <span className="text-[11px] text-[#082F49] font-black">/{questions.length}</span>
             {unansweredCount > 0 && (
-              <span className="ml-1.5 font-black text-rose-500">· {unansweredCount} chưa làm</span>
+              <span className="text-[11px] font-black text-rose-500">· {unansweredCount} chưa</span>
             )}
           </div>
           <div
@@ -352,7 +379,7 @@ function ExamScreen({ quizSet, questions, onFinish, onExit }: {
       </div>
 
       {/* Content */}
-      <div className="flex-1 px-4 py-6 space-y-8 w-[90%] mx-auto">
+      <div className="flex-1 py-6 space-y-8 w-[95%] mx-auto">
         {(mcList.length > 0 || tfList.length > 0) && (
           <section>
             <div className="mb-4 pb-2 border-b-2 border-cyan-100">
@@ -512,7 +539,7 @@ function ExamScreen({ quizSet, questions, onFinish, onExit }: {
                 className="flex-1 py-2.5 rounded-[14px] border border-slate-200 text-[#334155] font-black text-sm hover:bg-slate-50 transition-all">
                 Làm tiếp
               </button>
-              <button onClick={() => { setConfirmSubmit(false); onFinish(collectAnswers()); }}
+              <button onClick={() => { setConfirmSubmit(false); onFinish(collectAnswers(), { exitCount, exitLog, timeSpentSeconds: totalSec - timeLeft }); }}
                 className={`flex-1 py-2.5 rounded-[14px] font-black text-sm text-white bg-gradient-to-r ${meta.grad} shadow-md hover:shadow-lg transition-all`}>
                 Nộp bài
               </button>
@@ -572,7 +599,7 @@ function ResultScreen({ quizSet, questions, answers, onRetry, onBack }: {
         </button>
       </div>
 
-      <div className="flex-1 px-4 py-6 w-[90%] mx-auto space-y-6">
+      <div className="flex-1 py-6 w-[95%] mx-auto space-y-6">
 
         {/* Score card */}
         <div className={`rounded-[24px] p-6 bg-gradient-to-br ${meta.grad} text-white shadow-xl`}>
@@ -723,6 +750,7 @@ function ResultScreen({ quizSet, questions, answers, onRetry, onBack }: {
 export default function QuizPage({ params }: { params: Promise<{ setId: string }> }) {
   const router = useRouter();
   const { setId } = use(params);
+  const { data: session } = useSession();
 
   const [quizSet, setQuizSet] = useState<QuizSet | null>(null);
   const [questions, setQuestions] = useState<QuizQuestion[]>([]);
@@ -748,10 +776,38 @@ export default function QuizPage({ params }: { params: Promise<{ setId: string }
     })();
   }, [setId]);
 
-  const handleFinish = useCallback((ans: ExamAnswers) => {
+  const handleFinish = useCallback(async (ans: ExamAnswers, meta: FinishMeta) => {
     setExamAnswers(ans);
     setExamDone(true);
-  }, []);
+
+    // Save result to DB (fire-and-forget, don't block UI)
+    if (!quizSet || !session?.user) return;
+    const mcList    = questions.filter(q => !q.questionType || q.questionType === 'mc');
+    const tfList    = questions.filter(q => q.questionType === 'tf');
+    const essayList = questions.filter(q => q.questionType === 'essay');
+    const mcCorrect = mcList.filter(q => ans.mc[q._id] === q.correctOption).length;
+    let tfCorrect = 0; let tfTotal = 0;
+    tfList.forEach(q => {
+      q.options.forEach((_, i) => { tfTotal++; if ((ans.tf[q._id] ?? [])[i] === (q.tfAnswers ?? [])[i]) tfCorrect++; });
+    });
+    const essayAnswered = essayList.filter(q => (ans.essay[q._id] ?? '').trim().length > 0).length;
+
+    fetch('/api/quizzes/results', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        setId: quizSet._id,
+        mcAnswers: ans.mc, tfAnswers: ans.tf, essayAnswers: ans.essay,
+        mcCorrect, mcTotal: mcList.length,
+        tfCorrect, tfTotal,
+        essayAnswered, essayTotal: essayList.length,
+        timeSpentSeconds: meta.timeSpentSeconds,
+        timeLimitSeconds: quizSet.timeLimit * 60,
+        exitCount: meta.exitCount,
+        exitLog:   meta.exitLog,
+      }),
+    }).catch(() => {/* silent */});
+  }, [quizSet, questions, session]);
 
   const handleRetry = useCallback(() => {
     setExamAnswers(null);

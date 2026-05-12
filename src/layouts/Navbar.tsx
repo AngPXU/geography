@@ -2,23 +2,23 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
-import { signOut } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { logout } from '@/app/actions/auth';
 
 import { FaGlobeAsia, FaMapMarkedAlt, FaGamepad, FaUsers, FaBell, FaBook, FaUserCircle, FaSignOutAlt, FaCog, FaShieldAlt } from 'react-icons/fa';
 import { SettingsDrawer } from '@/components/ui/SettingsDrawer';
 import { Icon } from '@iconify/react';
 
 const NAV_ITEMS = [
-  { href: '/', label: 'Trang chủ', icon: <Icon icon="material-symbols:dashboard-rounded" width={22} />, color: 'text-blue-500', bg: 'bg-blue-50', dot: 'bg-blue-500' },
-  { href: '/classroom', label: 'Lớp học', icon: <Icon icon="material-symbols:home-work-rounded" width={22} />, color: 'text-cyan-500', bg: 'bg-cyan-50', dot: 'bg-cyan-500' },
-  { href: '/map', label: 'Bản đồ', icon: <Icon icon="material-symbols:map-search-rounded" width={22} />, color: 'text-green-500', bg: 'bg-green-50', dot: 'bg-green-500' },
-  { href: '/arena', label: 'Đấu trường', icon: <Icon icon="material-symbols:toys-and-games" width={22} />, color: 'text-rose-500', bg: 'bg-rose-50', dot: 'bg-rose-500' },
-  { href: '/books', label: 'Sách', icon: <Icon icon="material-symbols:book-4-rounded" width={22} />, color: 'text-violet-500', bg: 'bg-violet-50', dot: 'bg-violet-500' },
+  { href: '/', label: 'Trang chủ', icon: <Icon icon="material-symbols:dashboard-rounded" width={22} />, color: 'text-blue-500', bg: 'bg-blue-50', dot: 'bg-blue-500', hoverCls: 'hover:text-blue-500 hover:bg-white hover:shadow-sm' },
+  { href: '/classroom', label: 'Lớp học', icon: <Icon icon="material-symbols:home-work-rounded" width={22} />, color: 'text-cyan-500', bg: 'bg-cyan-50', dot: 'bg-cyan-500', hoverCls: 'hover:text-cyan-500 hover:bg-white hover:shadow-sm' },
+  { href: '/map', label: 'Bản đồ', icon: <Icon icon="material-symbols:map-search-rounded" width={22} />, color: 'text-green-500', bg: 'bg-green-50', dot: 'bg-green-500', hoverCls: 'hover:text-green-500 hover:bg-white hover:shadow-sm' },
+  { href: '/arena', label: 'Đấu trường', icon: <Icon icon="material-symbols:toys-and-games" width={22} />, color: 'text-rose-500', bg: 'bg-rose-50', dot: 'bg-rose-500', hoverCls: 'hover:text-rose-500 hover:bg-white hover:shadow-sm' },
+  { href: '/books', label: 'Sách', icon: <Icon icon="material-symbols:book-4-rounded" width={22} />, color: 'text-violet-500', bg: 'bg-violet-50', dot: 'bg-violet-500', hoverCls: 'hover:text-violet-500 hover:bg-white hover:shadow-sm' },
 ];
 
 
-export function Navbar({ user }: { user?: { name?: string | null; image?: string | null; role?: number } }) {
+export function Navbar({ user }: { user?: { name?: string | null; fullName?: string | null; image?: string | null; role?: number } }) {
   const roleName = user?.role === 1 ? 'Quản trị viên' : user?.role === 2 ? 'Giáo viên' : 'Học sinh';
 
   const router = useRouter();
@@ -149,11 +149,11 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
             <img src={user.image} alt="Avatar" className="w-10 h-10 rounded-[12px] object-cover shadow-sm border-[2px] border-white" />
           ) : (
             <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-black text-base shadow-sm border-[2px] border-white">
-              {(user?.name?.charAt(0) || 'K').toUpperCase()}
+              {((user?.fullName ?? user?.name)?.charAt(0) || 'K').toUpperCase()}
             </div>
           )}
           <div className="min-w-0">
-            <p className="font-extrabold text-[#082F49] text-sm truncate">{user?.name || 'Khách'}</p>
+            <p className="font-extrabold text-[#082F49] text-sm truncate">{user?.fullName ?? user?.name ?? 'Khách'}</p>
             <p className="text-[#94A3B8] text-xs font-semibold">{roleName}</p>
           </div>
         </div>
@@ -167,7 +167,7 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
           className="flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-sm font-semibold text-[#334155] hover:bg-cyan-50 hover:text-cyan-700 transition-colors group"
         >
           <div className="w-7 h-7 rounded-[8px] bg-slate-100 group-hover:bg-cyan-100 flex items-center justify-center transition-colors">
-            <FaUserCircle className="text-slate-400 group-hover:text-cyan-500 text-xs transition-colors" />
+            <Icon icon="mingcute:user-edit-fill" width={20} />
           </div>
           Thông tin cá nhân
         </Link>
@@ -179,7 +179,7 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-sm font-semibold text-[#334155] hover:bg-slate-50 hover:text-slate-700 transition-colors group"
         >
           <div className="w-7 h-7 rounded-[8px] bg-slate-100 group-hover:bg-slate-200 flex items-center justify-center transition-colors">
-            <FaCog className="text-slate-400 text-xs" />
+            <Icon icon="mingcute:settings-3-fill" width={20} />
           </div>
           Cài đặt
         </button>
@@ -187,11 +187,11 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
         <div className="my-2 mx-1 h-px bg-slate-100" />
 
         <button
-          onClick={() => signOut({ callbackUrl: '/login' })}
+          onClick={() => logout()}
           className="w-full flex items-center gap-3 px-3 py-2.5 rounded-[12px] text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors group"
         >
           <div className="w-7 h-7 rounded-[8px] bg-red-50 group-hover:bg-red-100 flex items-center justify-center transition-colors">
-            <FaSignOutAlt className="text-red-400 text-xs" />
+            <Icon icon="mingcute:layout-rightbar-close-fill" width={20} />
           </div>
           Đăng xuất
         </button>
@@ -320,8 +320,8 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
 
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 group shrink-0 min-w-0">
-              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[14px] bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-lg shadow-md group-hover:scale-105 group-hover:shadow-cyan-300/40 transition-all duration-300 flex-shrink-0">
-                <FaGlobeAsia />
+              <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[14px] overflow-hidden shadow-md group-hover:scale-105 group-hover:shadow-cyan-300/40 transition-all duration-300 flex-shrink-0 border-2 border-white">
+                <img src="/icon-192x192.png" alt="Logo" className="w-full h-full object-cover" />
               </div>
               <div className="min-w-0">
                 <p className="font-black text-[#082F49] text-sm sm:text-lg leading-none tracking-tight truncate">Vui học Địa Lý</p>
@@ -333,7 +333,7 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
             <div className="hidden lg:flex items-center gap-1 bg-slate-50/80 rounded-[18px] px-2 py-1.5 border border-slate-100">
               {NAV_ITEMS.map(item => (
                 <Link key={item.href} href={item.href}
-                  className={`nav-link-item flex items-center gap-2 px-4 py-2 rounded-[14px] text-sm font-bold text-[#334155] hover:${item.color} hover:bg-white hover:shadow-sm transition-all duration-200`}>
+                  className={`nav-link-item flex items-center gap-2 px-4 py-2 rounded-[14px] text-sm font-bold text-[#334155] transition-all duration-200 ${item.hoverCls}`}>
                   <span className={`w-6 h-6 rounded-lg ${item.bg} flex items-center justify-center text-sm`}>
                     {item.icon}
                   </span>
@@ -379,11 +379,11 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
                     <img src={user.image} alt="Avatar" className="w-7 h-7 rounded-[10px] object-cover shadow-sm group-hover:scale-105 transition-transform" />
                   ) : (
                     <div className="w-7 h-7 rounded-[10px] bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-[10px] font-black shadow-sm group-hover:scale-105 transition-transform">
-                      {(user?.name?.charAt(0) || 'K').toUpperCase()}
+                      {((user?.fullName ?? user?.name)?.charAt(0) || 'K').toUpperCase()}
                     </div>
                   )}
                   <span className="font-bold text-sm text-[#082F49] hidden sm:block truncate max-w-[100px]">
-                    {user?.name || 'Khách'}
+                    {user?.fullName ?? user?.name ?? 'Khách'}
                   </span>
                   <svg className={`w-3 h-3 text-slate-400 group-hover:text-slate-600 transition-all duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                     <polyline points="6 9 12 15 18 9" />
@@ -404,7 +404,7 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
         <div className="island-inner">
           {/* Logo dot */}
           <Link href="/" className="island-icon" title="Trang chủ">
-            <FaGlobeAsia />
+            <img src="/icon-192x192.png" alt="Logo" style={{ width: 22, height: 22, borderRadius: 6, objectFit: 'cover' }} />
           </Link>
 
           <div className="island-divider" />
@@ -447,12 +447,12 @@ export function Navbar({ user }: { user?: { name?: string | null; image?: string
             <button
               onClick={() => setDropdownOpen(v => !v)}
               className="island-avatar ml-1 cursor-pointer overflow-hidden border border-white/20"
-              title={user?.name || 'Khách'}
+              title={user?.fullName ?? user?.name ?? 'Khách'}
             >
               {user?.image ? (
                 <img src={user.image} alt="Avatar" className="w-full h-full object-cover" />
               ) : (
-                <span>{(user?.name?.charAt(0) || 'K').toUpperCase()}</span>
+                <span>{((user?.fullName ?? user?.name)?.charAt(0) || 'K').toUpperCase()}</span>
               )}
             </button>
             {scrolled && dropdownOpen && (

@@ -1,6 +1,7 @@
 'use client';
 import React, { useRef } from 'react';
 import Link from 'next/link';
+import { Icon } from '@iconify/react';
 
 const RECORDS = [
   {
@@ -9,7 +10,6 @@ const RECORDS = [
     name: 'Đỉnh Everest (8.848m)',
     desc: 'Biên giới Nepal & Trung Quốc - Đỉnh núi cao nhất hành tinh so với mực nước biển.',
     bg: 'https://images.unsplash.com/photo-1575819719798-83d97dd6949c?q=80&w=1169&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    icon: '⛰️',
     gradient: 'from-blue-900/80 to-transparent'
   },
   {
@@ -18,7 +18,6 @@ const RECORDS = [
     name: 'Rãnh Mariana (-10.984m)',
     desc: 'Tây Thái Bình Dương - Nơi sâu nhất của vỏ Trái Đất, nơi áp suất có thể nghiền nát mọi thứ và ánh mặt trời không bao giờ chạm tới.',
     bg: 'https://images.unsplash.com/photo-1582967788606-a171c1080cb0?q=80&w=800&auto=format&fit=crop',
-    icon: '🌊',
     gradient: 'from-cyan-900/80 to-transparent'
   },
   {
@@ -27,7 +26,6 @@ const RECORDS = [
     name: 'Hoang mạc Sahara',
     desc: 'Châu Phi - Sa mạc cát nóng lớn nhất thế giới, có diện tích xấp xỉ toàn bộ lãnh thổ của Hoa Kỳ.',
     bg: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?q=80&w=800&auto=format&fit=crop',
-    icon: '🐪',
     gradient: 'from-orange-900/80 to-transparent'
   },
   {
@@ -36,7 +34,6 @@ const RECORDS = [
     name: 'Sông Amazon',
     desc: 'Nam Mỹ - Dòng sông vĩ đại có lưu lượng nước lớn nhất thế giới, ôm trọn rừng rậm Amazon - lá phổi xanh của hành tinh.',
     bg: 'https://images.unsplash.com/photo-1593069567131-53a0614dde1d?q=80&w=1332&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    icon: '🌿',
     gradient: 'from-emerald-900/80 to-transparent'
   },
   {
@@ -45,7 +42,6 @@ const RECORDS = [
     name: 'Biển Chết (-430m)',
     desc: 'Biên giới Israel & Jordan - Hồ nước mặn nhất thế giới nằm dưới mực nước biển, nơi con người có thể nổi tự nhiên mà không cần bơi.',
     bg: 'https://images.unsplash.com/photo-1672417802197-94622fb9d122?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    icon: '🧂',
     gradient: 'from-sky-900/80 to-transparent'
   },
   {
@@ -54,7 +50,6 @@ const RECORDS = [
     name: 'Thác Angel (979m)',
     desc: 'Venezuela - Dòng thác rơi tự do cao nhất thế giới, đổ sầm sập xuống từ đỉnh núi phẳng Auyán-tepui ẩn mình trong mây.',
     bg: 'https://images.unsplash.com/photo-1533094602577-198d3beab8ea?q=80&w=1170&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D',
-    icon: '💦',
     gradient: 'from-teal-900/80 to-transparent'
   },
   {
@@ -63,7 +58,6 @@ const RECORDS = [
     name: 'Trạm Vostok (-89.2°C)',
     desc: 'Nam Cực - Nơi ghi nhận nhiệt độ tự nhiên thấp nhất từng được đo lường trên bề mặt Trái Đất, một thế giới chỉ có băng và tuyết.',
     bg: 'https://media.istockphoto.com/id/1437717528/photo/modern-remote-antarctic-research-polar-station-on-the-mountains-background-3d-rendering.webp?a=1&b=1&s=612x612&w=0&k=20&c=myhBcUiwmx1YkDtJeb56wvK2h1qdmsAoER-dyNJiOlI=',
-    icon: '❄️',
     gradient: 'from-indigo-900/80 to-transparent'
   }
 ];
@@ -147,13 +141,9 @@ export function EarthRecords() {
 
               {/* Content */}
               <div className="absolute inset-0 p-6 flex flex-col justify-end">
-                <div className="w-12 h-12 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl mb-auto border border-white/30 transform -translate-y-4 opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-500">
-                  {rec.icon}
-                </div>
-
                 <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                   <p className="text-white/80 font-bold text-sm uppercase tracking-wider mb-1">{rec.title}</p>
-                  <h3 className="text-2xl font-black text-white m-0 leading-tight mb-3 drop-shadow-md">
+                  <h3 className="text-2xl font-black !text-white m-0 leading-tight mb-3 drop-shadow-md">
                     {rec.name}
                   </h3>
                   <div className="h-0 group-hover:h-auto overflow-hidden transition-all duration-500 origin-bottom opacity-0 group-hover:opacity-100">
@@ -161,7 +151,7 @@ export function EarthRecords() {
                       {rec.desc}
                     </p>
                     <Link href="/map" className="inline-flex items-center justify-center w-full py-3 rounded-full bg-[#06B6D4] hover:bg-[#22D3EE] text-white font-black text-sm shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:shadow-[0_15px_30px_rgba(34,211,238,0.5)] transition-all duration-300 border-[2px] border-[#06B6D4]">
-                      Dịch chuyển đến đây 🚀
+                      Dịch chuyển đến đây <Icon icon="material-symbols:keyboard-double-arrow-right-rounded" width={22} />
                     </Link>
                   </div>
                 </div>

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import dynamic from 'next/dynamic';
 import { getPetInfo } from '@/utils/petSystem';
 import { PetInfoModal } from './PetInfoModal';
+import { Icon } from '@iconify/react';
 
 // VirtualPet kéo three + @react-three/fiber + @react-three/drei (~600KB).
 // Lazy-load để không nặng dashboard ban đầu.
@@ -169,7 +170,7 @@ export function PetGarden({ initialPetExp, initialCoins }: PetGardenProps) {
             disabled={isFeeding || petInfo.isMaxLevel}
             className="flex-1 py-3 px-6 bg-[#06B6D4] hover:bg-[#22D3EE] active:bg-[#0891B2] disabled:bg-slate-300 disabled:cursor-not-allowed text-white rounded-[16px] font-black shadow-[0_8px_16px_rgba(6,182,212,0.25)] hover:-translate-y-1 transition-all flex items-center justify-center gap-2"
           >
-            {isFeeding ? 'Đang ăn...' : petInfo.isMaxLevel ? 'Đã Max Level' : `🍖 Cho ăn (-${feedCost} Xu)`}
+            {isFeeding ? 'Đang ăn...' : petInfo.isMaxLevel ? 'Đã Max Level' : <><Icon icon="material-symbols:wheat-rounded" width={20} /> Cho ăn (-{feedCost} Xu)</>}
           </button>
 
           <div className="flex flex-col items-center justify-center bg-amber-50 border border-amber-200 px-4 py-2 rounded-[16px] min-w-[80px]">
@@ -181,7 +182,7 @@ export function PetGarden({ initialPetExp, initialCoins }: PetGardenProps) {
         {/* Error Message */}
         {errorMsg && (
           <p className="text-xs font-bold text-rose-500 animate-[shake_0.4s_ease] absolute bottom-[-20px] left-0">
-            ⚠️ {errorMsg}
+            <Icon icon="material-symbols:error-rounded" width={16} color="#fde2e2" /> {errorMsg}
           </p>
         )}
       </div>

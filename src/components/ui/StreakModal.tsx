@@ -3,6 +3,7 @@
 import { createPortal } from 'react-dom';
 import { useEffect, useState } from 'react';
 import { STREAK_MILESTONES, getNextStreakMilestone } from '@/utils/streakSystem';
+import { Icon } from '@iconify/react';
 
 interface StreakModalProps {
   streak: number;
@@ -53,7 +54,7 @@ export function StreakModal({ streak, onClose }: StreakModalProps) {
             onClick={onClose}
             className="w-8 h-8 rounded-full bg-slate-100 hover:bg-rose-100 text-slate-400 hover:text-rose-500 flex items-center justify-center transition-colors text-lg"
           >
-            ×
+            <Icon icon="material-symbols:close-rounded" width={20} />
           </button>
         </div>
 
@@ -66,7 +67,7 @@ export function StreakModal({ streak, onClose }: StreakModalProps) {
               <span>Mốc tiếp theo: <strong>{nextMilestone.days} ngày</strong></span>
             </div>
             <div className="flex items-center gap-1 font-black text-amber-600 text-sm">
-              🪙 +{nextMilestone.reward} Xu
+              +{nextMilestone.reward} <Icon icon="material-symbols:cookie-rounded" width={16} />
             </div>
           </div>
         )}
@@ -116,8 +117,8 @@ export function StreakModal({ streak, onClose }: StreakModalProps) {
                       </span>
                       {isCurrent && <span className="text-[10px] font-black text-cyan-500 bg-cyan-100 px-2 py-0.5 rounded-full animate-pulse">SẮP ĐẾN</span>}
                     </div>
-                    <span className={`font-black text-sm shrink-0 ${reached ? 'text-amber-600' : isCurrent ? 'text-amber-500' : 'text-slate-400'}`}>
-                      🪙 +{m.reward}
+                    <span className={`flex font-black text-sm shrink-0 ${reached ? 'text-amber-600' : isCurrent ? 'text-amber-500' : 'text-slate-400'}`}>
+                      +{m.reward} <Icon icon="material-symbols:cookie-rounded" width={16} />
                     </span>
                   </div>
 

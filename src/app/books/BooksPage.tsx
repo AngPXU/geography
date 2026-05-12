@@ -3,6 +3,7 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { trackMission } from '@/utils/missionTracker';
 import dynamic from 'next/dynamic';
+import { Icon } from '@iconify/react';
 
 /* ── Dynamic PDF Reader ─── */
 const PdfViewer = dynamic(() => import('./PdfViewer'), {
@@ -19,10 +20,10 @@ const PdfViewer = dynamic(() => import('./PdfViewer'), {
 interface BookMeta { _id: string; grade: number; title: string; publisher: string; pdfFilename: string; coverColor: string; startPage?: number; uploadedAt: string; }
 
 const GRADES = [
-  { grade: 6, label: 'Lớp 6', emoji: '🌏', color: '#06B6D4', gFrom: '#22D3EE', gTo: '#3B82F6', bg: 'rgba(224,242,254,0.6)', desc: 'Trái Đất — Ngôi nhà của chúng ta' },
-  { grade: 7, label: 'Lớp 7', emoji: '🌍', color: '#22C55E', gFrom: '#4ADE80', gTo: '#10B981', bg: 'rgba(220,252,231,0.6)', desc: 'Địa lý các châu lục & đại dương' },
-  { grade: 8, label: 'Lớp 8', emoji: '🌐', color: '#F59E0B', gFrom: '#FCD34D', gTo: '#F97316', bg: 'rgba(254,243,199,0.6)', desc: 'Địa lý tự nhiên Việt Nam' },
-  { grade: 9, label: 'Lớp 9', emoji: '🇻🇳', color: '#EC4899', gFrom: '#F472B6', gTo: '#F43F5E', bg: 'rgba(252,231,243,0.6)', desc: 'Địa lý kinh tế – xã hội Việt Nam' },
+  { grade: 6, label: 'Lớp 6', emoji: <Icon icon="material-symbols:filter-6-rounded" width={22} />, color: '#06B6D4', gFrom: '#22D3EE', gTo: '#3B82F6', bg: 'rgba(224,242,254,0.6)', desc: 'Trái Đất — Ngôi nhà của chúng ta' },
+  { grade: 7, label: 'Lớp 7', emoji: <Icon icon="material-symbols:filter-7-rounded" width={22} />, color: '#22C55E', gFrom: '#4ADE80', gTo: '#10B981', bg: 'rgba(220,252,231,0.6)', desc: 'Địa lý các châu lục & đại dương' },
+  { grade: 8, label: 'Lớp 8', emoji: <Icon icon="material-symbols:filter-8-rounded" width={22} />, color: '#F59E0B', gFrom: '#FCD34D', gTo: '#F97316', bg: 'rgba(254,243,199,0.6)', desc: 'Địa lý tự nhiên Việt Nam' },
+  { grade: 9, label: 'Lớp 9', emoji: <Icon icon="material-symbols:filter-9-rounded" width={22} />, color: '#EC4899', gFrom: '#F472B6', gTo: '#F43F5E', bg: 'rgba(252,231,243,0.6)', desc: 'Địa lý kinh tế – xã hội Việt Nam' },
 ];
 
 /* ── Upload Modal ─── */
@@ -108,50 +109,70 @@ function UploadModal({ g, onClose, onDone }: { g: typeof GRADES[number]; onClose
 
 /* ── Book Cover Simulation ─── */
 function BookCover({ book, g, page, numPages }: { book: BookMeta; g: typeof GRADES[number]; page: number; numPages: number }) {
+  const pct = numPages > 0 ? Math.round((page / numPages) * 100) : 0;
   return (
-    <div className="flex flex-col gap-5">
-      {/* Cover */}
-      <div className="relative w-full aspect-[3/4] max-w-[180px] mx-auto rounded-[20px] overflow-hidden cursor-pointer select-none"
-        style={{ boxShadow: `8px 12px 40px ${g.color}40, inset -3px 0 8px rgba(0,0,0,0.08)`, border: `3px solid ${g.color}` }}>
-        <div className="absolute inset-0" style={{ background: `linear-gradient(160deg, ${g.gFrom}, ${g.gTo})` }} />
-        <div className="absolute inset-0 flex flex-col items-center justify-between p-5 text-white">
-          <div className="w-full"><div className="w-8 h-1 rounded-full bg-white/50 mb-2" /><p className="text-[10px] font-black uppercase tracking-widest opacity-70">Sách Giáo Khoa</p></div>
-          <p className="text-5xl drop-shadow-lg">{g.emoji}</p>
-          <div className="w-full">
-            <p className="font-black text-xl leading-tight drop-shadow">{book.title}</p>
-            <div className="mt-3 h-px bg-white/30" />
-            <p className="text-[10px] mt-2 opacity-60 font-semibold">{book.publisher}</p>
+    <div className="flex flex-col gap-4">
+
+      {/* Cover card */}
+      <div className="relative w-full rounded-[20px] overflow-hidden select-none"
+        style={{ background: `linear-gradient(160deg, ${g.gFrom}, ${g.gTo})`, boxShadow: `0 12px 32px ${g.color}40` }}>
+        {/* Decorative dots */}
+        <div className="absolute inset-0 opacity-10"
+          style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '18px 18px' }} />
+
+        <div className="relative z-10 p-5 flex flex-col gap-3">
+          {/* Label */}
+          <p className="text-[10px] font-black uppercase tracking-[0.2em] text-white/60">Sách Giáo Khoa</p>
+
+          {/* Grade badge */}
+          <div className="w-10 h-10 rounded-[14px] bg-white/20 backdrop-blur-sm flex items-center justify-center text-white border border-white/30">
+            {g.emoji}
+          </div>
+
+          {/* Title */}
+          <div>
+            <p className="text-2xl font-black text-white leading-tight">{book.title}</p>
+            <div className="mt-2 h-px bg-white/25" />
+            <p className="text-[11px] text-white/55 mt-2 font-medium leading-snug">{book.publisher}</p>
           </div>
         </div>
       </div>
 
-      {/* Info chips */}
+      {/* Stats row */}
       <div className="grid grid-cols-2 gap-2">
         {[
-          { label: 'Trang hiện tại', val: page || '—', icon: '📖' },
-          { label: 'Tổng số trang', val: numPages || '—', icon: '📄' },
+          { label: 'Trang hiện tại', val: page || '—', icon: 'material-symbols:menu-book-rounded' },
+          { label: 'Tổng số trang',  val: numPages || '—', icon: 'material-symbols:description-rounded' },
         ].map(({ label, val, icon }) => (
-          <div key={label} className="rounded-[16px] p-3 flex flex-col gap-1"
+          <div key={label} className="rounded-[16px] p-3 flex flex-col gap-1.5"
             style={{ background: g.bg, border: '1px solid rgba(255,255,255,0.8)' }}>
-            <p className="text-[10px] font-black uppercase tracking-wider" style={{ color: g.color }}>{icon} {label}</p>
-            <p className="text-lg font-black text-[#082F49]">{val}</p>
+            <div className="flex items-center gap-1.5">
+              <Icon icon={icon} width={14} style={{ color: g.color, flexShrink: 0 }} />
+              <p className="text-[9px] font-black uppercase tracking-wider leading-none" style={{ color: g.color }}>{label}</p>
+            </div>
+            <p className="text-xl font-black text-[#082F49] leading-none">{val}</p>
           </div>
         ))}
       </div>
 
-      {/* Reading progress */}
+      {/* Progress */}
       {numPages > 0 && (
-        <div className="rounded-[16px] p-4" style={{ background: g.bg, border: '1px solid rgba(255,255,255,0.8)' }}>
-          <div className="flex justify-between mb-2">
-            <p className="text-[11px] font-black text-[#082F49] uppercase tracking-wider">Tiến độ đọc</p>
-            <p className="text-[11px] font-bold" style={{ color: g.color }}>{Math.round((page / numPages) * 100)}%</p>
+        <div className="rounded-[16px] p-4 flex flex-col gap-2"
+          style={{ background: g.bg, border: '1px solid rgba(255,255,255,0.8)' }}>
+          <div className="flex justify-between items-center">
+            <p className="text-[10px] font-black text-[#082F49] uppercase tracking-wider">Tiến độ đọc</p>
+            <p className="text-[11px] font-black" style={{ color: g.color }}>{pct}%</p>
           </div>
-          <div className="h-2 bg-white/60 rounded-full overflow-hidden">
+          <div className="h-2 bg-white/70 rounded-full overflow-hidden">
             <div className="h-full rounded-full transition-all duration-500"
-              style={{ width: `${(page / numPages) * 100}%`, background: `linear-gradient(to right, ${g.gFrom}, ${g.gTo})` }} />
+              style={{ width: `${pct}%`, background: `linear-gradient(to right, ${g.gFrom}, ${g.gTo})` }} />
           </div>
+          <p className="text-[10px] text-[#94A3B8] font-semibold">
+            Còn {numPages - page} trang nữa
+          </p>
         </div>
       )}
+
     </div>
   );
 }

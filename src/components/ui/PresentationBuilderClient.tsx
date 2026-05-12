@@ -536,8 +536,8 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
             return next;
           });
         }}
-        className={`group relative rounded-[24px] transition-all duration-300 border-2 cursor-pointer
-          ${isActive ? 'border-cyan-400 bg-white shadow-[0_10px_30px_rgba(14,165,233,0.08)] p-5 scale-[1.01] z-10' : 'border-transparent bg-[rgba(255,255,255,0.5)] hover:bg-[rgba(255,255,255,0.8)] hover:border-slate-200 p-4'}`}
+        className={`group relative rounded-[24px] transition-all duration-300 border-2 cursor-pointer p-1
+          ${isActive ? 'border-cyan-400 shadow-[0_10px_30px_rgba(14,165,233,0.12)] z-10' : 'border-transparent hover:border-slate-200'}`}
       >
         {/* Floating actions */}
         <div className={`absolute -right-3 -top-3 flex flex-col gap-1 bg-white p-1 rounded-xl shadow-lg border border-slate-100 transition-opacity z-20 ${isActive ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
@@ -2168,7 +2168,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
         </div>
 
         {/* Editor Stream */}
-        <div className="flex-1 overflow-y-auto px-4 lg:px-12 py-4 lg:py-8 custom-scrollbar scroll-smooth">
+        <div className="flex-1 overflow-y-auto py-4 lg:py-6 custom-scrollbar scroll-smooth">
           <div className="w-full space-y-6 pb-32">
 
             {blocks.map(block => renderBlockEditor(block))}

@@ -5,9 +5,20 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import dynamic from 'next/dynamic';
+import { Icon } from '@iconify/react';
 
-// Self-host worker (xem scripts/copy-public-assets.js)
-pdfjs.GlobalWorkerOptions.workerSrc = '/pdf-worker/pdf.worker.min.mjs';
+// Set worker once — guard prevents race condition on Next.js HMR / re-renders
+if (typeof window !== 'undefined' && !pdfjs.GlobalWorkerOptions.workerSrc) {
+  pdfjs.GlobalWorkerOptions.workerSrc = '/pdf-worker/pdf.worker.min.mjs';
+}
+
+// Disable HTTP Range Requests — prevents "Bad end offset" on large PDFs
+// pdfjs v5 mặc định dùng range requests, dễ bị lỗi offset khi file lớn
+const PDF_OPTIONS = {
+  disableRange: true,
+  disableStream: true,
+  disableAutoFetch: true,
+};
 
 const AiChatPanel = dynamic(() => import('./AiChatPanel'), {
   ssr: false,
@@ -167,7 +178,7 @@ export default function PdfViewer({ pdfUrl, title, color, grade = 6, startPage =
               color: color, fontSize: 12, fontWeight: 900, cursor: 'pointer',
               transition: 'all 0.25s', flexShrink: 0,
             }}>
-            ⚡ Tạo Quiz
+            <Icon icon="material-symbols:quiz" width={16} /> Tạo Quiz
           </button>
 
           {/* AI toggle button */}
@@ -182,7 +193,7 @@ export default function PdfViewer({ pdfUrl, title, color, grade = 6, startPage =
               boxShadow: showAi ? `0 4px 14px ${color}45` : 'none',
               flexShrink: 0,
             }}>
-            🤖 {showAi ? 'Ẩn AI' : 'Hỏi AI'}
+            <Icon icon="mingcute:robot-fill" width={16} /> {showAi ? 'Ẩn AI' : 'Hỏi AI'}
           </button>
         </div>
 
@@ -195,6 +206,7 @@ export default function PdfViewer({ pdfUrl, title, color, grade = 6, startPage =
         }}>
           <Document
             file={pdfUrl}
+            options={PDF_OPTIONS}
             onLoadSuccess={(pdf: any) => {
               const n = pdf.numPages;
               setNumPages(n); setErrMsg(''); setPage(startPage); setInput(String(startPage));
@@ -212,7 +224,7 @@ export default function PdfViewer({ pdfUrl, title, color, grade = 6, startPage =
             }
             error={
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, padding: 64, textAlign: 'center' }}>
-                <span style={{ fontSize: 40 }}>📄</span>
+                <span style={{ fontSize: 40 }}><Icon icon="mingcute:pdf-fill" width={50} /></span>
                 <p style={{ fontWeight: 900, color: '#082F49', fontSize: 16 }}>Không thể tải PDF</p>
                 <p style={{ color: '#94A3B8', fontSize: 13 }}>{errMsg}</p>
                 <a href={pdfUrl} target="_blank" rel="noreferrer" style={{ color, fontWeight: 700, fontSize: 13 }}>Mở trực tiếp →</a>

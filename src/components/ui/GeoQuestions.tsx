@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@iconify/react';
 import { useEffect, useState, useCallback, useRef } from 'react';
 
 interface AskResult {
@@ -133,7 +134,7 @@ export function GeoQuestions() {
       {/* Header */}
       <div className="mx-auto text-center mb-16">
         <div className="inline-flex items-center gap-2 bg-gradient-to-r from-white/90 to-white/70 backdrop-blur-xl px-6 py-2.5 rounded-full border-[2px] border-white/80 shadow-[0_8px_30px_rgba(14,165,233,0.15)] mb-5 transform hover:scale-105 transition-all cursor-default">
-          <span className="text-xl animate-bounce" style={{ animationDuration: '3s'}}>🧭</span>
+          <span className="flex items-center text-cyan-600"><Icon icon="mingcute:robot-fill" width={30} /></span>
           <span className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-cyan-600 to-blue-500 uppercase tracking-[0.2em] ml-1">AI Trợ Lý Thông Minh</span>
         </div>
         <h2 className="text-4xl md:text-6xl font-black text-[#082F49] tracking-tight" style={{ textShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
@@ -164,7 +165,7 @@ export function GeoQuestions() {
           {/* Panel header */}
           <div className="flex items-center gap-4 px-8 py-5 border-b border-white/60 bg-white/40 relative z-30">
             <div className="w-12 h-12 rounded-[18px] bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-[0_10px_20px_-5px_rgba(6,182,212,0.5)]">
-              <span className="text-white text-2xl drop-shadow-md">🌍</span>
+              <span className="text-white text-2xl drop-shadow-md"><Icon icon="mingcute:earth-3-line" width={38} /></span>
             </div>
             <div>
               <p className="text-[#082F49] font-black text-base leading-none tracking-tight">GeoAssistant Siêu Cấp</p>
@@ -180,7 +181,7 @@ export function GeoQuestions() {
           <div className="flex-1 flex flex-col gap-6 px-8 py-8 overflow-y-auto">
             {qaSession.length === 0 && !qaLoading && (
               <div className="flex flex-col items-center justify-center py-8 text-center gap-3">
-                <span className="text-5xl">🌍</span>
+                <span className="text-5xl"><Icon icon="mingcute:earth-3-line" width={50} /></span>
                 <p className="text-[#334155] font-semibold text-sm">Bạn muốn biết gì về địa lý?</p>
                 <div className="flex flex-wrap justify-center gap-2 mt-1">
                   {['Tại sao biển mặn?', 'Núi Everest cao bao nhiêu?', 'Sông Amazon ở đâu?'].map(ex => (
@@ -231,7 +232,7 @@ export function GeoQuestions() {
                     </div>
                   ) : (
                     <div className="max-w-[85%] bg-[rgba(254,240,138,0.5)] border border-yellow-200 rounded-[18px] rounded-tl-[6px] px-4 py-3 shadow-sm">
-                      <p className="text-[11px] font-black text-[#D97706] uppercase tracking-wider mb-1">⚠️ Ngoài phạm vi</p>
+                      <p className="flex text-[11px] font-black text-[#D97706] uppercase tracking-wider mb-1"><Icon icon="material-symbols:error-rounded" width={22} /> Ngoài phạm vi</p>
                       <p className="text-[#334155] text-sm">{item.result.reason}</p>
                     </div>
                   )}
@@ -243,7 +244,7 @@ export function GeoQuestions() {
             {qaLoading && (
               <div className="flex justify-start gap-2.5">
                 <div className="w-8 h-8 shrink-0 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center shadow-sm">
-                  <span className="text-white text-xs">🤖</span>
+                  <span className="text-white text-xs"><Icon icon="mingcute:robot-fill" width={16} /></span>
                 </div>
                 <div className="bg-white/80 border border-white rounded-[18px] rounded-tl-[6px] px-5 py-4 shadow-sm flex items-center gap-1.5">
                   <span className="w-2 h-2 rounded-full bg-cyan-400 animate-bounce" style={{ animationDelay: '0ms' }} />
@@ -280,9 +281,9 @@ export function GeoQuestions() {
               <button
                 onClick={handleAsk}
                 disabled={!qaInput.trim() || qaLoading}
-                className="h-[46px] px-6 rounded-full bg-[#06B6D4] hover:bg-[#22D3EE] text-white text-sm font-black uppercase tracking-widest shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:-translate-y-0.5 hover:shadow-[0_15px_30px_rgba(34,211,238,0.5)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:-translate-y-0 disabled:hover:shadow-[0_10px_20px_rgba(6,182,212,0.3)] shrink-0 border-[2px] border-[#06B6D4]"
+                className="flex items-center justify-center h-[46px] px-6 rounded-full bg-[#06B6D4] hover:bg-[#22D3EE] text-white text-sm font-black uppercase tracking-widest shadow-[0_10px_20px_rgba(6,182,212,0.3)] hover:-translate-y-0.5 hover:shadow-[0_15px_30px_rgba(34,211,238,0.5)] transition-all duration-300 disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:-translate-y-0 disabled:hover:shadow-[0_10px_20px_rgba(6,182,212,0.3)] shrink-0 border-[2px] border-[#06B6D4]"
               >
-                {qaLoading ? '...' : 'Gửi 🚀'}
+                {qaLoading ? '...' : 'Gửi'} <Icon icon="material-symbols:not-started-rounded" width={22} />
               </button>
             </div>
             <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-widest mt-4 text-center">
@@ -295,7 +296,7 @@ export function GeoQuestions() {
       <div className="w-full xl:w-[450px] shrink-0 flex flex-col gap-5">
         <div className="flex items-center gap-4 mb-2 px-2">
            <div className="w-12 h-12 rounded-[18px] bg-white/70 backdrop-blur-xl border-[2px] border-white flex items-center justify-center text-2xl shadow-[0_5px_15px_rgba(0,0,0,0.08)]">
-             📚
+              <Icon icon="mingcute:briefcase-2-fill" width={32} />
            </div>
            <div>
              <h3 className="text-xl font-black text-[#082F49] tracking-tight">Hành trang của bạn</h3>
@@ -317,7 +318,7 @@ export function GeoQuestions() {
         ) : history.length === 0 ? (
           <div className="bg-gradient-to-b from-white/60 to-white/30 backdrop-blur-xl border-[3px] border-white/80 rounded-[36px] px-8 py-10 text-center shadow-sm">
             <div className="w-20 h-20 mx-auto bg-gradient-to-br from-cyan-100 to-blue-50 rounded-full flex items-center justify-center mb-4 border-[3px] border-white shadow-inner">
-               <span className="text-4xl">🗺️</span>
+               <span className="text-4xl"><Icon icon="material-symbols:map-rounded" width={50} /></span>
             </div>
             <p className="text-[#082F49] font-black text-lg">Chưa có dấu chân nào</p>
             <p className="text-[#94A3B8] text-xs mt-2 font-medium leading-relaxed">Hãy hỏi AI Trợ Lý Siêu Cấp ở bên kia để bắt đầu hành trình khám phá thế giới ngay nhé!</p>

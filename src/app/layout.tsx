@@ -6,6 +6,7 @@ import { OnlineTimer } from "@/components/OnlineTimer";
 import { BadgeUnlockWatcher } from "@/components/ui/BadgeUnlockWatcher";
 import ThreeWarningSuppress from "@/components/ThreeWarningSuppress";
 import { NavigationLoader } from "@/components/ui/NavigationLoader";
+import Providers from "@/components/Providers";
 
 const beVietnamPro = Be_Vietnam_Pro({
   weight: ["400", "500", "600", "700", "800", "900"],
@@ -203,12 +204,14 @@ export default function RootLayout({
         <meta name="HandheldFriendly" content="true" />
       </head>
       <body className="min-h-full flex flex-col" style={{ touchAction: 'manipulation' }}>
-        <ThreeWarningSuppress />
-        <PwaRegister />
-        <OnlineTimer />
-        <BadgeUnlockWatcher />
-        <NavigationLoader />
-        {children}
+        <Providers>
+          <ThreeWarningSuppress />
+          <PwaRegister />
+          <OnlineTimer />
+          <BadgeUnlockWatcher />
+          <NavigationLoader />
+          {children}
+        </Providers>
       </body>
     </html>
   );

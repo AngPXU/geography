@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { Icon } from '@iconify/react';
+import React, { useState, useEffect, useCallback, useRef, JSX } from 'react';
 
 // ── Grade UI metadata (colours stay on client) ─────────────────────────────
-const GRADE_META: Record<number, { label: string; grad: string; shadow: string; icon: string }> = {
-  6: { label: 'Lớp 6', grad: 'from-cyan-400 to-blue-500',     shadow: 'shadow-cyan-200',   icon: '🌍' },
-  7: { label: 'Lớp 7', grad: 'from-emerald-400 to-teal-500',  shadow: 'shadow-emerald-200', icon: '🗺️' },
-  8: { label: 'Lớp 8', grad: 'from-violet-400 to-purple-500', shadow: 'shadow-violet-200',  icon: '🌐' },
-  9: { label: 'Lớp 9', grad: 'from-orange-400 to-rose-500',   shadow: 'shadow-orange-200',  icon: '🏔️' },
+const GRADE_META: Record<number, { label: string; grad: string; shadow: string; icon: JSX.Element }> = {
+  6: { label: 'Lớp 6', grad: 'from-cyan-400 to-blue-500',     shadow: 'shadow-cyan-200',   icon: <Icon icon="material-symbols:filter-6-rounded" width={22} /> },
+  7: { label: 'Lớp 7', grad: 'from-emerald-400 to-teal-500',  shadow: 'shadow-emerald-200', icon: <Icon icon="material-symbols:filter-7-rounded" width={22} /> },
+  8: { label: 'Lớp 8', grad: 'from-violet-400 to-purple-500', shadow: 'shadow-violet-200',  icon: <Icon icon="material-symbols:filter-8-rounded" width={22} /> },
+  9: { label: 'Lớp 9', grad: 'from-orange-400 to-rose-500',   shadow: 'shadow-orange-200',  icon: <Icon icon="material-symbols:filter-9-rounded" width={22} /> },
 };
 
 // ── Data types from /api/flashcards ─────────────────────────────────────────
@@ -33,6 +34,8 @@ interface ApiGrade {
 
 // ── Flip card CSS injected once ─────────────────────────────────────────────
 const FLIP_STYLE = `
+  .hide-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+  .hide-scrollbar::-webkit-scrollbar { display: none; }
   .fc-scene { perspective: 1200px; }
   .fc-inner { position:relative; width:100%; height:100%; transition:transform 0.55s cubic-bezier(.4,0,.2,1); transform-style:preserve-3d; }
   .fc-inner.flipped { transform:rotateY(180deg); }
@@ -166,12 +169,12 @@ export function FlashcardPanel() {
         {/* Header row: title left, lesson dropdown right */}
         {/* Header: title only */}
         <div className="mb-4">
-          <p className="text-[#082F49] font-black text-lg flex items-center gap-2">📚 Thẻ Ghi Nhớ Địa Lý</p>
+          <p className="text-[#082F49] font-black text-lg flex items-center gap-2"><Icon icon="material-symbols:note-alt" width={30} /> Thẻ Ghi Nhớ Địa Lý</p>
           <p className="text-slate-400 text-sm font-medium mt-0.5 hidden sm:block">Chọn lớp và bài học để bắt đầu luyện tập</p>
         </div>
 
-        {/* Grade pills + lesson dropdown — same row */}
-        <div className="flex items-center gap-2.5 flex-wrap">
+        {/* Grade pills — 2x2 on mobile, single row on sm+ */}
+        <div className="grid grid-cols-2 sm:flex sm:flex-row gap-2 sm:gap-2.5 mb-3">
           {([6, 7, 8, 9] as const).map(g => {
             const m = GRADE_META[g];
             const hasData = (grades.find(gr => gr.grade === g)?.lessons.length ?? 0) > 0;
@@ -179,7 +182,7 @@ export function FlashcardPanel() {
               <button
                 key={g}
                 onClick={() => { setSelectedGrade(g); }}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-[14px] font-black text-sm
+                className={`flex items-center justify-center sm:justify-start gap-2 px-3 sm:px-4 py-2.5 rounded-[14px] font-black text-sm
                   transition-all duration-300 border ${
                   selectedGrade === g
                     ? `bg-gradient-to-r ${m.grad} text-white border-transparent shadow-md ${m.shadow}`
@@ -189,20 +192,21 @@ export function FlashcardPanel() {
                 }`}
               >
                 <span>{m.icon}</span> {m.label}
-                {!hasData && <span className="text-[9px] opacity-60">(chưa có)</span>}
+                {!hasData && <span className="text-[9px] opacity-60 font-semibold">(chưa có)</span>}
               </button>
             );
           })}
+        </div>
 
-          {/* Lesson dropdown — inline with grade pills, pushed right */}
-          <div ref={dropdownRef} className="ml-auto shrink-0 relative">
+        {/* Lesson dropdown — full width row below grades */}
+        <div ref={dropdownRef} className="relative w-full">
             {(grade?.lessons.length ?? 0) > 0 ? (
               <>
                 {/* Trigger button */}
                 <button
                   onClick={() => setDropdownOpen(o => !o)}
-                  className={`flex items-center gap-2.5 pl-3.5 pr-3 py-2.5 rounded-[14px] border
-                    text-sm font-bold transition-all duration-200 min-w-[200px] max-w-[260px]
+                  className={`w-full flex items-center gap-2.5 pl-3.5 pr-3 py-2.5 rounded-[14px] border
+                    text-sm font-bold transition-all duration-200
                     ${ dropdownOpen
                       ? `bg-gradient-to-r ${meta.grad} text-white border-transparent shadow-lg`
                       : 'bg-white text-[#082F49] border-slate-200 hover:border-cyan-300 hover:shadow-md'
@@ -225,7 +229,7 @@ export function FlashcardPanel() {
                 {/* Dropdown panel */}
                 {dropdownOpen && (
                   <div
-                    className="absolute right-0 top-[calc(100%+8px)] z-50 w-72
+                    className="absolute left-0 right-0 top-[calc(100%+8px)] z-50
                       rounded-[20px] overflow-hidden
                       border border-white/80"
                     style={{
@@ -287,12 +291,11 @@ export function FlashcardPanel() {
                 )}
               </>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-3.5 py-2.5 rounded-[14px]
+              <div className="w-full flex items-center gap-1.5 px-3.5 py-2.5 rounded-[14px]
                 border border-slate-200 bg-slate-50 text-xs font-semibold text-slate-400">
                 <span>📭</span> Chưa có bài học
-              </span>
+              </div>
             )}
-          </div>
         </div>
         <p className="text-[10px] font-bold tracking-widest text-slate-300 mt-3 text-right hidden sm:block">
           ← → PHÍM MŨI TÊN · SPACE ĐỂ LẬT
@@ -399,19 +402,21 @@ export function FlashcardPanel() {
             Trước
           </button>
 
-          {/* Dot indicators */}
-          <div className="flex items-center gap-1.5 flex-wrap justify-center max-w-[200px] md:max-w-none">
-            {lesson?.cards.map((_, i) => (
-              <button
-                key={i}
-                onClick={() => { setFlipped(false); setCardIdx(i); }}
-                className={`rounded-full transition-all duration-300 ${
-                  i === cardIdx
-                    ? `w-6 h-2.5 bg-gradient-to-r ${meta.grad}`
-                    : 'w-2.5 h-2.5 bg-slate-200 hover:bg-slate-300'
-                }`}
-              />
-            ))}
+          {/* Dot indicators — scrollable, no wrap */}
+          <div className="flex-1 overflow-x-auto hide-scrollbar">
+            <div className="flex items-center gap-1.5 justify-center min-w-max mx-auto px-2">
+              {lesson?.cards.map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => { setFlipped(false); setCardIdx(i); }}
+                  className={`rounded-full transition-all duration-300 shrink-0 ${
+                    i === cardIdx
+                      ? `w-5 h-2 bg-gradient-to-r ${meta.grad}`
+                      : 'w-2 h-2 bg-slate-200 hover:bg-slate-300'
+                  }`}
+                />
+              ))}
+            </div>
           </div>
 
           <button

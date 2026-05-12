@@ -2,6 +2,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { FaFacebook, FaGithub, FaYoutube, FaMapMarkedAlt } from 'react-icons/fa';
+import { Icon } from '@iconify/react';
 
 const MODAL_CONTENT = {
   faq: { 
@@ -76,20 +77,20 @@ export function Footer() {
           <div>
             <h4 className="font-black text-[#082F49] uppercase tracking-wider text-sm mb-5">Khám phá</h4>
             <ul className="space-y-3">
-              <li><Link href="/map" className="text-sm font-bold text-[#334155] hover:text-cyan-500 transition-colors">🗺️ Bản đồ Tương tác</Link></li>
-              <li><Link href="/arena" className="text-sm font-bold text-[#334155] hover:text-rose-500 transition-colors">⚔️ Đấu trường Trí tuệ</Link></li>
-              <li><Link href="/roadmap" className="text-sm font-bold text-[#334155] hover:text-emerald-500 transition-colors">🚀 Lộ trình Khám phá</Link></li>
-              <li><Link href="/classroom" className="text-sm font-bold text-[#334155] hover:text-blue-500 transition-colors">🏫 Lớp học Ảo</Link></li>
+              <li><Link href="/map" className="flex items-center text-sm font-bold text-[#334155] hover:text-cyan-500 transition-colors"><Icon icon="material-symbols:map-rounded" width={22} />&nbsp; Bản đồ Tương tác</Link></li>
+              <li><Link href="/arena" className="flex items-center text-sm font-bold text-[#334155] hover:text-rose-500 transition-colors"><Icon icon="material-symbols:toys-and-games" width={22} />&nbsp; Đấu trường Trí tuệ</Link></li>
+              <li><Link href="/roadmap" className="flex items-center text-sm font-bold text-[#334155] hover:text-emerald-500 transition-colors"><Icon icon="material-symbols:timeline" width={22} />&nbsp; Lộ trình Khám phá</Link></li>
+              <li><Link href="/classroom" className="flex items-center text-sm font-bold text-[#334155] hover:text-blue-500 transition-colors"><Icon icon="material-symbols:home-work-rounded" width={22} />&nbsp; Lớp học Ảo</Link></li>
             </ul>
           </div>
 
           <div>
             <h4 className="font-black text-[#082F49] uppercase tracking-wider text-sm mb-5">Hỗ trợ</h4>
             <ul className="space-y-3">
-              <li><button onClick={() => setActiveModal('faq')} className="text-sm font-bold text-[#334155] hover:text-cyan-500 transition-colors">❓ Câu hỏi thường gặp (FAQ)</button></li>
-              <li><button onClick={() => setActiveModal('guide')} className="text-sm font-bold text-[#334155] hover:text-cyan-500 transition-colors">📖 Hướng dẫn sử dụng Bản đồ</button></li>
-              <li><button onClick={() => setActiveModal('contact')} className="text-sm font-bold text-[#334155] hover:text-cyan-500 transition-colors">💬 Liên hệ Ban Giám Hiệu</button></li>
-              <li><Link href="/settings" className="text-sm font-bold text-[#334155] hover:text-cyan-500 transition-colors">🛡️ Quản lý Tài khoản</Link></li>
+              <li><button onClick={() => setActiveModal('faq')} className="flex items-center text-sm font-bold text-[#334155] hover:text-cyan-500 transition-colors"><Icon icon="mingcute:question-2-fill" width={22} />&nbsp; Câu hỏi thường gặp (FAQ)</button></li>
+              <li><button onClick={() => setActiveModal('guide')} className="flex items-center text-sm font-bold text-[#334155] hover:text-cyan-500 transition-colors"><Icon icon="mingcute:document-3-fill" width={22} />&nbsp; Hướng dẫn sử dụng Bản đồ</button></li>
+              <li><button onClick={() => setActiveModal('contact')} className="flex items-center text-sm font-bold text-[#334155] hover:text-cyan-500 transition-colors"><Icon icon="mingcute:message-1-ai-fill" width={22} />&nbsp; Liên hệ Ban Giám Hiệu</button></li>
+              <li><Link href="/settings" className="flex items-center text-sm font-bold text-[#334155] hover:text-cyan-500 transition-colors"><Icon icon="mingcute:user-edit-fill" width={22} />&nbsp; Quản lý Tài khoản</Link></li>
             </ul>
           </div>
 
@@ -97,8 +98,8 @@ export function Footer() {
 
         {/* Bottom bar */}
         <div className="mt-12 pt-8 border-t border-white flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-xs font-bold text-[#94A3B8]">
-            © {new Date().getFullYear()} Vui học Địa Lý. Thiết kế bởi trái tim yêu địa lý ❤️
+          <p className="flex items-center text-xs font-bold text-[#94A3B8]">
+            © {new Date().getFullYear()} Vui học Địa Lý. Thiết kế bởi YuuBee &nbsp;<Icon icon="mingcute:heart-fill" width={16} />
           </p>
           <div className="flex items-center gap-4 text-xs font-bold tracking-wide text-[#94A3B8]">
             <button onClick={() => setActiveModal('terms')} className="hover:text-cyan-600 transition-colors cursor-pointer">Điều khoản dịch vụ</button>

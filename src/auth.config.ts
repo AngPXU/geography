@@ -21,6 +21,7 @@ export const authConfig = {
       if (user) {
         if ('role' in user) token.role = user.role;
         if (user.id) token.id = user.id;
+        if ('fullName' in user) token.fullName = user.fullName;
       }
       return token;
     },
@@ -28,6 +29,7 @@ export const authConfig = {
       if (session.user) {
         if (token.role !== undefined) session.user.role = token.role as number;
         if (token.id) session.user.id = token.id as string;
+        if (token.fullName !== undefined) session.user.fullName = token.fullName as string | null;
       }
       return session;
     },

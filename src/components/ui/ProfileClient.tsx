@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
@@ -8,6 +8,7 @@ import {
   FaChevronDown, FaEye, FaEyeSlash, FaCheckCircle, FaCompass,
 } from 'react-icons/fa';
 import { BadgesPanel } from '@/components/ui/BadgesPanel';
+import { Icon } from '@iconify/react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -513,363 +514,243 @@ export function ProfileClient() {
         )}
       </div>
 
-      <div className="flex flex-col xl:flex-row gap-8 items-start relative mt-4">
+      {/* ═══ HERO CARD ══════════════════════════════════════════════════════ */}
+      <div className="rounded-[32px] overflow-hidden mb-8"
+        style={{ background: 'rgba(255,255,255,0.75)', backdropFilter: 'blur(20px)', border: '1px solid rgba(255,255,255,1)', boxShadow: '0 10px 30px rgba(14,165,233,0.08)' }}>
 
-        {/* ═══ LEFT PANEL: GEO ID CARD ═══ */}
-        <div className="w-full xl:w-[35%] xl:max-w-md flex flex-col gap-6 xl:sticky xl:top-28 z-20">
+        {/* Gradient accent top bar */}
+        <div className="h-1.5 bg-gradient-to-r from-cyan-400 via-blue-500 to-indigo-400" />
 
-          <div
-            className="relative rounded-[40px] overflow-hidden flex flex-col items-center pt-12 pb-10 px-8 text-center"
-            style={{
-              background: 'linear-gradient(135deg, #0ea5e9, #6366f1, #ec4899)',
-              backgroundSize: '200% 200%',
-              animation: 'gradientMove 10s ease infinite',
-              boxShadow: '0 30px 60px rgba(99,102,241,0.25)',
-            }}
-          >
-            <style>{`
-              @keyframes gradientMove {
-                0% { background-position: 0% 50%; }
-                50% { background-position: 100% 50%; }
-                100% { background-position: 0% 50%; }
-              }
-            `}</style>
+        <div className="p-6 sm:p-8 flex flex-col sm:flex-row gap-6 items-center sm:items-start">
 
-            {/* Hologram Overlay & grid */}
-            <div
-              className="absolute inset-0 opacity-[0.1]"
-              style={{
-                backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)',
-                backgroundSize: '24px 24px',
-              }}
-            />
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 blur-[60px] rounded-full mix-blend-overlay"></div>
-
-            <div className="absolute top-4 left-6 text-white/40 text-[10px] font-black uppercase tracking-[0.3em]">
-              CERT. // {new Date(profile.createdAt).getFullYear()}
-            </div>
-
-            {/* Avatar Hologram */}
-            <div className="relative mb-6 mt-4">
-              <div
-                className="w-36 h-36 rounded-full overflow-hidden border-[6px] border-white/80 bg-white/20 backdrop-blur-md relative z-10"
-                style={{ boxShadow: '0 20px 50px rgba(0,0,0,0.3)' }}
-              >
-                {displayAvatar ? (
-                  <img src={displayAvatar} alt="avatar" className="w-full h-full object-cover" />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center font-black text-white/50 text-6xl">
-                    {(profile.fullName?.charAt(0) || profile.username.charAt(0)).toUpperCase()}
-                  </div>
-                )}
-              </div>
-
-              <div className="absolute inset-[-12px] border-[2px] border-dashed border-white/40 rounded-full animate-[spin_10s_linear_infinite] pointer-events-none" />
-
-              {editing && (
-                <button
-                  type="button"
-                  onClick={() => fileInputRef.current?.click()}
-                  className="absolute bottom-2 right-0 w-12 h-12 rounded-full bg-white shadow-xl flex items-center justify-center text-indigo-500 hover:scale-110 hover:bg-slate-50 transition-all duration-300 z-20 border-[3px] border-white"
-                  title="Đổi ảnh đại diện"
-                >
-                  <FaCamera size={18} />
-                </button>
-              )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleAvatarChange}
-              />
-            </div>
-
-            <h1 className="text-3xl font-black text-white tracking-tight drop-shadow-md relative z-10 w-full truncate px-4">
-              {profile.fullName || profile.username}
-            </h1>
-            <p className="text-white/80 font-bold text-sm mb-4 bg-black/10 px-4 py-1.5 rounded-full mt-2 inline-flex relative z-10 border border-white/10">
-              @{profile.username}
-            </p>
-
-            <div className="flex flex-wrap items-center justify-center gap-2 mb-6 relative z-10">
-              <span className="px-4 py-1.5 rounded-[12px] text-xs font-black bg-white/20 text-white backdrop-blur-md border border-white/30 shadow-sm uppercase tracking-wider">
-                {ROLE_LABEL[profile.role]}
-              </span>
-              <span className="px-4 py-1.5 rounded-[12px] text-[10px] font-black bg-gradient-to-r from-yellow-300 to-orange-400 text-white shadow-md uppercase tracking-wider flex items-center gap-1">
-                <FaCompass size={12} /> Nhà Khám Phá
-              </span>
-            </div>
-
-            <p className="text-white/60 text-[10px] font-black font-mono flex items-center justify-center gap-2 bg-white/10 px-4 py-2.5 rounded-[14px] backdrop-blur-sm border border-white/10 relative z-10">
-              <FaMapMarkerAlt />
-              {geoCoords
-                ? `${Math.abs(geoCoords.lat).toFixed(1)}°${geoCoords.lat >= 0 ? 'N' : 'S'} · ${Math.abs(geoCoords.lon).toFixed(1)}°${geoCoords.lon >= 0 ? 'E' : 'W'}`
-                : 'P/S: Đang dò tìm tín hiệu...'}
-            </p>
-
-            {/* Action Buttons */}
-            <div className="w-full mt-8 flex flex-col gap-3 relative z-10">
-              {!editing ? (
-                <button
-                  onClick={startEditing}
-                  className="w-full group h-[54px] rounded-[20px] bg-white text-indigo-600 font-black text-sm flex items-center justify-center gap-2 shadow-lg hover:shadow-[0_15px_30px_rgba(255,255,255,0.3)] hover:-translate-y-1 transition-all"
-                >
-                  <FaEdit className="group-hover:scale-125 transition-transform" size={16} /> Chỉnh sửa Hồ sơ
-                </button>
+          {/* Avatar */}
+          <div className="relative flex-shrink-0">
+            <div className="w-24 h-24 sm:w-28 sm:h-28 rounded-[24px] overflow-hidden border-4 border-white shadow-lg"
+              style={{ background: 'linear-gradient(135deg, #0ea5e9, #6366f1)' }}>
+              {displayAvatar ? (
+                <img src={displayAvatar} alt="avatar" className="w-full h-full object-cover" />
               ) : (
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleSave}
-                    disabled={saving}
-                    className="flex-1 h-[54px] rounded-[20px] bg-green-400 text-white font-black text-sm hover:bg-green-500 hover:shadow-[0_10px_20px_rgba(74,222,128,0.4)] disabled:opacity-50 transition-all flex items-center justify-center gap-2"
-                  >
-                    <FaSave /> {saving ? 'Ghi đè...' : 'Lưu Dữ Liệu'}
-                  </button>
-                  <button
-                    onClick={cancelEditing}
-                    className="w-[54px] h-[54px] shrink-0 rounded-[20px] bg-white/20 backdrop-blur-md text-white hover:bg-red-500 hover:border-red-500 border border-white/30 transition-all flex items-center justify-center"
-                  >
-                    <FaTimes size={18} />
-                  </button>
+                <div className="w-full h-full flex items-center justify-center text-white font-black text-4xl">
+                  {(profile.fullName?.charAt(0) || profile.username.charAt(0)).toUpperCase()}
                 </div>
               )}
             </div>
+            {editing && (
+              <button type="button" onClick={() => fileInputRef.current?.click()}
+                className="absolute -bottom-2 -right-2 w-9 h-9 rounded-full bg-white shadow-lg flex items-center justify-center text-cyan-500 hover:scale-110 transition-all border-2 border-white"
+                title="Đổi ảnh đại diện">
+                <FaCamera size={13} />
+              </button>
+            )}
+            <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
           </div>
 
-          {/* Stats Widgets Matrix */}
-          <div className="grid grid-cols-2 gap-4">
-            {[
-              { icon: '🌍', label: 'Vùng đất', value: '1', color: 'from-blue-50 to-cyan-50' },
-              { icon: '🏆', label: 'Hạng cao', value: '—', color: 'from-yellow-50 to-orange-50' },
-              { icon: '⚡', label: 'Giải đó', value: '0', color: 'from-purple-50 to-pink-50' },
-              { icon: '🔥', label: 'Chuỗi ngày', value: '0', color: 'from-red-50 to-rose-50' },
-            ].map((s) => (
-              <div key={s.label} className={`flex flex-col p-5 rounded-[28px] bg-gradient-to-br ${s.color} border border-white shadow-[0_5px_15px_rgba(14,165,233,0.05)] hover:shadow-[0_15px_30px_rgba(14,165,233,0.1)] hover:-translate-y-1 transition-all`}>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-2xl drop-shadow-sm">{s.icon}</span>
-                  <span className="text-2xl font-black text-[#082F49] tracking-tight">{s.value}</span>
+          {/* Name + Role + Badges */}
+          <div className="flex-1 min-w-0 text-center sm:text-left">
+            <h1 className="text-2xl sm:text-3xl font-black text-[#082F49] leading-tight truncate">
+              {profile.fullName || profile.username}
+            </h1>
+            <p className="text-[#94A3B8] font-semibold text-sm mt-0.5 mb-3">@{profile.username}</p>
+            <div className="flex flex-wrap gap-2 justify-center sm:justify-start">
+              <span className={`px-3 py-1 rounded-full text-xs font-black ${ROLE_BADGE[profile.role]}`}>
+                {ROLE_LABEL[profile.role]}
+              </span>
+              <span className="px-3 py-1 rounded-full text-xs font-black bg-gradient-to-r from-yellow-100 to-orange-100 text-orange-600 flex items-center gap-1">
+                <FaCompass size={10} /> Nhà Khám Phá
+              </span>
+              {geoCoords && (
+                <span className="px-3 py-1 rounded-full text-xs font-semibold bg-slate-100 text-slate-500 flex items-center gap-1">
+                  <FaMapMarkerAlt size={9} />
+                  {`${Math.abs(geoCoords.lat).toFixed(1)}°${geoCoords.lat >= 0 ? 'N' : 'S'} · ${Math.abs(geoCoords.lon).toFixed(1)}°${geoCoords.lon >= 0 ? 'E' : 'W'}`}
+                </span>
+              )}
+            </div>
+            <p className="text-[#94A3B8] text-[11px] mt-3 font-medium">
+              Tham gia từ {new Date(profile.createdAt).toLocaleDateString('vi-VN', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </p>
+          </div>
+
+          {/* Stats + Edit button */}
+          <div className="flex flex-col gap-4 items-center sm:items-end w-full sm:w-auto flex-shrink-0">
+            <div className="grid grid-cols-4 sm:grid-cols-2 gap-2.5 w-full sm:w-auto">
+              {[
+                { icon: '🌍', label: 'Vùng đất', value: '1',                           bg: 'bg-blue-50'   },
+                { icon: '🏆', label: 'Hạng cao', value: '—',                           bg: 'bg-yellow-50' },
+                { icon: '⚡', label: 'Kinh nghiệm', value: String(profile.exp ?? 0),   bg: 'bg-purple-50' },
+                { icon: '🔥', label: 'Chuỗi ngày', value: String(profile.streak ?? 0), bg: 'bg-red-50'    },
+              ].map((s) => (
+                <div key={s.label} className={`${s.bg} rounded-[18px] p-3 flex flex-col items-center sm:items-end text-center sm:text-right min-w-[68px]`}>
+                  <span className="text-xl">{s.icon}</span>
+                  <span className="text-lg font-black text-[#082F49] leading-none mt-1">{s.value}</span>
+                  <span className="text-[9px] font-bold uppercase tracking-wide text-[#94A3B8] mt-0.5 leading-tight">{s.label}</span>
                 </div>
-                <span className="text-[#334155] text-[10px] font-black uppercase tracking-widest">{s.label}</span>
+              ))}
+            </div>
+            {!editing ? (
+              <button onClick={startEditing}
+                className="flex items-center gap-2 px-5 py-2.5 rounded-[14px] bg-gradient-to-r from-cyan-500 to-blue-500 text-white font-bold text-sm shadow-md hover:shadow-cyan-300/40 hover:-translate-y-0.5 transition-all duration-300 w-full sm:w-auto justify-center">
+                <FaEdit size={13} /> Chỉnh sửa Hồ sơ
+              </button>
+            ) : (
+              <div className="flex gap-2 w-full sm:w-auto">
+                <button onClick={handleSave} disabled={saving}
+                  className="flex-1 flex items-center justify-center gap-2 px-5 py-2.5 rounded-[14px] bg-green-500 text-white font-bold text-sm hover:bg-green-600 disabled:opacity-50 transition-all shadow-md">
+                  <FaSave size={13} /> {saving ? 'Đang lưu...' : 'Lưu'}
+                </button>
+                <button onClick={cancelEditing}
+                  className="px-4 py-2.5 rounded-[14px] bg-slate-100 text-slate-600 hover:bg-red-50 hover:text-red-500 transition-all">
+                  <FaTimes size={13} />
+                </button>
               </div>
-            ))}
+            )}
           </div>
 
         </div>
+      </div>
 
-        {/* ═══ RIGHT PANEL: SETTINGS MATRIX ═══ */}
-        <div className="flex-1 w-full grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
+      {/* ═══ INFO GRID ══════════════════════════════════════════════════════ */}
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
 
-          {/* ── Thông tin cá nhân ─────────────────────────────────────────────── */}
-          <SectionCard icon={<FaUser size={13} />} title="Thông tin cá nhân">
-            {editing && form ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <GlassInput
-                  label="Họ và tên"
-                  id="fullName"
-                  value={form.fullName}
-                  onChange={(v) => setForm((f) => (f ? { ...f, fullName: v } : f))}
-                  placeholder="Nguyễn Văn An"
-                />
-                <div>
-                  <p className="text-xs font-semibold text-[#334155] mb-1.5 ml-1">Vai trò</p>
-                  <span className={`inline-flex items-center px-4 py-2 rounded-2xl text-sm font-bold ${ROLE_BADGE[profile.role]}`}>
-                    {ROLE_LABEL[profile.role]}
-                  </span>
-                  <p className="text-[10px] text-[#94A3B8] mt-1 ml-1">Không thể tự thay đổi vai trò</p>
-                </div>
+        {/* Thông tin cá nhân */}
+        <SectionCard icon={<FaUser size={13} />} title="Thông tin cá nhân">
+          {editing && form ? (
+            <div className="space-y-4">
+              <GlassInput label="Họ và tên" id="fullName" value={form.fullName}
+                onChange={(v) => setForm((f) => (f ? { ...f, fullName: v } : f))}
+                placeholder="Nguyễn Văn An" />
+              <div>
+                <p className="text-xs font-semibold text-[#334155] mb-1.5 ml-1">Vai trò</p>
+                <span className={`inline-flex items-center px-4 py-2 rounded-2xl text-sm font-bold ${ROLE_BADGE[profile.role]}`}>
+                  {ROLE_LABEL[profile.role]}
+                </span>
+                <p className="text-[10px] text-[#94A3B8] mt-1 ml-1">Không thể tự thay đổi vai trò</p>
               </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <InfoRow label="Họ và tên" value={profile.fullName} empty="Chưa cập nhật" />
-                <div>
-                  <p className="text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8] mb-1">Vai trò</p>
-                  <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${ROLE_BADGE[profile.role]}`}>
-                    {ROLE_LABEL[profile.role]}
-                  </span>
-                </div>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <InfoRow label="Họ và tên" value={profile.fullName} empty="Chưa cập nhật" />
+              <div>
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-[#94A3B8] mb-1.5">Vai trò</p>
+                <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-bold ${ROLE_BADGE[profile.role]}`}>
+                  {ROLE_LABEL[profile.role]}
+                </span>
               </div>
-            )}
-          </SectionCard>
+            </div>
+          )}
+        </SectionCard>
 
-          {/* ── Học tập ───────────────────────────────────────────────────────── */}
-          <SectionCard icon={<FaGraduationCap size={13} />} title="Thông tin học tập">
-            {editing && form ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <GlassInput
-                  label="Lớp"
-                  id="className"
-                  value={form.className}
-                  onChange={(v) => setForm((f) => (f ? { ...f, className: v } : f))}
-                  placeholder="Ví dụ: 8A1"
-                />
-                <GlassInput
-                  label="Trường"
-                  id="school"
-                  value={form.school}
-                  onChange={(v) => setForm((f) => (f ? { ...f, school: v } : f))}
-                  placeholder="Tên trường của bạn"
-                />
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <InfoRow label="Lớp" value={profile.className} empty="Chưa cập nhật" />
-                <InfoRow label="Trường" value={profile.school} empty="Chưa cập nhật" />
-              </div>
-            )}
-          </SectionCard>
+        {/* Thông tin học tập */}
+        <SectionCard icon={<FaGraduationCap size={13} />} title="Thông tin học tập">
+          {editing && form ? (
+            <div className="space-y-4">
+              <GlassInput label="Lớp" id="className" value={form.className}
+                onChange={(v) => setForm((f) => (f ? { ...f, className: v } : f))}
+                placeholder="Ví dụ: 8A1" />
+              <GlassInput label="Trường" id="school" value={form.school}
+                onChange={(v) => setForm((f) => (f ? { ...f, school: v } : f))}
+                placeholder="Tên trường của bạn" />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <InfoRow label="Lớp" value={profile.className} empty="Chưa cập nhật" />
+              <InfoRow label="Trường" value={profile.school} empty="Chưa cập nhật" />
+            </div>
+          )}
+        </SectionCard>
 
-          {/* ── Tài khoản ─────────────────────────────────────────────────────── */}
-          <SectionCard icon={<FaGlobe size={13} />} title="Tài khoản">
-            {editing && form ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <GlassInput
-                  label="Tên đăng nhập (không thể thay đổi)"
-                  id="username-display"
-                  value={profile.username}
-                  disabled
-                />
-                <GlassInput
-                  label="Email"
-                  id="email"
-                  type="email"
-                  value={form.email}
-                  onChange={(v) => setForm((f) => (f ? { ...f, email: v } : f))}
-                  placeholder="example@email.com"
-                />
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                <InfoRow label="Tên đăng nhập" value={profile.username} />
-                <InfoRow label="Email" value={profile.email} empty="Chưa thêm email" />
-              </div>
-            )}
-          </SectionCard>
+        {/* Tài khoản */}
+        <SectionCard icon={<FaGlobe size={13} />} title="Tài khoản">
+          {editing && form ? (
+            <div className="space-y-4">
+              <GlassInput label="Tên đăng nhập (không thể thay đổi)" id="username-display"
+                value={profile.username} disabled />
+              <GlassInput label="Email" id="email" type="email" value={form.email}
+                onChange={(v) => setForm((f) => (f ? { ...f, email: v } : f))}
+                placeholder="example@email.com" />
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <InfoRow label="Tên đăng nhập" value={profile.username} />
+              <InfoRow label="Email" value={profile.email} empty="Chưa thêm email" />
+            </div>
+          )}
+        </SectionCard>
 
-          {/* ── Địa chỉ ───────────────────────────────────────────────────────── */}
+        {/* Địa chỉ - span 2 cols */}
+        <div className="md:col-span-2">
           <SectionCard icon={<FaMapMarkerAlt size={13} />} title="Địa chỉ">
             {editing && form ? (
               <div className="space-y-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <GlassSelect
-                    label="Tỉnh / Thành phố"
-                    id="province"
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <GlassSelect label="Tỉnh / Thành phố" id="province"
                     value={String(form.province?.code ?? '')}
                     onChange={(v) => {
                       const p = provinces.find((x) => String(x.code) === v) ?? null;
                       setForm((f) => (f ? { ...f, province: p, ward: null } : f));
-                    }}
-                  >
+                    }}>
                     <option value="">-- Chọn tỉnh / thành phố --</option>
-                    {provinces.map((p) => (
-                      <option key={p.code} value={String(p.code)}>{p.name}</option>
-                    ))}
+                    {provinces.map((p) => (<option key={p.code} value={String(p.code)}>{p.name}</option>))}
                   </GlassSelect>
-                  <GlassSelect
-                    label="Xã / Phường"
-                    id="ward"
+                  <GlassSelect label="Xã / Phường" id="ward"
                     value={String(form.ward?.code ?? '')}
                     onChange={(v) => {
                       const w = wards.find((x) => String(x.code) === v) ?? null;
                       setForm((f) => (f ? { ...f, ward: w } : f));
                     }}
-                    disabled={!form.province || wards.length === 0}
-                  >
+                    disabled={!form.province || wards.length === 0}>
                     <option value="">-- Chọn xã / phường --</option>
-                    {wards.map((w) => (
-                      <option key={w.code} value={String(w.code)}>{w.name}</option>
-                    ))}
+                    {wards.map((w) => (<option key={w.code} value={String(w.code)}>{w.name}</option>))}
                   </GlassSelect>
                 </div>
-                <GlassInput
-                  label="Địa chỉ hiện tại"
-                  id="address"
-                  value={form.address}
+                <GlassInput label="Địa chỉ hiện tại" id="address" value={form.address}
                   onChange={(v) => setForm((f) => (f ? { ...f, address: v } : f))}
-                  placeholder="Số nhà, tên đường, khu vực..."
-                />
+                  placeholder="Số nhà, tên đường, khu vực..." />
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                 <InfoRow label="Tỉnh / Thành phố" value={profile.province?.name} empty="Chưa cập nhật" />
                 <InfoRow label="Xã / Phường" value={profile.ward?.name} empty="Chưa cập nhật" />
-                {profile.address && (
-                  <div className="md:col-span-2">
-                    <InfoRow label="Địa chỉ hiện tại" value={profile.address} />
-                  </div>
-                )}
+                <InfoRow label="Địa chỉ hiện tại" value={profile.address} empty="Chưa cập nhật" />
               </div>
             )}
           </SectionCard>
-
-          {/* ── Bảo mật ───────────────────────────────────────────────────────── */}
-          <SectionCard icon={<FaLock size={13} />} title="Bảo mật">
-            <button
-              onClick={() => { setPwOpen((o) => !o); setPwError(''); }}
-              className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-300 ${pwOpen
-                  ? 'bg-[#06B6D4]/10 text-[#06B6D4] border border-[#06B6D4]/30'
-                  : 'bg-white/60 text-[#334155] border border-[#BAE6FD] hover:border-[#06B6D4]/50 hover:text-[#06B6D4]'
-                }`}
-            >
-              <FaLock size={11} />
-              {pwOpen ? 'Đóng' : 'Đổi mật khẩu'}
-              <FaChevronDown
-                size={10}
-                className={`transition-transform duration-300 ${pwOpen ? 'rotate-180' : ''}`}
-              />
-            </button>
-
-            {pwOpen && (
-              <div className="mt-5 space-y-4 pt-5 border-t border-[#E0F2FE]">
-                {pwError && (
-                  <div
-                    className="flex items-center gap-2 px-4 py-3 rounded-2xl text-xs font-semibold"
-                    style={{ background: 'rgba(254,226,226,0.8)', color: '#DC2626' }}
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#F87171] flex-shrink-0" />
-                    {pwError}
-                  </div>
-                )}
-                <PwInput
-                  id="cur-pw"
-                  label="Mật khẩu hiện tại"
-                  value={currentPw}
-                  onChange={setCurrentPw}
-                  show={showCurrentPw}
-                  setShow={setShowCurrentPw}
-                  placeholder="Nhập mật khẩu hiện tại"
-                />
-                <PwInput
-                  id="new-pw"
-                  label="Mật khẩu mới"
-                  value={newPw}
-                  onChange={setNewPw}
-                  show={showNewPw}
-                  setShow={setShowNewPw}
-                  placeholder="Tối thiểu 8 ký tự"
-                  hint="Phải có: chữ hoa, chữ thường, chữ số và ký tự đặc biệt (!@#$...)"
-                />
-                <PwInput
-                  id="confirm-pw"
-                  label="Xác nhận mật khẩu mới"
-                  value={confirmPw}
-                  onChange={setConfirmPw}
-                  show={showConfirmPw}
-                  setShow={setShowConfirmPw}
-                  placeholder="Nhập lại mật khẩu mới"
-                />
-                <button
-                  onClick={handlePasswordChange}
-                  disabled={saving}
-                  className="px-6 py-2.5 rounded-2xl font-bold text-white text-sm bg-[#06B6D4] hover:bg-[#22D3EE] disabled:opacity-60 transition-all duration-300 shadow-md"
-                >
-                  {saving ? 'Đang lưu...' : 'Xác nhận đổi mật khẩu'}
-                </button>
-              </div>
-            )}
-          </SectionCard>
-
         </div>
+
+        {/* Bảo mật */}
+        <SectionCard icon={<FaLock size={13} />} title="Bảo mật">
+          <button onClick={() => { setPwOpen((o) => !o); setPwError(''); }}
+            className={`flex items-center gap-2 px-5 py-2.5 rounded-2xl text-sm font-semibold transition-all duration-300 ${pwOpen
+              ? 'bg-[#06B6D4]/10 text-[#06B6D4] border border-[#06B6D4]/30'
+              : 'bg-white/60 text-[#334155] border border-[#BAE6FD] hover:border-[#06B6D4]/50 hover:text-[#06B6D4]'
+            }`}>
+            <FaLock size={11} />
+            {pwOpen ? 'Đóng' : 'Đổi mật khẩu'}
+            <FaChevronDown size={10} className={`transition-transform duration-300 ${pwOpen ? 'rotate-180' : ''}`} />
+          </button>
+          {pwOpen && (
+            <div className="mt-5 space-y-4 pt-5 border-t border-[#E0F2FE]">
+              {pwError && (
+                <div className="flex items-center gap-2 px-4 py-3 rounded-2xl text-xs font-semibold"
+                  style={{ background: 'rgba(254,226,226,0.8)', color: '#DC2626' }}>
+                  <span className="w-1.5 h-1.5 rounded-full bg-[#F87171] flex-shrink-0" />
+                  {pwError}
+                </div>
+              )}
+              <PwInput id="cur-pw" label="Mật khẩu hiện tại" value={currentPw} onChange={setCurrentPw}
+                show={showCurrentPw} setShow={setShowCurrentPw} placeholder="Nhập mật khẩu hiện tại" />
+              <PwInput id="new-pw" label="Mật khẩu mới" value={newPw} onChange={setNewPw}
+                show={showNewPw} setShow={setShowNewPw} placeholder="Tối thiểu 8 ký tự"
+                hint="Phải có: chữ hoa, chữ thường, chữ số và ký tự đặc biệt (!@#$...)" />
+              <PwInput id="confirm-pw" label="Xác nhận mật khẩu mới" value={confirmPw} onChange={setConfirmPw}
+                show={showConfirmPw} setShow={setShowConfirmPw} placeholder="Nhập lại mật khẩu mới" />
+              <button onClick={handlePasswordChange} disabled={saving}
+                className="px-6 py-2.5 rounded-2xl font-bold text-white text-sm bg-[#06B6D4] hover:bg-[#22D3EE] disabled:opacity-60 transition-all duration-300 shadow-md">
+                {saving ? 'Đang lưu...' : 'Xác nhận đổi mật khẩu'}
+              </button>
+            </div>
+          )}
+        </SectionCard>
+
       </div>
 
       {/* ── Badges Collection ─────────────────────────────────────────────── */}
@@ -878,8 +759,8 @@ export function ProfileClient() {
       </div>
 
       {/* ── Footer ────────────────────────────────────────────────────────── */}
-      <p className="text-center text-slate-400 font-bold text-xs pt-12 pb-4 tracking-widest uppercase">
-        🌏 Tham gia Vui học Địa Lý từ{' '}
+      <p className="text-center text-slate-400 font-bold text-xs pt-12 pb-4 tracking-widest">
+        Tham gia Vui học Địa Lý từ{' '}
         {new Date(profile.createdAt).toLocaleDateString('vi-VN', {
           year: 'numeric',
           month: 'long',

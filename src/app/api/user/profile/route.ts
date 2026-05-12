@@ -6,12 +6,12 @@ import bcrypt from 'bcryptjs';
 
 export async function GET() {
   const session = await auth();
-  if (!session?.user?.name) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
   await dbConnect();
-  const user = await User.findOne({ username: session.user.name }).select('-password');
+  const user = await User.findById(session.user.id).select('-password');
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }
@@ -21,7 +21,7 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   const session = await auth();
-  if (!session?.user?.name) {
+  if (!session?.user?.id) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
@@ -39,7 +39,7 @@ export async function PATCH(req: Request) {
   } = body as Record<string, string | undefined>;
 
   await dbConnect();
-  const user = await User.findOne({ username: session.user.name });
+  const user = await User.findById(session.user.id);
   if (!user) {
     return NextResponse.json({ error: 'User not found' }, { status: 404 });
   }

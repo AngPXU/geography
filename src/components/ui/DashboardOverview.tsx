@@ -243,7 +243,7 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             {[
               {
-                icon: '⏱️',
+                icon: <Icon icon="material-symbols:timer-10-alt-1-rounded" width={40} color="#ec4899" />,
                 tag: 'THỜI GIAN HỌC',
                 tagColor: 'text-pink-400',
                 value: (() => {
@@ -264,16 +264,16 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
                 sub: <span className="text-slate-400 text-xs font-medium">Hôm nay — đang chạy theo thời gian thực</span>,
               },
               {
-                icon: '🔥',
+                icon: <Icon icon="material-symbols:local-fire-department" width={40} color="#f97316" />,
                 tag: 'CHUỖI NGÀY',
                 tagColor: 'text-orange-400',
                 value: <><span className="text-4xl font-black text-[#082F49]">{streak}</span><span className="text-base font-bold text-[#082F49] ml-2">ngày</span></>,
                 sub: last7Days[0]?.active
-                  ? <span className="text-emerald-500 text-xs font-bold flex items-center gap-1">✅ Hôm nay đã tính!</span>
-                  : <span className="text-amber-500 text-xs font-bold flex items-center gap-1">⚠️ Làm nhiệm vụ để giữ chuỗi!</span>,
+                  ? <span className="text-emerald-500 text-xs font-bold flex items-center gap-1"><Icon icon="material-symbols:check-circle-rounded" width={16} /> Hôm nay đã tính!</span>
+                  : <span className="text-amber-500 text-xs font-bold flex items-center gap-1"><Icon icon="material-symbols:error-rounded" width={16} /> Làm nhiệm vụ để giữ chuỗi!</span>,
               },
               {
-                icon: '✨',
+                icon: <Icon icon="material-symbols:toys-and-games" width={40} color="#facc15" />,
                 tag: 'ĐẤU TRƯỜNG',
                 tagColor: 'text-yellow-500',
                 value: <><span className="text-4xl font-black text-[#082F49]">{totalExp.toLocaleString('vi-VN')}</span><span className="text-base font-bold text-cyan-400 ml-2">EXP</span></>,
@@ -281,7 +281,7 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
                 highlight: true,
               },
               {
-                icon: '🚀',
+                icon: <Icon icon="material-symbols:book-6" width={40} color="#10b981" />,
                 tag: 'BÀI HỌC',
                 tagColor: 'text-emerald-500',
                 value: <><span className="text-4xl font-black text-[#082F49]">0</span><span className="text-base font-bold text-[#082F49] ml-1">/6</span></>,
@@ -320,14 +320,14 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
           >
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
               <div>
-                <p className="text-[#082F49] font-black text-xl flex items-center gap-2">🎯 Nhiệm vụ EXP hôm nay</p>
+                <p className="text-[#082F49] font-black text-xl flex items-center gap-2"><Icon icon="material-symbols:globe-2-question-rounded" width={30} /> Nhiệm vụ EXP hôm nay</p>
                 <p className="text-slate-400 text-sm font-medium mt-1">Hoàn thành nhiệm vụ để nhận EXP đua top bảng đấu trường nhé!</p>
               </div>
               <div
                 className="shrink-0 rounded-[16px] px-4 py-2 flex items-center gap-2 text-orange-500 font-bold text-sm"
                 style={{ background: 'rgba(254,240,138,0.5)', border: '1px solid rgba(251,191,36,0.3)' }}
               >
-                <span>⏰</span> Làm mới sau: <span className="font-black tabular-nums">{resetCountdown}</span>
+                <span><Icon icon="material-symbols:nest-clock-farsight-analog-rounded" width={22} /></span> Làm mới sau: <span className="font-black tabular-nums">{resetCountdown}</span>
               </div>
             </div>
 
@@ -464,9 +464,9 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
                   <span className="text-[10px] font-bold text-slate-400 bg-slate-100 group-hover:bg-orange-100 group-hover:text-orange-500 px-2 py-0.5 rounded-full transition-colors">Nhấn để xem mốc thưởng →</span>
                 </p>
                 {last7Days[0]?.active ? (
-                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200">✅ Hôm nay đã tính</span>
+                  <span className="flex text-xs font-bold px-3 py-1 rounded-full bg-emerald-50 text-emerald-600 border border-emerald-200"><Icon icon="material-symbols:check-circle-rounded" width={16} />  Hôm nay đã tính</span>
                 ) : (
-                  <span className="text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-orange-500 border border-amber-200">⚠️ Chưa tính hôm nay</span>
+                  <span className="flex text-xs font-bold px-3 py-1 rounded-full bg-amber-50 text-orange-500 border border-amber-200"><Icon icon="material-symbols:warning-rounded" width={16} />  Chưa tính hôm nay</span>
                 )}
               </div>
 
@@ -497,7 +497,7 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
                     <div className="flex-1 min-w-0">
                       <div className="flex justify-between text-xs font-bold text-slate-400 mb-1.5">
                         <span>Mục tiêu tiếp theo</span>
-                        <span className="text-orange-500 font-black">{next} ngày 🪙 +{nextM?.reward ?? 0} Xu</span>
+                        <span className="flex text-orange-500 font-black">{next} ngày +{nextM?.reward ?? 0} <Icon icon="material-symbols:cookie-rounded" width={16} /></span>
                       </div>
                       <div className="w-full h-3 rounded-full bg-slate-100 overflow-hidden">
                         <div
