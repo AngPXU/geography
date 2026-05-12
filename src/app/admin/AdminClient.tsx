@@ -1579,6 +1579,1213 @@ function DataManager({ apiPrefix, title }: { apiPrefix: string; title: string })
   );
 }
 
+/* ══════════════════════════════════════════════
+   BẢN ĐỒ TAB — helper types + sub-components
+══════════════════════════════════════════════ */
+
+type EcoSortField = 'name' | 'gdpPerCapita' | 'population' | 'area' | 'lifeExpectancy';
+
+const MAP_CATEGORIES = [
+  { key: 'economic', label: 'Kinh tế',   icon: '🏭', color: 'text-amber-600',   bg: 'bg-amber-50',   border: 'border-amber-200'  },
+  { key: 'physical', label: 'Địa hình',  icon: '⛰️', color: 'text-emerald-600', bg: 'bg-emerald-50', border: 'border-emerald-200' },
+  { key: 'ocean',    label: 'Đại dương', icon: '🌊', color: 'text-blue-600',    bg: 'bg-blue-50',    border: 'border-blue-200'   },
+  { key: 'climate',  label: 'Khí hậu',  icon: '🌡️', color: 'text-rose-600',    bg: 'bg-rose-50',    border: 'border-rose-200'   },
+  { key: 'vietnam',  label: 'Việt Nam',  icon: '🇻🇳', color: 'text-red-600',     bg: 'bg-red-50',     border: 'border-red-200'    },
+];
+
+const INCOME_MAP: Record<string, { label: string; color: string; bg: string; dot: string; pill: string }> = {
+  HIC: { label: 'Thu nhập cao',    color: 'text-amber-700',   bg: 'bg-amber-50',   dot: '#F59E0B', pill: 'bg-amber-50 border border-amber-200 text-amber-700'     },
+  UMC: { label: 'Trên trung bình', color: 'text-emerald-700', bg: 'bg-emerald-50', dot: '#10B981', pill: 'bg-emerald-50 border border-emerald-200 text-emerald-700' },
+  LMC: { label: 'Dưới trung bình', color: 'text-blue-700',    bg: 'bg-blue-50',    dot: '#3B82F6', pill: 'bg-blue-50 border border-blue-200 text-blue-700'         },
+  LIC: { label: 'Thu nhập thấp',   color: 'text-rose-700',    bg: 'bg-rose-50',    dot: '#F43F5E', pill: 'bg-rose-50 border border-rose-200 text-rose-700'         },
+  INX: { label: 'Không phân loại', color: 'text-slate-600',   bg: 'bg-slate-50',   dot: '#94A3B8', pill: 'bg-slate-50 border border-slate-200 text-slate-600'      },
+};
+
+const INCOME_OPTIONS_MAP = [
+  { value: 'HIC', label: 'Thu nhập cao',    dot: '#F59E0B' },
+  { value: 'UMC', label: 'Trên trung bình', dot: '#10B981' },
+  { value: 'LMC', label: 'Dưới trung bình', dot: '#3B82F6' },
+  { value: 'LIC', label: 'Thu nhập thấp',   dot: '#F43F5E' },
+  { value: 'INX', label: 'Không phân loại', dot: '#94A3B8' },
+];
+
+function flagEmoji(iso2: string): string {
+  if (!iso2 || iso2.length !== 2) return '🏳️';
+  const offset = 0x1F1E6 - 65;
+  return String.fromCodePoint(
+    iso2.toUpperCase().charCodeAt(0) + offset,
+    iso2.toUpperCase().charCodeAt(1) + offset,
+  );
+}
+function fmtUSD(n: number | null | undefined) {
+  if (n == null || isNaN(Number(n))) return '—';
+  const v = Number(n);
+  if (v >= 1e9) return `$${(v / 1e9).toFixed(1)}B`;
+  if (v >= 1e6) return `$${(v / 1e6).toFixed(1)}M`;
+  return `$${Math.round(v).toLocaleString('en-US')}`;
+}
+function fmtPop(n: number | null | undefined) {
+  if (n == null || isNaN(Number(n))) return '—';
+  const v = Number(n);
+  if (v >= 1e9) return `${(v / 1e9).toFixed(2)}B`;
+  if (v >= 1e6) return `${(v / 1e6).toFixed(1)}M`;
+  if (v >= 1e3) return `${(v / 1e3).toFixed(0)}K`;
+  return String(Math.round(v));
+}
+
+interface CdvForm {
+  capitalCity: string; incomeLevelCode: string;
+  gdpPerCapita: string; gdpTotal: string; population: string;
+  unemployment: string; lifeExpectancy: string;
+  nameOfficial: string; area: string;
+  tld: string; callingCodes: string; unMember: boolean;
+  flagImage: string;
+}
+
+function CdvFieldLabel({ children }: { children: React.ReactNode }) {
+  return <label className="block text-xs font-bold text-[#334155] mb-1">{children}</label>;
+}
+function CdvReadonly({ value }: { value: string }) {
+  return (
+    <div className="w-full px-3 py-2.5 rounded-[16px] border border-slate-100 bg-slate-50/60 text-sm text-[#334155] font-semibold min-h-[40px]">
+      {value || <span className="text-[#94A3B8]">—</span>}
+    </div>
+  );
+}
+function CdvInput({ value, onChange, type = 'text', placeholder }: {
+  value: string; onChange: (v: string) => void; type?: string; placeholder?: string;
+}) {
+  return (
+    <input
+      type={type} value={value} placeholder={placeholder}
+      onChange={e => onChange(e.target.value)}
+      className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm
+        text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all"
+    />
+  );
+}
+
+/* ── CountryDetailView (inline — không có page wrapper) ── */
+function CountryDetailView({ country: initial, onBack, onDeleted, onUpdated }: {
+  country: any;
+  onBack: () => void;
+  onDeleted: () => void;
+  onUpdated: (updated: any) => void;
+}) {
+  const [country, setCountry] = useState(initial);
+  const a = country.attributes ?? {};
+  const flag = flagEmoji(a.iso2);
+  const incCode: string = a.incomeLevelCode ?? 'INX';
+  const incInfo = INCOME_OPTIONS_MAP.find(o => o.value === incCode) ?? INCOME_OPTIONS_MAP[4];
+
+  const [editing, setEditing] = useState(false);
+  const [form, setForm] = useState<CdvForm | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+  const [confirmDelete, setConfirmDelete] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setToast({ msg, type }); setTimeout(() => setToast(null), 3500);
+  };
+
+  const startEdit = () => {
+    setForm({
+      capitalCity: a.capitalCity ?? '',
+      incomeLevelCode: a.incomeLevelCode ?? 'INX',
+      gdpPerCapita: a.gdpPerCapita != null ? String(a.gdpPerCapita) : '',
+      gdpTotal: a.gdpTotal != null ? String(a.gdpTotal) : '',
+      population: a.population != null ? String(a.population) : '',
+      unemployment: a.unemployment != null ? String(a.unemployment) : '',
+      lifeExpectancy: a.lifeExpectancy != null ? String(a.lifeExpectancy) : '',
+      nameOfficial: a.nameOfficial ?? '',
+      area: a.area != null ? String(a.area) : '',
+      tld: Array.isArray(a.tld) ? a.tld.join(', ') : (a.tld ?? ''),
+      callingCodes: Array.isArray(a.callingCodes) ? a.callingCodes.join(', ') : (a.callingCodes ?? ''),
+      unMember: a.unMember ?? true,
+      flagImage: a.flagImage ?? '',
+    });
+    setSaveError('');
+    setEditing(true);
+  };
+
+  const handleSave = async () => {
+    if (!form) return;
+    setSaving(true); setSaveError('');
+    try {
+      const patch = {
+        attributes: {
+          ...country.attributes,
+          capitalCity: form.capitalCity,
+          incomeLevelCode: form.incomeLevelCode,
+          incomeLevel: INCOME_OPTIONS_MAP.find(o => o.value === form.incomeLevelCode)?.label ?? form.incomeLevelCode,
+          gdpPerCapita: form.gdpPerCapita !== '' ? parseFloat(form.gdpPerCapita) : undefined,
+          gdpTotal: form.gdpTotal !== '' ? parseFloat(form.gdpTotal) : undefined,
+          population: form.population !== '' ? parseFloat(form.population) : undefined,
+          unemployment: form.unemployment !== '' ? parseFloat(form.unemployment) : undefined,
+          lifeExpectancy: form.lifeExpectancy !== '' ? parseFloat(form.lifeExpectancy) : undefined,
+          nameOfficial: form.nameOfficial,
+          area: form.area !== '' ? parseFloat(form.area) : undefined,
+          tld: form.tld.split(',').map((s: string) => s.trim()).filter(Boolean),
+          callingCodes: form.callingCodes.split(',').map((s: string) => s.trim()).filter(Boolean),
+          unMember: form.unMember,
+          flagImage: form.flagImage.trim() || undefined,
+        },
+      };
+      const res = await fetch(`/api/map/features/${country._id}`, {
+        method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Lưu thất bại');
+      const updated = data.feature ?? { ...country, attributes: patch.attributes };
+      setCountry(updated);
+      onUpdated(updated);
+      setEditing(false);
+      showToast('Đã lưu thay đổi!');
+    } catch (err: any) { setSaveError(err.message); }
+    finally { setSaving(false); }
+  };
+
+  const handleDelete = async () => {
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/map/features/${country._id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Xoá thất bại');
+      onDeleted();
+    } catch (err: any) { showToast(err.message, 'error'); setDeleting(false); }
+    setConfirmDelete(false);
+  };
+
+  return (
+    <div className="space-y-5">
+      {/* Toast */}
+      {toast && (
+        <div className={`fixed top-5 right-5 z-[99999] px-5 py-3 rounded-[20px] text-sm font-bold
+          shadow-[0_8px_24px_rgba(0,0,0,0.12)] border ${
+            toast.type === 'success'
+              ? 'bg-[rgba(187,247,208,0.95)] border-emerald-200 text-[#16A34A]'
+              : 'bg-[rgba(254,226,226,0.95)] border-red-200 text-[#DC2626]'
+          }`}>{toast.msg}</div>
+      )}
+
+      {/* Confirm delete modal */}
+      {confirmDelete && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" onClick={() => setConfirmDelete(false)} />
+          <div className="relative w-full max-w-sm bg-[rgba(255,255,255,0.92)] backdrop-blur-[24px]
+            border border-white/80 rounded-[32px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] p-6 space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-100 text-red-500 flex items-center justify-center mx-auto">
+              <FaTrash className="text-lg" />
+            </div>
+            <p className="text-center font-bold text-[#082F49]">
+              Xoá quốc gia &ldquo;{country.name}&rdquo;?<br />
+              <span className="text-sm font-normal text-[#94A3B8]">Thao tác này không thể hoàn tác.</span>
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmDelete(false)}
+                className="flex-1 py-2.5 rounded-full border border-slate-200 text-sm font-bold text-[#334155] hover:bg-slate-50 transition-all">
+                Huỷ
+              </button>
+              <button onClick={handleDelete} disabled={deleting}
+                className="flex-1 py-2.5 rounded-full bg-gradient-to-r from-red-500 to-rose-500 text-white text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60">
+                {deleting && <FaSpinner className="animate-spin text-xs" />}
+                Xoá
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Breadcrumb + actions */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div className="flex items-center gap-3 flex-wrap">
+          <button onClick={onBack}
+            className="flex items-center gap-2 text-[#94A3B8] hover:text-[#334155] font-bold text-sm transition-colors group">
+            <span className="w-8 h-8 rounded-full bg-slate-100 group-hover:bg-slate-200 flex items-center justify-center transition-colors">
+              <FaArrowLeft className="text-xs" />
+            </span>
+            <span className="hidden sm:inline">Danh sách Quốc gia</span>
+          </button>
+          <span className="text-slate-300 font-bold">/</span>
+          <div className="flex items-center gap-2">
+            <span className="text-2xl leading-none">{flag}</span>
+            <div>
+              <p className="font-black text-[#082F49] text-sm leading-none">{country.name}</p>
+              <p className="text-[#94A3B8] text-xs font-semibold mt-0.5">{a.iso2} · {a.iso3}</p>
+            </div>
+          </div>
+        </div>
+        <div className="sm:ml-auto flex items-center gap-2">
+          {editing ? (
+            <>
+              <button onClick={() => { setEditing(false); setSaveError(''); }}
+                className="flex items-center gap-2 px-4 py-2 rounded-full border border-slate-200 bg-white text-sm font-bold text-[#334155] hover:bg-slate-50 transition-all">
+                <FaTimes className="text-xs" /> Huỷ
+              </button>
+              <button onClick={handleSave} disabled={saving}
+                className="flex items-center gap-2 px-5 py-2 rounded-full text-sm font-black text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                style={{ background: 'linear-gradient(135deg,#06B6D4,#0284c7)', boxShadow: '0 8px 20px rgba(6,182,212,0.35)' }}>
+                {saving && <FaSpinner className="animate-spin text-xs" />}
+                {saving ? 'Đang lưu...' : 'Lưu thay đổi'}
+              </button>
+            </>
+          ) : (
+            <>
+              <button onClick={startEdit}
+                className="flex items-center gap-2 px-4 py-2 rounded-full border border-cyan-200 bg-cyan-50 text-sm font-bold text-cyan-700 hover:bg-cyan-100 transition-all">
+                <FaEdit className="text-xs" /> Chỉnh sửa
+              </button>
+              <button onClick={() => setConfirmDelete(true)} disabled={deleting}
+                className="flex items-center gap-2 px-4 py-2 rounded-full border border-rose-200 bg-rose-50 text-sm font-bold text-rose-600 hover:bg-rose-100 transition-all disabled:opacity-60">
+                {deleting ? <FaSpinner className="animate-spin text-xs" /> : <FaTrash className="text-xs" />}
+                Xoá
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {saveError && (
+        <div className="bg-[rgba(254,226,226,0.9)] border border-red-200 text-red-700 text-sm font-bold px-5 py-3 rounded-[20px]">
+          ❌ {saveError}
+        </div>
+      )}
+
+      {/* Hero card */}
+      <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px] px-6 py-5 shadow-sm">
+        <div className="flex items-center gap-5">
+          {/* Flag image */}
+          <div className="flex-shrink-0">
+            {a.flagImage ? (
+              <div className="w-24 h-16 rounded-[16px] overflow-hidden border border-white/80 shadow-[0_4px_16px_rgba(14,165,233,0.15)] bg-slate-50">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={a.flagImage} alt={`Cờ ${country.name}`}
+                  className="w-full h-full object-cover" />
+              </div>
+            ) : (
+              <div className="w-24 h-16 rounded-[16px] border border-dashed border-slate-300 bg-slate-50/80
+                flex flex-col items-center justify-center gap-1 text-[#94A3B8]">
+                <span className="text-2xl leading-none">{flag}</span>
+                <span className="text-[9px] font-bold">Chưa có ảnh</span>
+              </div>
+            )}
+          </div>
+
+          <div className="flex-1 min-w-0">
+            <h2 className="text-xl font-black text-[#082F49] leading-tight">{country.name}</h2>
+            {a.nameOfficial && a.nameOfficial !== country.name && (
+              <p className="text-[#94A3B8] text-sm font-semibold mt-0.5">{a.nameOfficial}</p>
+            )}
+            <div className="flex flex-wrap items-center gap-2 mt-2">
+              {a.iso2 && <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">{a.iso2}</span>}
+              {a.iso3 && <span className="text-[11px] font-black px-2 py-0.5 rounded-full bg-slate-100 text-slate-600">{a.iso3}</span>}
+              <span className={`inline-flex items-center gap-1.5 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full ${INCOME_MAP[incCode]?.pill ?? INCOME_MAP['INX'].pill}`}>
+                <span className="w-1.5 h-1.5 rounded-full" style={{ background: incInfo.dot }} />
+                {incInfo.label}
+              </span>
+              {a.unMember === true && (
+                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200">🇺🇳 LHQ</span>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Flag image path — chỉ hiện khi editing */}
+        {editing && (
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <CdvFieldLabel>Đường dẫn ảnh cờ (trong /public/flag/)</CdvFieldLabel>
+            <div className="flex items-center gap-3">
+              <div className="flex-1">
+                <CdvInput
+                  value={form!.flagImage}
+                  onChange={v => setForm(p => p && ({ ...p, flagImage: v }))}
+                  placeholder="VD: /flag/vn.png"
+                />
+              </div>
+              {form!.flagImage && (
+                <div className="w-14 h-10 rounded-[12px] overflow-hidden border border-slate-200 flex-shrink-0 bg-slate-50">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={form!.flagImage} alt="preview"
+                    className="w-full h-full object-cover"
+                    onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                </div>
+              )}
+            </div>
+            <p className="text-[10px] text-[#94A3B8] font-semibold mt-1.5">
+              Đặt ảnh vào thư mục <code className="bg-slate-100 px-1 rounded">public/flag/</code>, nhập đường dẫn bắt đầu từ <code className="bg-slate-100 px-1 rounded">/flag/</code>
+            </p>
+          </div>
+        )}
+      </div>
+
+      {/* 2-col grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Địa lý & Hành chính */}
+        <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px] p-6 shadow-sm space-y-4">
+          <h3 className="flex items-center font-black text-[#082F49]"><Icon icon="mingcute:map-line" width={22} />&nbsp; Địa lý &amp; Hành chính</h3>
+
+          <div><CdvFieldLabel>Tên chính thức</CdvFieldLabel>
+            {editing ? <CdvInput value={form!.nameOfficial} onChange={v => setForm(p => p && ({ ...p, nameOfficial: v }))} />
+                     : <CdvReadonly value={a.nameOfficial ?? ''} />}</div>
+
+          <div><CdvFieldLabel>Thủ đô</CdvFieldLabel>
+            {editing ? <CdvInput value={form!.capitalCity} onChange={v => setForm(p => p && ({ ...p, capitalCity: v }))} placeholder="VD: Hanoi" />
+                     : <CdvReadonly value={a.capitalCity ?? ''} />}</div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div><CdvFieldLabel>Khu vực</CdvFieldLabel><CdvReadonly value={a.region ?? ''} /></div>
+            <div><CdvFieldLabel>Tiểu vùng</CdvFieldLabel><CdvReadonly value={a.subregion ?? ''} /></div>
+          </div>
+
+          <div><CdvFieldLabel>Diện tích (km²)</CdvFieldLabel>
+            {editing ? <CdvInput value={form!.area} onChange={v => setForm(p => p && ({ ...p, area: v }))} type="number" placeholder="VD: 331212" />
+                     : <CdvReadonly value={a.area != null ? `${Number(a.area).toLocaleString('vi-VN')} km²` : ''} />}</div>
+
+          <div><CdvFieldLabel>TLD (phân cách bởi dấu phẩy)</CdvFieldLabel>
+            {editing ? <CdvInput value={form!.tld} onChange={v => setForm(p => p && ({ ...p, tld: v }))} placeholder=".vn, .viet" />
+                     : <CdvReadonly value={Array.isArray(a.tld) ? a.tld.join(', ') : (a.tld ?? '')} />}</div>
+
+          <div><CdvFieldLabel>Mã điện thoại (phân cách bởi dấu phẩy)</CdvFieldLabel>
+            {editing ? <CdvInput value={form!.callingCodes} onChange={v => setForm(p => p && ({ ...p, callingCodes: v }))} placeholder="+84" />
+                     : <CdvReadonly value={Array.isArray(a.callingCodes) ? a.callingCodes.join(', ') : (a.callingCodes ?? '')} />}</div>
+
+          <div><CdvFieldLabel>Tiền tệ (chỉ đọc)</CdvFieldLabel>
+            <CdvReadonly value={
+              Array.isArray(a.currencies) && a.currencies.length > 0
+                ? a.currencies.map((c: any) => `${c.code}${c.name ? ' (' + c.name + ')' : ''}`).join(' · ')
+                : ''
+            } /></div>
+
+          <div><CdvFieldLabel>Thành viên Liên Hợp Quốc</CdvFieldLabel>
+            {editing ? (
+              <div className="flex gap-3">
+                {([true, false] as const).map(v => (
+                  <button key={String(v)} type="button" onClick={() => setForm(p => p && ({ ...p, unMember: v }))}
+                    className={`flex-1 py-2 rounded-full text-sm font-bold border transition-all ${
+                      form!.unMember === v
+                        ? v ? 'bg-emerald-50 border-emerald-300 text-emerald-700' : 'bg-rose-50 border-rose-300 text-rose-700'
+                        : 'bg-slate-50 border-slate-200 text-slate-500'
+                    }`}>{v ? '✅ Có' : '❌ Không'}</button>
+                ))}
+              </div>
+            ) : <CdvReadonly value={a.unMember === true ? ' Có' : a.unMember === false ? '❌ Không' : ''} />}</div>
+        </div>
+
+        {/* Kinh tế */}
+        <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px] p-6 shadow-sm space-y-4">
+          <h3 className="flex items-center font-black text-[#082F49]"><Icon icon="mingcute:receive-money-line" width={22} />&nbsp; Kinh tế</h3>
+
+          <div><CdvFieldLabel>Mức thu nhập</CdvFieldLabel>
+            {editing ? (
+              <select value={form!.incomeLevelCode}
+                onChange={e => setForm(p => p && ({ ...p, incomeLevelCode: e.target.value }))}
+                className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49]
+                  font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 cursor-pointer">
+                {INCOME_OPTIONS_MAP.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
+              </select>
+            ) : (
+              <div className="py-1">
+                <span className={`inline-flex items-center gap-1.5 text-xs font-extrabold px-3 py-1.5 rounded-full ${INCOME_MAP[incCode]?.pill ?? INCOME_MAP['INX'].pill}`}>
+                  <span className="w-2 h-2 rounded-full" style={{ background: incInfo.dot }} />
+                  {incInfo.label}
+                </span>
+              </div>
+            )}</div>
+
+          <div><CdvFieldLabel>GDP / đầu người (USD)</CdvFieldLabel>
+            {editing ? <CdvInput value={form!.gdpPerCapita} onChange={v => setForm(p => p && ({ ...p, gdpPerCapita: v }))} type="number" placeholder="VD: 3756" />
+                     : <CdvReadonly value={a.gdpPerCapita != null ? `$${Number(a.gdpPerCapita).toLocaleString('en-US')}` : ''} />}</div>
+
+          <div><CdvFieldLabel>Tổng GDP (USD)</CdvFieldLabel>
+            {editing ? <CdvInput value={form!.gdpTotal} onChange={v => setForm(p => p && ({ ...p, gdpTotal: v }))} type="number" placeholder="VD: 409000000000" />
+                     : <CdvReadonly value={a.gdpTotal != null ? `$${Number(a.gdpTotal).toLocaleString('en-US')}` : ''} />}</div>
+
+          <div><CdvFieldLabel>Dân số</CdvFieldLabel>
+            {editing ? <CdvInput value={form!.population} onChange={v => setForm(p => p && ({ ...p, population: v }))} type="number" placeholder="VD: 98186856" />
+                     : <CdvReadonly value={a.population != null ? `${Number(a.population).toLocaleString('vi-VN')} người` : ''} />}</div>
+
+          <div><CdvFieldLabel>Tỷ lệ thất nghiệp (%)</CdvFieldLabel>
+            {editing ? <CdvInput value={form!.unemployment} onChange={v => setForm(p => p && ({ ...p, unemployment: v }))} type="number" placeholder="VD: 2.3" />
+                     : <CdvReadonly value={a.unemployment != null ? `${Number(a.unemployment).toFixed(1)}%` : ''} />}</div>
+
+          <div><CdvFieldLabel>Tuổi thọ trung bình (năm)</CdvFieldLabel>
+            {editing ? <CdvInput value={form!.lifeExpectancy} onChange={v => setForm(p => p && ({ ...p, lifeExpectancy: v }))} type="number" placeholder="VD: 73.4" />
+                     : <CdvReadonly value={a.lifeExpectancy != null ? `${Number(a.lifeExpectancy).toFixed(1)} tuổi` : ''} />}</div>
+
+          <div className="pt-3 border-t border-slate-100 space-y-3">
+            <p className="text-[10px] font-bold text-[#94A3B8] uppercase tracking-wider">Tham chiếu (chỉ đọc)</p>
+            <div className="grid grid-cols-3 gap-3">
+              <div><CdvFieldLabel>ISO2</CdvFieldLabel><CdvReadonly value={a.iso2 ?? ''} /></div>
+              <div><CdvFieldLabel>ISO3</CdvFieldLabel><CdvReadonly value={a.iso3 ?? ''} /></div>
+              <div><CdvFieldLabel>Toạ độ</CdvFieldLabel><CdvReadonly value={`${country.lat ?? '—'}, ${country.lng ?? '—'}`} /></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+/* ── MapTab — manages view state like QuizManager ── */
+function MapTab() {
+  const [view, setView] = useState<'overview' | 'detail'>('overview');
+  const [selectedCountry, setSelectedCountry] = useState<any | null>(null);
+
+  /* seed state */
+  const [stats, setStats] = useState<{ total: number; categories: Record<string, number> } | null>(null);
+  const [loadingStats, setLoadingStats] = useState(true);
+  const [seeding, setSeeding] = useState(false);
+  const [seedLog, setSeedLog] = useState<{ type: 'success' | 'error' | 'info'; msg: string }[]>([]);
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+
+  /* countries list state */
+  const [countries, setCountries] = useState<any[]>([]);
+  const [loadingCountries, setLoadingCountries] = useState(true);
+  const [search, setSearch] = useState('');
+  const [filterIncome, setFilterIncome] = useState('all');
+  const [filterRegion, setFilterRegion] = useState('all');
+  const [sortField, setSortField] = useState<EcoSortField>('name');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('asc');
+  const [page, setPage] = useState(1);
+  const PAGE_SIZE = 20;
+
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setToast({ msg, type }); setTimeout(() => setToast(null), 4000);
+  };
+
+  const regions = useMemo(() => {
+    const set = new Set<string>();
+    countries.forEach(c => { if (c.attributes?.region) set.add(c.attributes.region); });
+    return Array.from(set).sort();
+  }, [countries]);
+
+  const filtered = useMemo(() => {
+    let arr = [...countries];
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      arr = arr.filter(c =>
+        c.name?.toLowerCase().includes(q) ||
+        c.attributes?.iso2?.toLowerCase().includes(q) ||
+        c.attributes?.iso3?.toLowerCase().includes(q) ||
+        c.attributes?.capitalCity?.toLowerCase().includes(q) ||
+        c.attributes?.nameOfficial?.toLowerCase().includes(q)
+      );
+    }
+    if (filterIncome !== 'all') arr = arr.filter(c => c.attributes?.incomeLevelCode === filterIncome);
+    if (filterRegion !== 'all') arr = arr.filter(c => c.attributes?.region === filterRegion);
+    arr.sort((a, b) => {
+      let va: any = a.name, vb: any = b.name;
+      if (sortField !== 'name') { va = a.attributes?.[sortField] ?? -1; vb = b.attributes?.[sortField] ?? -1; }
+      if (typeof va === 'string') return sortDir === 'asc' ? va.localeCompare(vb) : vb.localeCompare(va);
+      return sortDir === 'asc' ? va - vb : vb - va;
+    });
+    return arr;
+  }, [countries, search, filterIncome, filterRegion, sortField, sortDir]);
+
+  const totalPages = Math.ceil(filtered.length / PAGE_SIZE);
+  const paged = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  const toggleSort = (field: EcoSortField) => {
+    if (sortField === field) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+    else { setSortField(field); setSortDir('asc'); }
+    setPage(1);
+  };
+
+  const fetchStats = useCallback(async () => {
+    setLoadingStats(true);
+    try {
+      const cats = MAP_CATEGORIES.map(c => c.key);
+      const results = await Promise.all(cats.map(cat => fetch(`/api/map/features?category=${cat}`).then(r => r.json())));
+      const categories: Record<string, number> = {};
+      cats.forEach((cat, i) => { categories[cat] = Array.isArray(results[i]) ? results[i].length : 0; });
+      setStats({ total: Object.values(categories).reduce((a, b) => a + b, 0), categories });
+    } catch { setStats(null); }
+    finally { setLoadingStats(false); }
+  }, []);
+
+  const fetchCountries = useCallback(async () => {
+    setLoadingCountries(true);
+    try {
+      const res = await fetch('/api/map/features?category=economic');
+      const data = await res.json();
+      setCountries(Array.isArray(data) ? data : []);
+    } catch { setCountries([]); }
+    finally { setLoadingCountries(false); }
+  }, []);
+
+  useEffect(() => { fetchStats(); fetchCountries(); }, [fetchStats, fetchCountries]);
+
+  const handleSeed = async () => {
+    if (!confirm('Thao tác này sẽ XOÁ toàn bộ dữ liệu bản đồ cũ và nạp lại từ Databank. Tiếp tục?')) return;
+    setSeeding(true);
+    setSeedLog([{ type: 'info', msg: 'Đang kết nối tới World Bank API & mledoze...' }]);
+    try {
+      const res = await fetch('/api/map/features', { method: 'POST' });
+      const data = await res.json();
+      if (!res.ok) {
+        setSeedLog(prev => [
+          ...prev,
+          { type: 'error', msg: `Lỗi: ${data.error || 'Không rõ nguyên nhân'}` },
+          ...(data.errors ?? []).map((e: string) => ({ type: 'error' as const, msg: `  - ${e}` })),
+        ]);
+        showToast('Seed thất bại', 'error');
+      } else {
+        setSeedLog(prev => [
+          ...prev,
+          { type: 'success', msg: `Hoàn thành! Đã nạp ${data.inserted ?? '?'} bản ghi.` },
+          ...(data.errors ?? []).map((e: string) => ({ type: 'error' as const, msg: `  - ${e}` })),
+        ]);
+        showToast(`Đã nạp ${data.inserted ?? '?'} bản ghi!`);
+        fetchStats(); fetchCountries();
+      }
+    } catch (err: any) {
+      setSeedLog(prev => [...prev, { type: 'error', msg: `Lỗi kết nối: ${err.message}` }]);
+      showToast('Lỗi kết nối server', 'error');
+    } finally { setSeeding(false); }
+  };
+
+  /* ── Inline view routing (like QuizManager) ── */
+  if (view === 'detail' && selectedCountry) {
+    return (
+      <CountryDetailView
+        country={selectedCountry}
+        onBack={() => { setView('overview'); setSelectedCountry(null); }}
+        onDeleted={() => {
+          setCountries(prev => prev.filter(c => c._id !== selectedCountry._id));
+          setView('overview'); setSelectedCountry(null);
+        }}
+        onUpdated={updated => {
+          setCountries(prev => prev.map(c => c._id === updated._id ? updated : c));
+          setSelectedCountry(updated);
+        }}
+      />
+    );
+  }
+
+  /* ── Overview ── */
+  return (
+    <div className="space-y-5">
+      {toast && (
+        <div className={`fixed top-5 right-5 z-[99999] px-5 py-3 rounded-[20px] text-sm font-bold
+          shadow-[0_8px_24px_rgba(0,0,0,0.12)] border ${
+            toast.type === 'success'
+              ? 'bg-[rgba(187,247,208,0.95)] border-emerald-200 text-[#16A34A]'
+              : 'bg-[rgba(254,226,226,0.95)] border-red-200 text-[#DC2626]'
+          }`}>{toast.msg}</div>
+      )}
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-[#082F49]">Quản lý Dữ liệu Bản đồ</h2>
+          <p className="text-[#94A3B8] text-sm font-semibold mt-0.5">Dữ liệu từ World Bank · mledoze · mapData.json</p>
+        </div>
+        <button onClick={handleSeed} disabled={seeding}
+          className="sm:ml-auto flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-black text-white
+            transition-all hover:-translate-y-0.5 disabled:opacity-60 disabled:translate-y-0"
+          style={{ background: 'linear-gradient(135deg,#06B6D4,#0284c7)', boxShadow: '0 10px 25px rgba(6,182,212,0.35)' }}>
+          {seeding ? <FaSpinner className="animate-spin" /> : <FaDownload />}
+          {seeding ? 'Đang nạp...' : 'Nạp / Cập nhật Databank'}
+        </button>
+      </div>
+
+      {/* Stats cards */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        {MAP_CATEGORIES.map(cat => (
+          <div key={cat.key} className={`rounded-[24px] border p-4 flex flex-col gap-1.5 ${cat.bg} ${cat.border} backdrop-blur-sm`}>
+            <span className="text-2xl">{cat.icon}</span>
+            <p className={`text-[11px] font-extrabold uppercase tracking-wider ${cat.color}`}>{cat.label}</p>
+            <p className="text-2xl font-black text-[#082F49]">
+              {loadingStats ? '—' : (stats?.categories[cat.key] ?? 0).toLocaleString('vi-VN')}
+            </p>
+            <p className="text-[10px] text-[#94A3B8] font-semibold">bản ghi</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Total */}
+      <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px] px-6 py-4 shadow-sm flex items-center gap-4">
+        <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-[#06B6D4] to-blue-500 flex items-center justify-center text-white">
+          <FaDatabase className="text-sm" />
+        </div>
+        <div>
+          <p className="font-black text-[#082F49] text-base">
+            {loadingStats ? 'Đang tải...' : `${(stats?.total ?? 0).toLocaleString('vi-VN')} bản ghi trong database`}
+          </p>
+          <p className="text-[#94A3B8] text-xs font-semibold">Đọc trực tiếp từ MongoDB — không gọi API ngoài khi dùng</p>
+        </div>
+        <button onClick={() => { fetchStats(); fetchCountries(); }} disabled={loadingStats || loadingCountries}
+          className="ml-auto text-[#94A3B8] hover:text-[#06B6D4] transition-colors disabled:opacity-40">
+          <FaSpinner className={(loadingStats || loadingCountries) ? 'animate-spin' : ''} />
+        </button>
+      </div>
+
+      {/* Seed log */}
+      {seedLog.length > 0 && (
+        <div className="bg-[#082F49] rounded-[24px] p-5 space-y-1.5 font-mono text-xs shadow-inner">
+          <div className="flex items-center justify-between mb-3">
+            <p className="text-[#94A3B8] font-bold uppercase tracking-widest text-[9px]">Nhật ký thực thi</p>
+            {!seeding && <button onClick={() => setSeedLog([])} className="text-[#94A3B8] hover:text-white text-[10px]">Xoá log</button>}
+          </div>
+          {seedLog.map((log, i) => (
+            <p key={i} className={`leading-relaxed ${
+              log.type === 'success' ? 'text-emerald-400' : log.type === 'error' ? 'text-red-400' : 'text-slate-300'
+            }`}>{log.msg}</p>
+          ))}
+          {seeding && <p className="text-cyan-400 animate-pulse">|</p>}
+        </div>
+      )}
+
+      {/* Countries table */}
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <h3 className="text-lg font-black text-[#082F49]">Danh sách Quốc gia</h3>
+          <span className="text-[11px] font-bold px-2.5 py-0.5 rounded-full bg-[#E0F2FE] text-[#0284C7] border border-[#BAE6FD]">
+            {loadingCountries ? '…' : `${filtered.length} / ${countries.length}`}
+          </span>
+        </div>
+
+        {/* Toolbar */}
+        <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px] p-4 shadow-sm mb-4 space-y-3">
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs font-bold text-[#94A3B8] mr-1">Thu nhập:</span>
+            {(['all', 'HIC', 'UMC', 'LMC', 'LIC'] as const).map(k => (
+              <button key={k} onClick={() => { setFilterIncome(k); setPage(1); }}
+                className={`px-3.5 py-1.5 rounded-full text-xs font-bold border transition-all ${
+                  filterIncome === k
+                    ? 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-transparent shadow-[0_4px_12px_rgba(6,182,212,0.4)]'
+                    : 'bg-slate-50 text-[#334155] border-slate-200 hover:border-cyan-300 hover:text-cyan-600'
+                }`}>
+                {k === 'all' ? 'Tất cả' : INCOME_MAP[k]?.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap gap-2 items-center">
+            <span className="text-xs font-bold text-[#94A3B8]">Sắp xếp:</span>
+            {([
+              ['name', 'Tên'], ['gdpPerCapita', 'GDP/người'], ['population', 'Dân số'],
+              ['area', 'Diện tích'], ['lifeExpectancy', 'Tuổi thọ'],
+            ] as [EcoSortField, string][]).map(([k, lbl]) => (
+              <button key={k} onClick={() => toggleSort(k)}
+                className={`flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-bold border transition-all ${
+                  sortField === k
+                    ? 'bg-cyan-50 border-cyan-300 text-cyan-700'
+                    : 'bg-slate-50 border-slate-200 text-[#334155] hover:border-cyan-200'
+                }`}>
+                {lbl}{sortField === k && <span>{sortDir === 'asc' ? ' ↑' : ' ↓'}</span>}
+              </button>
+            ))}
+            <select value={filterRegion} onChange={e => { setFilterRegion(e.target.value); setPage(1); }}
+              className="ml-auto px-3 py-1.5 rounded-full border border-slate-200 bg-slate-50
+                text-xs text-[#334155] font-semibold focus:outline-none focus:border-cyan-300 cursor-pointer">
+              <option value="all">Mọi khu vực</option>
+              {regions.map(r => <option key={r} value={r}>{r}</option>)}
+            </select>
+            <div className="flex items-center gap-2 bg-slate-50 border border-slate-200 rounded-full px-3 py-2
+              focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-100 transition-all">
+              <FaSearch className="text-[#94A3B8] text-xs shrink-0" />
+              <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
+                placeholder="Tìm tên, ISO, thủ đô..."
+                className="bg-transparent text-xs font-semibold text-[#082F49] placeholder:text-[#94A3B8] outline-none w-36 sm:w-44" />
+              {search && (
+                <button onClick={() => { setSearch(''); setPage(1); }} className="text-[#94A3B8] hover:text-slate-600 transition-colors">
+                  <FaTimes className="text-xs" />
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Table */}
+        {loadingCountries ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <FaSpinner className="text-4xl text-cyan-400 animate-spin" />
+            <p className="text-[#94A3B8] font-semibold text-sm">Đang tải dữ liệu quốc gia...</p>
+          </div>
+        ) : (
+          <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px] shadow-[0_10px_30px_rgba(14,165,233,0.08)] overflow-hidden">
+            {paged.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-3">
+                <div className="w-16 h-16 rounded-[24px] bg-slate-100 flex items-center justify-center text-3xl">🔍</div>
+                <p className="text-[#082F49] font-bold">Không tìm thấy quốc gia nào</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100 bg-white/40 backdrop-blur-md">
+                      <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs w-10">#</th>
+                      <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs">Quốc gia</th>
+                      <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden sm:table-cell">Thủ đô</th>
+                      <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden md:table-cell">Khu vực</th>
+                      <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs">Thu nhập</th>
+                      <th className="text-right px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden lg:table-cell">GDP/người</th>
+                      <th className="text-right px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden lg:table-cell">Dân số</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {paged.map((c, idx) => {
+                      const ca = c.attributes ?? {};
+                      const inc = INCOME_MAP[ca.incomeLevelCode] ?? INCOME_MAP['INX'];
+                      const cf = flagEmoji(ca.iso2);
+                      return (
+                        <tr key={c._id}
+                          onClick={() => { setSelectedCountry(c); setView('detail'); }}
+                          className="border-b border-white/50 hover:bg-cyan-50/50 transition-colors cursor-pointer group">
+                          <td className="px-5 py-3 text-[#94A3B8] text-xs font-bold">{(page - 1) * PAGE_SIZE + idx + 1}</td>
+                          <td className="px-5 py-3">
+                            <div className="flex items-center gap-2.5">
+                              <span className="text-xl leading-none flex-shrink-0">{cf}</span>
+                              <div className="min-w-0">
+                                <p className="font-bold text-[#082F49] group-hover:text-cyan-700 transition-colors leading-snug">{c.name}</p>
+                                <p className="text-[#94A3B8] text-[10px] font-semibold">{ca.iso2 || ''}{ca.iso2 && ca.iso3 ? ' · ' : ''}{ca.iso3 || ''}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-5 py-3 text-[#334155] text-xs hidden sm:table-cell">{ca.capitalCity || '—'}</td>
+                          <td className="px-5 py-3 text-[#334155] text-xs hidden md:table-cell max-w-[160px]">
+                            <p className="truncate">{ca.region || '—'}</p>
+                          </td>
+                          <td className="px-5 py-3">
+                            <span className={`inline-flex items-center gap-1 text-[10px] font-extrabold px-2 py-0.5 rounded-full ${inc.pill}`}>
+                              <span className="w-1.5 h-1.5 rounded-full" style={{ background: inc.dot }} />
+                              {inc.label}
+                            </span>
+                          </td>
+                          <td className="px-5 py-3 text-right text-xs font-mono text-[#334155] hidden lg:table-cell">{fmtUSD(ca.gdpPerCapita)}</td>
+                          <td className="px-5 py-3 text-right text-xs font-mono text-[#334155] hidden lg:table-cell">{fmtPop(ca.population)}</td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            )}
+            {totalPages > 1 && (
+              <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100">
+                <p className="text-[#94A3B8] text-xs font-semibold">
+                  {(page - 1) * PAGE_SIZE + 1}–{Math.min(page * PAGE_SIZE, filtered.length)} / {filtered.length} quốc gia
+                </p>
+                <Paginator page={page} totalPages={totalPages} onPageChange={setPage} />
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/* ══════════════════════════════════════════════
+   GLOBE TAB — quản lý quốc gia trên địa cầu
+══════════════════════════════════════════════ */
+
+const CONTINENT_OPTIONS = ['Châu Á', 'Châu Âu', 'Châu Mỹ', 'Châu Phi', 'Châu Đại Dương', 'Châu Nam Cực', 'Châu Âu / Á'];
+
+const EMPTY_GLOBE_FORM = {
+  name: '', capital: '', population: '', description: '', color: '#06B6D4',
+  lat: '', lng: '', flag: '', area: '', language: '', currency: '', continent: '', funFact: '',
+  images: ['', '', ''],
+};
+
+type GlobeForm = typeof EMPTY_GLOBE_FORM;
+
+function GlobeTab() {
+  const [countries, setCountries] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [search, setSearch] = useState('');
+  const [modal, setModal] = useState<'add' | 'edit' | null>(null);
+  const [form, setForm] = useState<GlobeForm>(EMPTY_GLOBE_FORM);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState('');
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState(false);
+  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
+
+  const showToast = (msg: string, ok = true) => {
+    setToast({ msg, ok }); setTimeout(() => setToast(null), 3500);
+  };
+
+  const fetchCountries = useCallback(async () => {
+    setLoading(true);
+    try {
+      const res = await fetch('/api/countries');
+      const data = await res.json();
+      setCountries(Array.isArray(data.countries) ? data.countries : []);
+    } catch { setCountries([]); }
+    finally { setLoading(false); }
+  }, []);
+
+  useEffect(() => { fetchCountries(); }, [fetchCountries]);
+
+  const filtered = useMemo(() => {
+    const q = search.toLowerCase();
+    return countries.filter(c =>
+      !q || c.name?.toLowerCase().includes(q) || c.capital?.toLowerCase().includes(q) || c.continent?.toLowerCase().includes(q)
+    );
+  }, [countries, search]);
+
+  const openAdd = () => {
+    setForm(EMPTY_GLOBE_FORM);
+    setEditId(null);
+    setSaveError('');
+    setModal('add');
+  };
+
+  const openEdit = (c: any) => {
+    const imgs = Array.isArray(c.images) ? [...c.images] : [];
+    while (imgs.length < 3) imgs.push('');
+    setForm({
+      name: c.name ?? '', capital: c.capital ?? '', population: c.population ?? '',
+      description: c.description ?? '', color: c.color ?? '#06B6D4',
+      lat: c.lat != null ? String(c.lat) : '', lng: c.lng != null ? String(c.lng) : '',
+      flag: c.flag ?? '', area: c.area ?? '', language: c.language ?? '',
+      currency: c.currency ?? '', continent: c.continent ?? '', funFact: c.funFact ?? '',
+      images: imgs.slice(0, 3) as [string, string, string],
+    });
+    setEditId(c._id);
+    setSaveError('');
+    setModal('edit');
+  };
+
+  const handleSave = async () => {
+    if (!form.name.trim() || !form.capital.trim()) {
+      setSaveError('Tên nước và thủ đô là bắt buộc.'); return;
+    }
+    setSaving(true); setSaveError('');
+    try {
+      const body = {
+        ...form,
+        lat: parseFloat(form.lat) || 0,
+        lng: parseFloat(form.lng) || 0,
+        images: form.images.filter(Boolean),
+      };
+      const url = modal === 'edit' ? `/api/countries/${editId}` : '/api/countries';
+      const method = modal === 'edit' ? 'PATCH' : 'POST';
+      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Lưu thất bại');
+      showToast(modal === 'edit' ? '✅ Đã cập nhật!' : '✅ Đã thêm quốc gia!');
+      setModal(null);
+      fetchCountries();
+    } catch (e: any) { setSaveError(e.message); }
+    finally { setSaving(false); }
+  };
+
+  const handleDelete = async () => {
+    if (!confirmDeleteId) return;
+    setDeleting(true);
+    try {
+      const res = await fetch(`/api/countries/${confirmDeleteId}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error('Xoá thất bại');
+      showToast('🗑️ Đã xoá quốc gia');
+      fetchCountries();
+    } catch (e: any) { showToast(e.message, false); }
+    finally { setDeleting(false); setConfirmDeleteId(null); }
+  };
+
+  const setImg = (i: number, v: string) => {
+    setForm(p => { const imgs = [...p.images] as [string, string, string]; imgs[i] = v; return { ...p, images: imgs }; });
+  };
+
+  return (
+    <div className="space-y-5">
+      {/* Toast */}
+      {toast && (
+        <div className={`fixed top-5 right-5 z-[99999] px-5 py-3 rounded-[20px] text-sm font-bold
+          shadow-[0_8px_24px_rgba(0,0,0,0.12)] border ${
+            toast.ok ? 'bg-[rgba(187,247,208,0.95)] border-emerald-200 text-[#16A34A]'
+                     : 'bg-[rgba(254,226,226,0.95)] border-red-200 text-[#DC2626]'
+          }`}>{toast.msg}</div>
+      )}
+
+      {/* Confirm delete */}
+      {confirmDeleteId && (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+          <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" onClick={() => setConfirmDeleteId(null)} />
+          <div className="relative w-full max-w-sm bg-white/92 backdrop-blur-[24px] border border-white/80 rounded-[32px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] p-6 space-y-4">
+            <div className="w-12 h-12 rounded-full bg-red-100 text-red-500 flex items-center justify-center mx-auto">
+              <FaTrash className="text-lg" />
+            </div>
+            <p className="text-center font-bold text-[#082F49]">
+              Xoá quốc gia này?<br />
+              <span className="text-sm font-normal text-[#94A3B8]">Thao tác này không thể hoàn tác.</span>
+            </p>
+            <div className="flex gap-3">
+              <button onClick={() => setConfirmDeleteId(null)}
+                className="flex-1 py-2.5 rounded-full border border-slate-200 text-sm font-bold text-[#334155] hover:bg-slate-50 transition-all">Huỷ</button>
+              <button onClick={handleDelete} disabled={deleting}
+                className="flex-1 py-2.5 rounded-full bg-gradient-to-r from-red-500 to-rose-500 text-white text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60">
+                {deleting && <FaSpinner className="animate-spin text-xs" />} Xoá
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add / Edit modal */}
+      {modal && (
+        <div className="fixed inset-0 z-[99998] flex items-start justify-center p-4 pt-16 overflow-y-auto">
+          <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" onClick={() => setModal(null)} />
+          <div className="relative w-full max-w-2xl bg-white/92 backdrop-blur-[24px] border border-white/80 rounded-[32px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] p-6 space-y-5 my-4">
+            <div className="flex items-center justify-between">
+              <h3 className="font-black text-[#082F49] text-lg">
+                {modal === 'add' ? '🌍 Thêm Quốc gia mới' : '✏️ Chỉnh sửa Quốc gia'}
+              </h3>
+              <button onClick={() => setModal(null)} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all">
+                <FaTimes className="text-xs text-slate-500" />
+              </button>
+            </div>
+
+            {saveError && (
+              <div className="bg-[rgba(254,226,226,0.9)] border border-red-200 text-red-700 text-sm font-bold px-4 py-3 rounded-[16px]">❌ {saveError}</div>
+            )}
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {/* Col 1 */}
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-[#334155] mb-1">Tên quốc gia *</label>
+                  <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="VD: Việt Nam"
+                    className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#334155] mb-1">Thủ đô *</label>
+                  <input value={form.capital} onChange={e => setForm(p => ({ ...p, capital: e.target.value }))} placeholder="VD: Hà Nội"
+                    className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#334155] mb-1">Dân số</label>
+                  <input value={form.population} onChange={e => setForm(p => ({ ...p, population: e.target.value }))} placeholder="VD: 100 Triệu"
+                    className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-[#334155] mb-1">Vĩ độ</label>
+                    <input type="number" value={form.lat} onChange={e => setForm(p => ({ ...p, lat: e.target.value }))} placeholder="21.03"
+                      className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#334155] mb-1">Kinh độ</label>
+                    <input type="number" value={form.lng} onChange={e => setForm(p => ({ ...p, lng: e.target.value }))} placeholder="105.85"
+                      className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-[#334155] mb-1">Cờ (emoji)</label>
+                    <input value={form.flag} onChange={e => setForm(p => ({ ...p, flag: e.target.value }))} placeholder="🇻🇳"
+                      className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#334155] mb-1">Màu marker</label>
+                    <div className="flex items-center gap-2">
+                      <input type="color" value={form.color} onChange={e => setForm(p => ({ ...p, color: e.target.value }))}
+                        className="w-10 h-10 rounded-[12px] border border-slate-200 cursor-pointer p-0.5" />
+                      <span className="text-xs font-mono text-[#334155]">{form.color}</span>
+                    </div>
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#334155] mb-1">Châu lục</label>
+                  <select value={form.continent} onChange={e => setForm(p => ({ ...p, continent: e.target.value }))}
+                    className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 cursor-pointer">
+                    <option value="">— Chọn châu lục —</option>
+                    {CONTINENT_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
+                  </select>
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <label className="block text-xs font-bold text-[#334155] mb-1">Diện tích</label>
+                    <input value={form.area} onChange={e => setForm(p => ({ ...p, area: e.target.value }))} placeholder="331.212 km²"
+                      className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-bold text-[#334155] mb-1">Tiền tệ</label>
+                    <input value={form.currency} onChange={e => setForm(p => ({ ...p, currency: e.target.value }))} placeholder="Đồng (VND)"
+                      className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#334155] mb-1">Ngôn ngữ</label>
+                  <input value={form.language} onChange={e => setForm(p => ({ ...p, language: e.target.value }))} placeholder="Tiếng Việt"
+                    className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
+                </div>
+              </div>
+
+              {/* Col 2 */}
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-bold text-[#334155] mb-1">Mô tả ngắn</label>
+                  <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={4}
+                    placeholder="Mô tả về quốc gia..."
+                    className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all resize-none" />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-[#334155] mb-1">Fun Fact</label>
+                  <textarea value={form.funFact} onChange={e => setForm(p => ({ ...p, funFact: e.target.value }))} rows={3}
+                    placeholder="Điều thú vị về quốc gia..."
+                    className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all resize-none" />
+                </div>
+                <div className="space-y-2">
+                  <label className="block text-xs font-bold text-[#334155]">Ảnh (tối đa 3 link)</label>
+                  {form.images.map((url, i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <input value={url} onChange={e => setImg(i, e.target.value)}
+                        placeholder={`Link ảnh ${i + 1}...`}
+                        className="flex-1 px-3 py-2 rounded-[14px] border border-slate-200 bg-white text-xs text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
+                      {url && (
+                        <div className="w-10 h-8 rounded-[10px] overflow-hidden border border-slate-200 flex-shrink-0 bg-slate-50">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={url} alt="" className="w-full h-full object-cover"
+                            onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
+              <button onClick={() => setModal(null)}
+                className="px-5 py-2.5 rounded-full border border-slate-200 text-sm font-bold text-[#334155] hover:bg-slate-50 transition-all">
+                Huỷ
+              </button>
+              <button onClick={handleSave} disabled={saving}
+                className="flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-black text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
+                style={{ background: 'linear-gradient(135deg,#06B6D4,#0284c7)', boxShadow: '0 8px 20px rgba(6,182,212,0.35)' }}>
+                {saving && <FaSpinner className="animate-spin text-xs" />}
+                {saving ? 'Đang lưu...' : (modal === 'add' ? 'Thêm mới' : 'Lưu thay đổi')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-[#082F49]">🌍 Quốc gia trên Địa cầu</h2>
+          <p className="text-[#94A3B8] text-sm font-semibold mt-0.5">Quản lý marker + nội dung hiển thị trên trang chủ</p>
+        </div>
+        <button onClick={openAdd}
+          className="sm:ml-auto flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-black text-white transition-all hover:-translate-y-0.5"
+          style={{ background: 'linear-gradient(135deg,#22C55E,#16A34A)', boxShadow: '0 10px 25px rgba(34,197,94,0.35)' }}>
+          <FaPlus className="text-xs" /> Thêm Quốc gia
+        </button>
+      </div>
+
+      {/* Stats row */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {CONTINENT_OPTIONS.slice(0, 4).map(cont => {
+          const count = countries.filter(c => c.continent === cont).length;
+          return (
+            <div key={cont} className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[24px] p-4 shadow-sm">
+              <p className="text-[11px] font-extrabold text-[#94A3B8] uppercase tracking-wider">{cont}</p>
+              <p className="text-2xl font-black text-[#082F49] mt-1">{count}</p>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Search + Table */}
+      <div>
+        <div className="flex items-center gap-3 mb-4">
+          <div className="flex items-center gap-2 bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-full px-4 py-2.5 flex-1 max-w-sm
+            focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-100 shadow-sm transition-all">
+            <FaSearch className="text-[#94A3B8] text-xs shrink-0" />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm theo tên, thủ đô, châu lục..."
+              className="bg-transparent text-sm font-semibold text-[#082F49] placeholder:text-[#94A3B8] outline-none flex-1" />
+            {search && <button onClick={() => setSearch('')}><FaTimes className="text-[#94A3B8] text-xs" /></button>}
+          </div>
+          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#E0F2FE] text-[#0284C7] border border-[#BAE6FD]">
+            {filtered.length} / {countries.length}
+          </span>
+        </div>
+
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20 gap-4">
+            <FaSpinner className="text-4xl text-cyan-400 animate-spin" />
+            <p className="text-[#94A3B8] font-semibold text-sm">Đang tải...</p>
+          </div>
+        ) : (
+          <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px] shadow-[0_10px_30px_rgba(14,165,233,0.08)] overflow-hidden">
+            {filtered.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 gap-3">
+                <div className="w-16 h-16 rounded-[24px] bg-slate-100 flex items-center justify-center text-3xl">🌍</div>
+                <p className="text-[#082F49] font-bold">Chưa có quốc gia nào</p>
+                <p className="text-[#94A3B8] text-sm">Nhấn &ldquo;Thêm Quốc gia&rdquo; để bắt đầu</p>
+              </div>
+            ) : (
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100 bg-white/40 backdrop-blur-md">
+                      <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs w-10">#</th>
+                      <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs">Quốc gia</th>
+                      <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden sm:table-cell">Thủ đô</th>
+                      <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden md:table-cell">Châu lục</th>
+                      <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden lg:table-cell">Ảnh</th>
+                      <th className="text-right px-5 py-3.5 text-[#94A3B8] font-bold text-xs">Thao tác</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filtered.map((c, idx) => (
+                      <tr key={c._id} className="border-b border-white/50 hover:bg-cyan-50/40 transition-colors">
+                        <td className="px-5 py-3 text-[#94A3B8] text-xs font-bold">{idx + 1}</td>
+                        <td className="px-5 py-3">
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-xl leading-none">{c.flag || '🌐'}</span>
+                            <div>
+                              <p className="font-bold text-[#082F49] leading-snug">{c.name}</p>
+                              <p className="text-[#94A3B8] text-[10px] font-semibold">{c.population || '—'}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-5 py-3 text-[#334155] text-xs hidden sm:table-cell">{c.capital || '—'}</td>
+                        <td className="px-5 py-3 text-[#334155] text-xs hidden md:table-cell">{c.continent || '—'}</td>
+                        <td className="px-5 py-3 hidden lg:table-cell">
+                          <div className="flex items-center gap-1">
+                            {(c.images ?? []).filter(Boolean).slice(0, 3).map((img: string, i: number) => (
+                              <div key={i} className="w-8 h-6 rounded-[8px] overflow-hidden border border-slate-200 bg-slate-50">
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img src={img} alt="" className="w-full h-full object-cover"
+                                  onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                              </div>
+                            ))}
+                            {(!c.images || c.images.filter(Boolean).length === 0) && (
+                              <span className="text-[#94A3B8] text-[10px]">Chưa có ảnh</span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-5 py-3">
+                          <div className="flex items-center justify-end gap-2">
+                            <button onClick={() => openEdit(c)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-cyan-200 bg-cyan-50 text-xs font-bold text-cyan-700 hover:bg-cyan-100 transition-all">
+                              <FaEdit className="text-[10px]" /> Sửa
+                            </button>
+                            <button onClick={() => setConfirmDeleteId(c._id)}
+                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-rose-200 bg-rose-50 text-xs font-bold text-rose-600 hover:bg-rose-100 transition-all">
+                              <FaTrash className="text-[10px]" /> Xoá
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function DataTab() {
   const [subTab, setSubTab] = useState<'flashcards' | 'quizzes'>('flashcards');
 
@@ -3128,13 +4335,15 @@ function OverviewTab() {
 
 /* ═══════════════════════ MAIN ADMIN CLIENT ════════════════════════ */
 
-type SidebarTab = 'overview' | 'users' | 'classrooms' | 'data';
+type SidebarTab = 'overview' | 'users' | 'classrooms' | 'data' | 'map' | 'globe';
 
 const SIDEBAR_ITEMS: { id: SidebarTab; label: string; icon: React.ReactNode; badge?: string }[] = [
   { id: 'overview',    label: 'Tổng quan',   icon: <FaChartBar /> },
   { id: 'users',       label: 'Người dùng',  icon: <FaUsers /> },
   { id: 'classrooms',  label: 'Lớp học',     icon: <FaSchool /> },
   { id: 'data',        label: 'Dữ liệu',     icon: <FaDatabase /> },
+  { id: 'map',         label: 'Bản đồ',      icon: <FaGlobeAsia /> },
+  { id: 'globe',       label: 'Địa cầu',     icon: <FaGlobeAsia /> },
 ];
 
 export function AdminClient({ currentUser }: {
@@ -3264,6 +4473,8 @@ export function AdminClient({ currentUser }: {
             {activeTab === 'users'      && <UsersTab />}
             {activeTab === 'classrooms' && <ClassroomsTab />}
             {activeTab === 'data'       && <DataTab />}
+            {activeTab === 'map'        && <MapTab />}
+            {activeTab === 'globe'      && <GlobeTab />}
           </main>
         </div>
       </div>

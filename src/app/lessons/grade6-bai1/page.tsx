@@ -8,8 +8,6 @@ const Map = dynamic(() => import('react-map-gl/maplibre').then(m => m.Map), { ss
 const Marker = dynamic(() => import('react-map-gl/maplibre').then(m => m.Marker), { ssr: false });
 const NavigationControl = dynamic(() => import('react-map-gl/maplibre').then(m => m.NavigationControl), { ssr: false });
 
-// Dynamic Globe import (tránh SSR)
-const GlobeGL = dynamic(() => import('react-globe.gl'), { ssr: false });
 
 import 'maplibre-gl/dist/maplibre-gl.css';
 import { Navbar } from '@/layouts/Navbar';
@@ -80,72 +78,160 @@ const CHAPTERS: Chapter[] = [
   },
 ];
 
-// ── Quả địa cầu có lưới Kinh/Vĩ tuyến ────────────────────────────────────────
+// ── Quả địa cầu Cesium có lưới Kinh/Vĩ tuyến ────────────────────────────────
 function GlobePanel() {
-  const globeRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const viewerRef    = useRef<any>(null);
+  const initRef      = useRef(false);
+  const rafRef       = useRef<number>(0);
 
-  // Tự quay chậm sau khi mount
   useEffect(() => {
-    let raf: number;
-    let angle = 0;
-    const spin = () => {
-      angle += 0.12;
-      globeRef.current?.pointOfView({ lat: 20, lng: angle, altitude: 2.5 });
-      raf = requestAnimationFrame(spin);
-    };
-    // Delay nhỏ để Globe đã render
-    const timer = setTimeout(() => { raf = requestAnimationFrame(spin); }, 800);
-    return () => { clearTimeout(timer); cancelAnimationFrame(raf); };
-  }, []);
+    if (!containerRef.current || initRef.current) return;
+    initRef.current = true;
+    let cancelled = false;
 
-  // Tạo lưới Kinh/Vĩ tuyến bằng GeoJSON lines
-  const graticuleData = useMemo(() => {
-    const lines: any[] = [];
-    // Vĩ tuyến mỗi 30°
-    for (let lat = -90; lat <= 90; lat += 30) {
-      const pts = [];
-      for (let lng = -180; lng <= 180; lng += 5) pts.push([lng, lat]);
-      lines.push({ coords: pts, isEquator: lat === 0, isTropic: Math.abs(lat) === 23, isPolar: Math.abs(lat) === 66 });
-    }
-    // Kinh tuyến mỗi 30°
-    for (let lng = -180; lng <= 180; lng += 30) {
-      const pts = [];
-      for (let lat = -90; lat <= 90; lat += 5) pts.push([lng, lat]);
-      lines.push({ coords: pts, isPrime: lng === 0 });
-    }
-    return lines;
+    const loadScript = (src: string): Promise<void> =>
+      new Promise((resolve, reject) => {
+        if ((window as any).__cesiumScriptLoaded) { resolve(); return; }
+        const existing = document.querySelector(`script[src="${src}"]`) as HTMLScriptElement | null;
+        if (existing) {
+          if ((window as any).Cesium) { resolve(); return; }
+          existing.addEventListener('load', () => resolve());
+          existing.addEventListener('error', () => reject(new Error(`Failed: ${src}`)));
+          return;
+        }
+        const s = document.createElement('script');
+        s.src = src; s.async = false;
+        s.onload = () => { (window as any).__cesiumScriptLoaded = true; resolve(); };
+        s.onerror = () => reject(new Error(`Failed: ${src}`));
+        document.head.appendChild(s);
+      });
+
+    const loadStyle = (href: string) => {
+      if (!document.querySelector(`link[href="${href}"]`)) {
+        const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = href;
+        document.head.appendChild(l);
+      }
+    };
+
+    (async () => {
+      try {
+        (window as any).CESIUM_BASE_URL = '/cesium';
+        loadStyle('/cesium/Widgets/widgets.css');
+        await loadScript('/cesium/Cesium.js');
+        if (cancelled || !containerRef.current) return;
+
+        const Cesium = (window as any).Cesium;
+        const creditDiv = document.createElement('div');
+        creditDiv.style.display = 'none';
+        document.body.appendChild(creditDiv);
+
+        const viewer = new Cesium.Viewer(containerRef.current, {
+          terrainProvider:      new Cesium.EllipsoidTerrainProvider(),
+          animation:            false, timeline:    false,
+          fullscreenButton:     false, baseLayerPicker: false,
+          navigationHelpButton: false, infoBox:     false,
+          selectionIndicator:   false, homeButton:  false,
+          sceneModePicker:      false, geocoder:    false,
+          creditContainer:      creditDiv,
+        });
+        viewerRef.current = viewer;
+
+        // Dark space background (matches lesson's #050E1A theme)
+        viewer.scene.skyBox.show          = false;
+        viewer.scene.skyAtmosphere.show   = true;
+        viewer.scene.sun.show             = false;
+        viewer.scene.moon.show            = false;
+        viewer.scene.globe.enableLighting = false;
+        viewer.scene.globe.showGroundAtmosphere = true;
+        viewer.scene.fog.enabled          = false;
+        viewer.scene.screenSpaceCameraController.enableZoom = false;
+        viewer.scene.screenSpaceCameraController.enableTilt = false;
+
+        viewer.camera.setView({
+          destination: Cesium.Cartesian3.fromDegrees(0, 20, 22_000_000),
+        });
+
+        // ── Graticule lines ──────────────────────────────────────────────────
+        const EQUATOR_COL = Cesium.Color.fromCssColorString('#F59E0B');  // Xích đạo
+        const PRIME_COL   = Cesium.Color.fromCssColorString('#22D3EE');  // Kinh tuyến gốc
+        const TROPIC_COL  = Cesium.Color.fromCssColorString('#86EFAC');  // Chí tuyến
+        const POLAR_COL   = Cesium.Color.fromCssColorString('#93C5FD');  // Vòng cực
+        const MINOR_COL   = Cesium.Color.WHITE.withAlpha(0.18);
+
+        const SPECIAL_LATS: Record<number, { color: any; width: number }> = {
+          0: { color: EQUATOR_COL, width: 2.5 },
+          23: { color: TROPIC_COL, width: 1.8 }, [-23 as any]: { color: TROPIC_COL, width: 1.8 },
+          66: { color: POLAR_COL,  width: 1.5 }, [-66 as any]: { color: POLAR_COL,  width: 1.5 },
+        };
+
+        const instances: any[] = [];
+
+        // Vĩ tuyến mỗi 30°
+        for (const lat of [-90, -66, -23, 0, 23, 66, 90, -60, -30, 30, 60]) {
+          const positions: any[] = [];
+          for (let lng = -180; lng <= 180; lng += 2) positions.push(Cesium.Cartesian3.fromDegrees(lng, lat));
+          const sp = SPECIAL_LATS[lat];
+          instances.push(new Cesium.GeometryInstance({
+            geometry: new Cesium.PolylineGeometry({
+              positions, width: sp ? sp.width : 0.8,
+              vertexFormat: Cesium.PolylineColorAppearance.VERTEX_FORMAT,
+            }),
+            attributes: {
+              color: Cesium.ColorGeometryInstanceAttribute.fromColor(sp ? sp.color : MINOR_COL),
+            },
+          }));
+        }
+
+        // Kinh tuyến mỗi 30°
+        for (let lng = -180; lng < 180; lng += 30) {
+          const positions: any[] = [];
+          for (let lat = -90; lat <= 90; lat += 2) positions.push(Cesium.Cartesian3.fromDegrees(lng, lat));
+          const isPrime = lng === 0;
+          instances.push(new Cesium.GeometryInstance({
+            geometry: new Cesium.PolylineGeometry({
+              positions, width: isPrime ? 2.5 : 0.8,
+              vertexFormat: Cesium.PolylineColorAppearance.VERTEX_FORMAT,
+            }),
+            attributes: {
+              color: Cesium.ColorGeometryInstanceAttribute.fromColor(isPrime ? PRIME_COL : MINOR_COL),
+            },
+          }));
+        }
+
+        viewer.scene.primitives.add(new Cesium.Primitive({
+          geometryInstances: instances,
+          appearance: new Cesium.PolylineColorAppearance(),
+          asynchronous: false,
+        }));
+
+        // ── Auto-rotation ────────────────────────────────────────────────────
+        const rotate = () => {
+          if (cancelled || !viewerRef.current || viewerRef.current.isDestroyed()) return;
+          viewerRef.current.scene.camera.rotate(Cesium.Cartesian3.UNIT_Z, -0.0004);
+          rafRef.current = requestAnimationFrame(rotate);
+        };
+        rafRef.current = requestAnimationFrame(rotate);
+      } catch (err) {
+        console.error('[GlobePanel] init error:', err);
+        initRef.current = false;
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(rafRef.current);
+      if (viewerRef.current && !viewerRef.current.isDestroyed()) {
+        viewerRef.current.destroy(); viewerRef.current = null; initRef.current = false;
+      }
+    };
   }, []);
 
   return (
-    <div className="w-full h-full flex items-center justify-center" style={{ background: '#050E1A' }}>
-      <GlobeGL
-        ref={globeRef}
-        width={undefined}
-        height={undefined}
-        globeImageUrl="//unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
-        bumpImageUrl="//unpkg.com/three-globe/example/img/earth-topology.png"
-        backgroundColor="#050E1A"
-        // Lưới kinh/vĩ tuyến
-        pathsData={graticuleData}
-        pathPoints={(d: any) => d.coords}
-        pathPointLat={(p: any) => p[1]}
-        pathPointLng={(p: any) => p[0]}
-        pathColor={(d: any) => {
-          if (d.isEquator) return '#F59E0B'; // Xích đạo – màu vàng nổi bật
-          if (d.isPrime) return '#22D3EE';   // Kinh tuyến gốc – màu cyan
-          if (d.isTropic) return '#86EFAC';  // Chí tuyến – màu xanh lá nhạt
-          if (d.isPolar) return '#93C5FD';   // Vòng cực – màu xanh nhạt
-          return 'rgba(255,255,255,0.18)';   // Các đường còn lại - trắng nhạt
-        }}
-        pathStroke={(d: any) => (d.isEquator || d.isPrime ? 2.5 : 1)}
-        pathDashLength={0.8}
-        pathDashGap={0.05}
-        atmosphereColor="#38BDF8"
-        atmosphereAltitude={0.2}
-        showAtmosphere
-      />
+    <div className="w-full h-full relative" style={{ background: '#050E1A' }}>
+      <div ref={containerRef} className="w-full h-full" />
       {/* Chú thích màu */}
-      <div className="absolute bottom-6 left-6 flex flex-col gap-2">
+      <div className="absolute bottom-6 left-6 flex flex-col gap-2 z-10">
         {[
           { color: '#F59E0B', label: 'Xích đạo (0°)' },
           { color: '#22D3EE', label: 'Kinh tuyến gốc (0°)' },
@@ -158,6 +244,13 @@ function GlobePanel() {
           </div>
         ))}
       </div>
+      <style>{`
+        .cesium-viewer-toolbar, .cesium-viewer-animationContainer,
+        .cesium-viewer-timelineContainer, .cesium-viewer-bottom,
+        .cesium-credit-lightbox-overlay, .cesium-widget-credits {
+          display: none !important;
+        }
+      `}</style>
     </div>
   );
 }

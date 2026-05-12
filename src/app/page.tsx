@@ -9,8 +9,7 @@ export const metadata: Metadata = {
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import { Navbar } from "@/layouts/Navbar";
-import { EarthGlobe } from "@/components/ui/EarthGlobe";
-import { FaRocket, FaMap } from "react-icons/fa";
+import { HomepageGlobeClient } from '@/components/ui/HomepageGlobeClient';
 import dbConnect from "@/utils/db";
 import User from "@/models/User";
 import { getVietnamDateStr } from "@/utils/missions";
@@ -120,9 +119,9 @@ export default async function HomePage() {
             {/* Glowing orb behind earth */}
             <div className="absolute inset-10 bg-gradient-to-tr from-[#06B6D4]/30 to-[#22C55E]/20 rounded-full blur-[80px]"></div>
             
-            {/* Wrapper to control max size of the earth to avoid overwhelming the view */}
-            <div className="w-full max-w-[280px] sm:max-w-[360px] lg:max-w-[500px] aspect-square relative hover:scale-[1.02] transition-transform duration-700">
-              <EarthGlobe userRole={userRole} />
+            {/* Wrapper — relative needed so absolute inset-0 inside HomepageGlobe anchors here */}
+            <div className="w-full max-w-[340px] sm:max-w-[460px] lg:max-w-[620px] aspect-square relative hover:scale-[1.02] transition-transform duration-700">
+              <HomepageGlobeClient />
             </div>
           </div>
 

@@ -219,6 +219,21 @@ export async function POST() {
       if (!countriesRes.ok) throw new Error('Không lấy được danh sách quốc gia từ WB');
       const countriesData = await countriesRes.json();
 
+      // Lấy dữ liệu bổ sung từ mledoze (tên chính thức, diện tích, tiền tệ, TLD, IDD, thành viên LHQ)
+      let mledozeMap: Record<string, any> = {};
+      try {
+        const mledozeRes = await fetch(
+          'https://raw.githubusercontent.com/mledoze/countries/master/countries.json',
+          { headers: { 'User-Agent': 'VuiHocDiaLy-App/1.0' } }
+        );
+        if (mledozeRes.ok) {
+          const mledozeRaw: any[] = await mledozeRes.json();
+          mledozeRaw.forEach(m => {
+            if (m.cca2) mledozeMap[m.cca2.toUpperCase()] = m;
+          });
+        }
+      } catch (_) { /* fallback gracefully — extra fields just won't be available */ }
+
       // income level → label tiếng Việt
       const INCOME_MAP: Record<string, { label: string; color: string }> = {
         'HIC':  { label: 'Quốc gia Phát triển cao',    color: '#16a34a' },
@@ -235,6 +250,7 @@ export async function POST() {
         )
         .map((c: any) => {
           const iso3 = c.id;
+          const iso2 = (c.iso2Code ?? '').toUpperCase();
           const incomeLv = c.incomeLevel?.id || 'INX';
           const gdpPC = gdpPerCapita[iso3];
           const gdpTot = gdpTotal[iso3];
@@ -242,6 +258,25 @@ export async function POST() {
           const unem = unemployment[iso3];
           const lifeExp = lifeExpectancy[iso3];
           const { label, color } = INCOME_MAP[incomeLv] || INCOME_MAP['INX'];
+
+          // Dữ liệu bổ sung từ mledoze
+          const ml = mledozeMap[iso2] ?? {};
+          const nameOfficial = ml.name?.official ?? '';
+          const area = ml.area ?? null;
+          const tld: string[] = ml.tld ?? [];
+          // IDD: root + suffixes, ví dụ "+84" cho Việt Nam
+          const iddRoot: string = ml.idd?.root ?? '';
+          const iddSuffixes: string[] = ml.idd?.suffixes ?? [];
+          const callingCodes: string[] = iddSuffixes.length > 0
+            ? iddSuffixes.map((s: string) => `${iddRoot}${s}`)
+            : (iddRoot ? [iddRoot] : []);
+          const unMember: boolean = ml.unMember ?? false;
+          const subregion: string = ml.subregion ?? c.region?.value ?? '';
+          // Tiền tệ: { USD: { name: "...", symbol: "$" }, ... }
+          const currenciesRaw = ml.currencies ?? {};
+          const currencies: string[] = Object.entries(currenciesRaw).map(
+            ([code, val]: [string, any]) => `${val?.name ?? code} (${code}${val?.symbol ? ' ' + val.symbol : ''})`
+          );
 
           return {
             id: `wb-eco-${iso3.toLowerCase()}`,
@@ -252,12 +287,19 @@ export async function POST() {
             lng: parseFloat(c.longitude),
             attributes: {
               iso3,
-              iso2: c.iso2Code,
+              iso2,
+              nameOfficial,
               region: c.region?.value,
+              subregion,
               capitalCity: c.capitalCity,
               incomeLevel: label,
               incomeLevelCode: incomeLv,
               color,
+              area,
+              tld,
+              callingCodes,
+              currencies,
+              unMember,
               gdpPerCapita: gdpPC ? Math.round(gdpPC) : null,
               gdpTotal: gdpTot ? Math.round(gdpTot / 1e9) : null, // tỷ USD
               population: pop ? Math.round(pop) : null,

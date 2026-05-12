@@ -51,6 +51,20 @@ interface EconomyFeature {
   lat: number;
   lng: number;
   subCategory?: string;
+  // identity
+  iso2?: string;
+  iso3?: string;
+  nameOfficial?: string;
+  tld?: string[];
+  callingCodes?: string[];
+  unMember?: boolean;
+  // geography
+  capitalCity?: string;
+  region?: string;
+  subregion?: string;
+  area?: number | null;
+  currencies?: string[];
+  // economy
   incomeLevel?: string;
   incomeLevelCode?: string;
   gdpPerCapita?: number | null;
@@ -58,8 +72,6 @@ interface EconomyFeature {
   population?: number | null;
   unemployment?: number | null;
   lifeExpectancy?: number | null;
-  region?: string;
-  capitalCity?: string;
   emoji?: string;
 }
 
@@ -280,88 +292,109 @@ export default function CesiumEconomicView({ className = '' }: Props) {
       {infoPanel && (() => {
         const e = infoPanel.item;
         const incColor = INCOME_COLOR[e.incomeLevelCode || 'INX'] || '#94a3b8';
+        const cx = infoPanel.x - (containerRef.current?.getBoundingClientRect().left ?? 0);
+        const cy = infoPanel.y - (containerRef.current?.getBoundingClientRect().top ?? 0);
+        const panelW = 480;
+        const panelH = 540;
+        const cw = containerRef.current?.clientWidth ?? 800;
+        const ch = containerRef.current?.clientHeight ?? 600;
+
+        const Row = ({ icon, label, value }: { icon: string; label: string; value: string }) => (
+          <div className="flex flex-col gap-0.5">
+            <p className="text-[9px] font-extrabold uppercase tracking-widest text-[#94A3B8]">{icon} {label}</p>
+            <p className="text-[11px] font-bold text-[#082F49] leading-snug">{value}</p>
+          </div>
+        );
+
         return (
           <div
-            className="absolute z-[1000] w-72 bg-white/95 backdrop-blur-2xl border border-white rounded-[24px] shadow-[0_20px_40px_rgba(8,47,73,0.15)] overflow-hidden"
+            className="absolute z-[1000] overflow-hidden"
             style={{
-              left: Math.min(infoPanel.x - (containerRef.current?.getBoundingClientRect().left ?? 0) + 12, (containerRef.current?.clientWidth ?? 800) - 300),
-              top:  Math.min(infoPanel.y - (containerRef.current?.getBoundingClientRect().top ?? 0) - 20, (containerRef.current?.clientHeight ?? 600) - 400),
+              width: panelW,
+              left: Math.min(cx + 14, cw - panelW - 8),
+              top:  Math.max(4, Math.min(cy - 20, ch - panelH - 8)),
+              background: 'rgba(255, 255, 255, 0.88)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255, 255, 255, 1)',
+              boxShadow: '0 20px 50px rgba(14, 165, 233, 0.18), inset 0 1px 0 rgba(255,255,255,1)',
+              borderRadius: 24,
             }}
           >
             {/* Header */}
-            <div className="px-5 pt-4 pb-3 bg-gradient-to-r from-amber-50 to-orange-50 border-b border-white">
+            <div className="px-5 pt-4 pb-3 border-b border-white/70" style={{ background: 'rgba(255,255,255,0.6)' }}>
               <div className="flex items-start justify-between gap-2">
-                <div>
-                  <span className="text-3xl">{e.emoji || '🌐'}</span>
-                  <p className="font-black text-[#082F49] text-base leading-tight mt-1">{e.name}</p>
-                  {e.capitalCity && (
-                    <p className="text-[10px] text-slate-400 font-medium">🏛️ {e.capitalCity}</p>
-                  )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2.5">
+                    <span className="text-2xl leading-none">{e.emoji || '🌐'}</span>
+                    <div className="min-w-0">
+                      <p className="font-black text-[#082F49] text-base leading-tight">{e.name}</p>
+                      {e.nameOfficial && e.nameOfficial !== e.name && (
+                        <p className="text-[10px] text-[#94A3B8] font-medium leading-tight mt-0.5 truncate">{e.nameOfficial}</p>
+                      )}
+                    </div>
+                  </div>
+                  {/* Badge row */}
+                  <div className="flex flex-wrap gap-1.5 mt-2.5">
+                    {e.iso2 && (
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-white border border-slate-200 text-slate-500 shadow-sm">{e.iso2}</span>
+                    )}
+                    {e.iso3 && (
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-white border border-slate-200 text-slate-500 shadow-sm">{e.iso3}</span>
+                    )}
+                    {e.tld && e.tld.length > 0 && (
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-[#E0F2FE] border border-[#BAE6FD] text-[#0284C7] shadow-sm">🌐 {e.tld[0]}</span>
+                    )}
+                    {e.callingCodes && e.callingCodes.length > 0 && (
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-[#DCFCE7] border border-[#BBF7D0] text-[#16A34A] shadow-sm">📞 {e.callingCodes[0]}</span>
+                    )}
+                    {e.unMember === true && (
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-[#EFF6FF] border border-[#BFDBFE] text-[#1D4ED8] shadow-sm">🇺🇳 LHQ</span>
+                    )}
+                  </div>
                 </div>
                 <button
                   onClick={() => setInfoPanel(null)}
-                  className="w-6 h-6 rounded-full bg-white/80 text-slate-400 hover:bg-rose-100 hover:text-rose-500 transition-colors text-xs flex items-center justify-center flex-shrink-0"
+                  className="w-7 h-7 rounded-full bg-white border border-slate-200 text-slate-400 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all text-xs flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm"
                 >✕</button>
               </div>
             </div>
 
-            {/* Body — giống InteractiveMap economic panel */}
-            <div className="p-4 space-y-1.5">
-              {e.incomeLevel && (
-                <div className="flex items-center gap-2 rounded-[10px] px-3 py-1.5"
-                  style={{ backgroundColor: incColor + '18' }}>
-                  <span className="text-sm">📊</span>
-                  <div>
-                    <p className="text-[9px] font-bold uppercase tracking-wider" style={{ color: incColor }}>Mức phát triển</p>
-                    <p className="text-xs font-bold text-[#082F49]">{e.incomeLevel}</p>
-                  </div>
+            {/* Mức phát triển — full width banner */}
+            {e.incomeLevel && (
+              <div className="mx-4 mt-3 flex items-center gap-2.5 rounded-[12px] px-3 py-2" style={{ background: incColor + '18', border: `1px solid ${incColor}30` }}>
+                <span className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ background: incColor }} />
+                <div>
+                  <p className="text-[9px] font-extrabold uppercase tracking-widest" style={{ color: incColor }}>Mức phát triển kinh tế</p>
+                  <p className="text-[11px] font-black text-[#082F49]">{e.incomeLevel}</p>
                 </div>
-              )}
-              {e.gdpPerCapita != null && (
-                <div className="flex items-center gap-2 bg-emerald-50 rounded-[10px] px-3 py-1.5">
-                  <span className="text-sm">💵</span>
-                  <div>
-                    <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider">GDP / Đầu người</p>
-                    <p className="text-xs font-bold text-[#082F49]">{e.gdpPerCapita.toLocaleString('vi-VN')} USD</p>
-                  </div>
-                </div>
-              )}
-              {e.gdpTotal != null && (
-                <div className="flex items-center gap-2 bg-green-50 rounded-[10px] px-3 py-1.5">
-                  <span className="text-sm">🏦</span>
-                  <div>
-                    <p className="text-[9px] font-bold text-green-600 uppercase tracking-wider">Tổng GDP</p>
-                    <p className="text-xs font-bold text-[#082F49]">{e.gdpTotal.toLocaleString('vi-VN')} tỷ USD</p>
-                  </div>
-                </div>
-              )}
-              {e.population != null && (
-                <div className="flex items-center gap-2 bg-violet-50 rounded-[10px] px-3 py-1.5">
-                  <span className="text-sm">👥</span>
-                  <div>
-                    <p className="text-[9px] font-bold text-violet-500 uppercase tracking-wider">Dân số</p>
-                    <p className="text-xs font-bold text-[#082F49]">{e.population.toLocaleString('vi-VN')} người</p>
-                  </div>
-                </div>
-              )}
-              {e.unemployment != null && (
-                <div className="flex items-center gap-2 bg-orange-50 rounded-[10px] px-3 py-1.5">
-                  <span className="text-sm">📉</span>
-                  <div>
-                    <p className="text-[9px] font-bold text-orange-500 uppercase tracking-wider">Tỷ lệ thất nghiệp</p>
-                    <p className="text-xs font-bold text-[#082F49]">{e.unemployment}%</p>
-                  </div>
-                </div>
-              )}
-              {e.lifeExpectancy != null && (
-                <div className="flex items-center gap-2 bg-rose-50 rounded-[10px] px-3 py-1.5">
-                  <span className="text-sm">❤️</span>
-                  <div>
-                    <p className="text-[9px] font-bold text-rose-500 uppercase tracking-wider">Tuổi thọ trung bình</p>
-                    <p className="text-xs font-bold text-[#082F49]">{e.lifeExpectancy} tuổi</p>
-                  </div>
-                </div>
-              )}
+              </div>
+            )}
+
+            {/* 2 columns */}
+            <div className="grid grid-cols-2 gap-x-4 px-4 pb-4 mt-3">
+
+              {/* Cột trái: Địa lý & Hành chính */}
+              <div className="space-y-2.5">
+                <p className="text-[9px] font-black text-[#94A3B8] uppercase tracking-widest pb-1 border-b border-slate-100">🗺️ Địa lý & Hành chính</p>
+                {e.capitalCity && <Row icon="🏛️" label="Thủ đô" value={e.capitalCity} />}
+                {e.region      && <Row icon="🌍" label="Khu vực" value={e.region} />}
+                {e.subregion && e.subregion !== e.region && <Row icon="📍" label="Tiểu vùng" value={e.subregion} />}
+                {e.area != null && <Row icon="📐" label="Diện tích" value={`${e.area.toLocaleString('vi-VN')} km²`} />}
+                {e.currencies && e.currencies.length > 0 && (
+                  <Row icon="💱" label="Tiền tệ" value={e.currencies.slice(0, 2).join('\n')} />
+                )}
+              </div>
+
+              {/* Cột phải: Kinh tế */}
+              <div className="space-y-2.5">
+                <p className="text-[9px] font-black text-[#94A3B8] uppercase tracking-widest pb-1 border-b border-slate-100">💰 Kinh tế</p>
+                {e.gdpPerCapita  != null && <Row icon="💵" label="GDP / Đầu người"  value={`${e.gdpPerCapita.toLocaleString('vi-VN')} USD`} />}
+                {e.gdpTotal      != null && <Row icon="🏦" label="Tổng GDP"         value={`${e.gdpTotal.toLocaleString('vi-VN')} tỷ USD`} />}
+                {e.population    != null && <Row icon="👥" label="Dân số"           value={e.population >= 1_000_000 ? `${(e.population / 1_000_000).toFixed(1)} triệu` : e.population.toLocaleString('vi-VN')} />}
+                {e.unemployment  != null && <Row icon="📉" label="Thất nghiệp"      value={`${e.unemployment}%`} />}
+                {e.lifeExpectancy != null && <Row icon="❤️" label="Tuổi thọ TB"     value={`${e.lifeExpectancy} tuổi`} />}
+              </div>
             </div>
           </div>
         );
