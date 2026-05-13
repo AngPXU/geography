@@ -1,7 +1,8 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useState } from 'react';
+import { JSX, useState } from 'react';
+import { Icon } from '@iconify/react';
 
 // CesiumMapView — cho chế độ Chính trị
 const CesiumMapView = dynamic(
@@ -64,13 +65,13 @@ const InteractiveMap = dynamic(
 
 type MapMode = 'political' | 'physical' | 'climate' | 'ocean' | 'economic' | 'vietnam';
 
-const MODES: { id: MapMode; icon: string; label: string }[] = [
-  { id: 'political', icon: '🗺️', label: 'Chính trị' },
-  { id: 'physical',  icon: '⛰️', label: 'Địa hình' },
-  { id: 'climate',   icon: '🌡️', label: 'Khí hậu' },
-  { id: 'ocean',     icon: '🌊', label: 'Đại dương' },
-  { id: 'economic',  icon: '🏭', label: 'Kinh tế' },
-  { id: 'vietnam',   icon: '🇻🇳', label: 'Việt Nam' },
+const MODES: { id: MapMode; icon: JSX.Element; label: string }[] = [
+  { id: 'political', icon: <Icon icon="mingcute:map-line" width={22} />, label: 'Chính trị' },
+  { id: 'physical',  icon: <Icon icon="mingcute:mountain-2-fill" width={22} />, label: 'Địa hình' },
+  { id: 'climate',   icon: <Icon icon="material-symbols:thermostat" width={22} />, label: 'Khí hậu' },
+  { id: 'ocean',     icon: <Icon icon="material-symbols:water" width={22} />, label: 'Đại dương' },
+  { id: 'economic',  icon: <Icon icon="material-symbols:factory" width={22} />, label: 'Kinh tế' },
+  { id: 'vietnam',   icon: <Icon icon="material-symbols:star-rate" width={22} />, label: 'Việt Nam' },
 ];
 
 export function MapWrapper() {

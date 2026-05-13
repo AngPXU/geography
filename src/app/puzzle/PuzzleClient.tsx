@@ -11,6 +11,7 @@ import { feature } from 'topojson-client';
 import type { Topology, Objects } from 'topojson-specification';
 import type { Feature, Geometry, FeatureCollection } from 'geojson';
 import { PUZZLE_SETS, type PuzzleSet, type CountryData } from '@/data/puzzleSets';
+import { Icon } from '@iconify/react';
 
 // ─── Constants ─────────────────────────────────────────────────────────────────
 const GEO_URL = 'https://cdn.jsdelivr.net/npm/world-atlas@2/countries-110m.json';
@@ -30,6 +31,13 @@ function getThumbnailPath(feat: Feature, size: number): string {
     const proj = geoMercator().fitSize([size, size], feat);
     return geoPath().projection(proj)(feat) ?? '';
   } catch { return ''; }
+}
+
+function getThumbnailInfo(feat: Feature, size: number): { path: string; proj: ReturnType<typeof geoMercator> | null } {
+  try {
+    const proj = geoMercator().fitSize([size, size], feat);
+    return { path: geoPath().projection(proj)(feat) ?? '', proj };
+  } catch { return { path: '', proj: null }; }
 }
 
 // Tailwind gradient class → [from, to] hex colors
@@ -60,6 +68,35 @@ function getColors(colorClass: string): [string, string] {
   return GRAD_MAP[colorClass] ?? ['#06B6D4', '#3B82F6'];
 }
 
+// ISO 3166-1 numeric → alpha-2 (for flagcdn.com)
+const NUM_TO_CCA2: Record<number, string> = {
+  // Đông Nam Á
+  96:'bn', 116:'kh', 360:'id', 418:'la', 458:'my', 104:'mm', 608:'ph', 702:'sg', 764:'th', 626:'tl', 704:'vn',
+  // Nam Á
+  4:'af', 50:'bd', 64:'bt', 356:'in', 524:'np', 586:'pk', 144:'lk',
+  // Đông Á & Trung Á
+  156:'cn', 392:'jp', 408:'kp', 410:'kr', 496:'mn', 398:'kz', 417:'kg', 762:'tj', 795:'tm', 860:'uz',
+  // Trung Đông
+  31:'az', 368:'iq', 364:'ir', 376:'il', 400:'jo', 422:'lb', 512:'om', 682:'sa', 760:'sy', 792:'tr', 887:'ye',
+  // Châu Âu
+  8:'al', 40:'at', 112:'by', 56:'be', 70:'ba', 100:'bg', 191:'hr', 196:'cy', 203:'cz', 208:'dk', 233:'ee',
+  246:'fi', 250:'fr', 276:'de', 300:'gr', 348:'hu', 352:'is', 372:'ie', 380:'it', 428:'lv', 440:'lt',
+  807:'mk', 498:'md', 499:'me', 528:'nl', 578:'no', 616:'pl', 620:'pt', 642:'ro', 643:'ru', 688:'rs',
+  703:'sk', 705:'si', 724:'es', 752:'se', 756:'ch', 804:'ua', 826:'gb',
+  // Châu Phi
+  12:'dz', 24:'ao', 204:'bj', 72:'bw', 854:'bf', 108:'bi', 120:'cm', 140:'cf', 148:'td', 178:'cg', 180:'cd',
+  384:'ci', 262:'dj', 818:'eg', 226:'gq', 232:'er', 748:'sz', 231:'et', 266:'ga', 270:'gm', 288:'gh',
+  324:'gn', 624:'gw', 404:'ke', 426:'ls', 430:'lr', 434:'ly', 450:'mg', 454:'mw', 466:'ml', 478:'mr',
+  504:'ma', 508:'mz', 516:'na', 562:'ne', 566:'ng', 646:'rw', 686:'sn', 694:'sl', 706:'so', 710:'za',
+  728:'ss', 729:'sd', 834:'tz', 768:'tg', 788:'tn', 800:'ug', 894:'zm', 716:'zw',
+  // Châu Mỹ
+  32:'ar', 84:'bz', 68:'bo', 76:'br', 124:'ca', 152:'cl', 170:'co', 188:'cr', 192:'cu', 214:'do', 218:'ec',
+  222:'sv', 320:'gt', 328:'gy', 332:'ht', 340:'hn', 388:'jm', 484:'mx', 558:'ni', 591:'pa', 600:'py',
+  604:'pe', 740:'sr', 780:'tt', 840:'us', 858:'uy', 862:'ve',
+  // Châu Đại Dương
+  36:'au', 242:'fj', 554:'nz', 598:'pg', 90:'sb', 548:'vu',
+};
+
 // ─── Draggable Piece in Tray ───────────────────────────────────────────────────
 function DraggablePiece({
   country, feat, isPlaced,
@@ -68,6 +105,11 @@ function DraggablePiece({
     id: String(country.id),
   });
   const thumbPath = useMemo(() => getThumbnailPath(feat, THUMB), [feat]);
+  // For Vietnam: compute projection to place island clusters
+  const vnInfo = useMemo(
+    () => country.id === 704 ? getThumbnailInfo(feat, THUMB) : null,
+    [feat, country.id]
+  );
   const [c1, c2] = getColors(country.color);
   const gradId = `grad-${country.id}`;
 
@@ -105,6 +147,28 @@ function DraggablePiece({
           </linearGradient>
         </defs>
         <path d={thumbPath} fill={`url(#${gradId})`} stroke="white" strokeWidth={1.5} strokeLinejoin="round" />
+
+        {/* Hoàng Sa & Trường Sa — luôn hiển thị trên mảnh ghép VN */}
+        {vnInfo?.proj && (() => {
+          const p   = vnInfo.proj;
+          const hs  = p([112.0, 16.5] as [number, number]);
+          const ts  = p([114.0,  9.8] as [number, number]);
+          if (!hs || !ts) return null;
+          const Island = ({ cx, cy, s }: { cx: number; cy: number; s: number }) => (
+            <g>
+              <ellipse cx={cx}        cy={cy}        rx={3.2*s} ry={2*s}   fill={c1} stroke="white" strokeWidth={0.6} />
+              <ellipse cx={cx+5.5*s}  cy={cy-3.5*s}  rx={2*s}   ry={1.3*s} fill={c2} stroke="white" strokeWidth={0.5} />
+              <ellipse cx={cx-4*s}    cy={cy+3.5*s}  rx={1.6*s} ry={1*s}   fill={c1} stroke="white" strokeWidth={0.5} />
+              <ellipse cx={cx+2.5*s}  cy={cy+5*s}    rx={1.3*s} ry={0.8*s} fill={c2} stroke="white" strokeWidth={0.4} />
+            </g>
+          );
+          return (
+            <g>
+              <Island cx={hs[0]} cy={hs[1]} s={1} />
+              <Island cx={ts[0]} cy={ts[1]} s={0.85} />
+            </g>
+          );
+        })()}
       </svg>
       <span className="text-[10px] font-bold text-[#082F49] text-center leading-tight max-w-[80px]">
         {country.flag} {country.name}
@@ -115,28 +179,42 @@ function DraggablePiece({
 
 // ─── Droppable Country on Map ──────────────────────────────────────────────────
 function DroppableCountry({
-  country, d, isPlaced, isWrong,
-}: { country: CountryData; d: string; isPlaced: boolean; isWrong: boolean }) {
+  country, d, isPlaced, bounds,
+}: { country: CountryData; d: string; isPlaced: boolean; bounds?: [[number,number],[number,number]] }) {
   const { setNodeRef, isOver } = useDroppable({ id: String(country.id) });
   const [c1, c2] = getColors(country.color);
-  const gradId = `map-grad-${country.id}`;
+  const gradId    = `map-grad-${country.id}`;
+  const patternId = `flag-pat-${country.id}`;
+
+  const flagCode = NUM_TO_CCA2[country.id];
+  const flagUrl  = flagCode ? `https://flagcdn.com/w320/${flagCode}.png` : null;
+
+  const bx = bounds?.[0][0] ?? 0;
+  const by = bounds?.[0][1] ?? 0;
+  const bw = bounds ? bounds[1][0] - bounds[0][0] : 100;
+  const bh = bounds ? bounds[1][1] - bounds[0][1] : 100;
 
   const fill = isPlaced
-    ? `url(#${gradId})`
+    ? (flagUrl && bounds ? `url(#${patternId})` : `url(#${gradId})`)
     : isOver
     ? 'rgba(6,182,212,0.35)'
     : 'rgba(148,163,184,0.12)';
 
-  const stroke = isPlaced ? c1 : isOver ? '#06B6D4' : '#94a3b8';
-  const strokeW = isPlaced || isOver ? 2 : 1;
+  const stroke  = isPlaced ? '#64748b' : isOver ? '#06B6D4' : '#94a3b8';
+  const strokeW = isPlaced ? 1.5 : isOver ? 1.5 : 1;
 
   return (
-    <g className={isWrong ? 'animate-[shake_0.4s_ease]' : ''}>
+    <g>
       <defs>
         <linearGradient id={gradId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" stopColor={c1} stopOpacity={0.75} />
+          <stop offset="0%"   stopColor={c1} stopOpacity={0.75} />
           <stop offset="100%" stopColor={c2} stopOpacity={0.75} />
         </linearGradient>
+        {flagUrl && bounds && (
+          <pattern id={patternId} patternUnits="userSpaceOnUse" x={bx} y={by} width={bw} height={bh}>
+            <image href={flagUrl} x={0} y={0} width={bw} height={bh} preserveAspectRatio="xMidYMid slice" />
+          </pattern>
+        )}
       </defs>
       <path
         ref={setNodeRef as unknown as React.RefCallback<SVGPathElement>}
@@ -152,45 +230,63 @@ function DroppableCountry({
 }
 
 // ─── Map Board ────────────────────────────────────────────────────────────────
+const MAP_PAD = 32; // inner padding so paths don't touch edge
+
 function MapBoard({
-  features, countryMap, placed, wrongPiece, puzzleSet,
+  features, countryMap, placed, puzzleSet, zoom,
 }: {
   features: Feature[];
   countryMap: Map<number, CountryData>;
   placed: Set<string>;
-  wrongPiece: string | null;
   puzzleSet: PuzzleSet;
+  zoom: number;
 }) {
-  const { paths, centroids } = useMemo(() => {
-    if (features.length === 0) return { paths: new Map<number, string>(), centroids: new Map<number, [number, number]>() };
+  const { paths, centroids, bounds, proj } = useMemo(() => {
+    if (features.length === 0) return {
+      paths: new Map<number, string>(),
+      centroids: new Map<number, [number, number]>(),
+      bounds: new Map<number, [[number,number],[number,number]]>(),
+      proj: null as ReturnType<typeof geoMercator> | null,
+    };
 
     const collection: FeatureCollection = { type: 'FeatureCollection', features };
-    const proj = geoMercator()
-      .center(puzzleSet.mapCenter)
-      .scale(puzzleSet.mapScale)
-      .translate([MAP_W / 2, MAP_H / 2]);
+    // fitExtent guarantees ALL features fit inside the viewport
+    const proj = geoMercator().fitExtent(
+      [[MAP_PAD, MAP_PAD], [MAP_W - MAP_PAD, MAP_H - MAP_PAD]],
+      collection
+    );
     const gen = geoPath().projection(proj);
 
-    const paths = new Map<number, string>();
+    const paths    = new Map<number, string>();
     const centroids = new Map<number, [number, number]>();
+    const bounds   = new Map<number, [[number,number],[number,number]]>();
 
     features.forEach(f => {
       const id = Number(f.id);
       paths.set(id, gen(f) ?? '');
+      bounds.set(id, gen.bounds(f) as [[number,number],[number,number]]);
       try {
         const [cx, cy] = proj(geoCentroid(f)) ?? [0, 0];
         centroids.set(id, [cx, cy]);
       } catch {}
     });
 
-    return { paths, centroids };
+    return { paths, centroids, bounds, proj };
   }, [features, puzzleSet]);
 
   return (
-    <div className="relative w-full rounded-[24px] overflow-hidden" style={{ background: 'rgba(186,230,253,0.15)', border: '1px solid rgba(255,255,255,0.8)' }}>
+    <div
+      className="relative w-full rounded-[20px] overflow-auto"
+      style={{
+        background: 'rgba(186,230,253,0.15)',
+        border: '1px solid rgba(255,255,255,0.8)',
+        maxHeight: '64vh',
+      }}
+    >
       <svg
+        width={MAP_W * zoom}
+        height={MAP_H * zoom}
         viewBox={`0 0 ${MAP_W} ${MAP_H}`}
-        className="w-full h-auto"
         style={{ display: 'block' }}
       >
         {features.map(f => {
@@ -198,7 +294,6 @@ function MapBoard({
           const country = countryMap.get(id);
           if (!country) return null;
           const d = paths.get(id) ?? '';
-          const [cx, cy] = centroids.get(id) ?? [0, 0];
           const isPlaced = placed.has(String(id));
 
           return (
@@ -207,30 +302,48 @@ function MapBoard({
                 country={country}
                 d={d}
                 isPlaced={isPlaced}
-                isWrong={wrongPiece === String(id)}
+                bounds={bounds.get(id)}
               />
-              {isPlaced && (
-                <text
-                  x={cx} y={cy + 4}
-                  textAnchor="middle"
-                  fontSize={puzzleSet.mapScale > 500 ? 12 : 10}
-                  fill="white"
-                  fontWeight="800"
-                  style={{ pointerEvents: 'none', textShadow: '0 1px 3px rgba(0,0,0,0.5)' }}
-                >
-                  {country.flag}
-                </text>
-              )}
             </g>
           );
         })}
+
+        {/* Hoàng Sa & Trường Sa — luôn hiển thị, màu đổi khi VN được ghép */}
+        {proj && (() => {
+          const hs  = proj([112.0, 16.5] as [number, number]);
+          const ts  = proj([114.0,  9.8] as [number, number]);
+          if (!hs || !ts) return null;
+          const vnPlaced = placed.has('704');
+          const islandFill   = vnPlaced ? '#EF4444' : 'rgba(148,163,184,0.18)';
+          const islandStroke = vnPlaced ? 'white'   : '#94a3b8';
+
+          const IslandCluster = ({ cx, cy, scale }: { cx: number; cy: number; scale: number }) => (
+            <g transform={`translate(${cx},${cy})`} style={{ pointerEvents: 'none' }}>
+              <ellipse rx={5*scale}   ry={3*scale}   cx={0}        cy={0}        fill={islandFill} stroke={islandStroke} strokeWidth={0.8} />
+              <ellipse rx={3*scale}   ry={2*scale}   cx={9*scale}  cy={-5*scale} fill={islandFill} stroke={islandStroke} strokeWidth={0.8} />
+              <ellipse rx={2.5*scale} ry={1.8*scale} cx={-7*scale} cy={5*scale}  fill={islandFill} stroke={islandStroke} strokeWidth={0.8} />
+              <ellipse rx={2*scale}   ry={1.2*scale} cx={4*scale}  cy={7*scale}  fill={islandFill} stroke={islandStroke} strokeWidth={0.8} />
+              <ellipse rx={1.5*scale} ry={1*scale}   cx={-3*scale} cy={-6*scale} fill={islandFill} stroke={islandStroke} strokeWidth={0.7} />
+            </g>
+          );
+
+          return (
+            <g style={{ pointerEvents: 'none' }}>
+              <IslandCluster cx={hs[0]} cy={hs[1]} scale={1.15} />
+              <IslandCluster cx={ts[0]} cy={ts[1]} scale={1}    />
+            </g>
+          );
+        })()}
       </svg>
     </div>
   );
 }
 
 // ─── Completion Screen ────────────────────────────────────────────────────────
-function CompletionScreen({ elapsed, total, onRestart }: { elapsed: number; total: number; onRestart: () => void }) {
+function CompletionScreen({ elapsed, total, onRestart, expEarned, submitting }: {
+  elapsed: number; total: number; onRestart: () => void;
+  expEarned: number | null; submitting: boolean;
+}) {
   const stars = elapsed < 60 ? 3 : elapsed < 180 ? 2 : 1;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4" style={{ background: 'rgba(8,47,73,0.6)', backdropFilter: 'blur(20px)' }}>
@@ -262,6 +375,17 @@ function CompletionScreen({ elapsed, total, onRestart }: { elapsed: number; tota
         >
           🔄 Chơi lại
         </button>
+
+        {submitting ? (
+          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/50 border border-slate-200 text-slate-500 font-bold text-xs">
+            <span className="w-3 h-3 border-2 border-[#06B6D4] border-t-transparent rounded-full animate-spin inline-block" />
+            Đang lưu kết quả...
+          </div>
+        ) : expEarned ? (
+          <div className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-600 font-black text-sm animate-bounce">
+            🎉 Nhận {expEarned} EXP!
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -273,11 +397,13 @@ export function PuzzleClient({ initialSet = 'sea' }: { initialSet?: string }) {
   const [loading, setLoading] = useState(true);
   const [selectedSetId, setSelectedSetId] = useState(initialSet);
   const [placed, setPlaced] = useState<Set<string>>(new Set());
-  const [wrongPiece, setWrongPiece] = useState<string | null>(null);
   const [activeId, setActiveId] = useState<string | null>(null);
   const [elapsed, setElapsed] = useState(0);
   const [startTime, setStartTime] = useState<number | null>(null);
   const [completed, setCompleted] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [expEarned, setExpEarned] = useState<number | null>(null);
+  const [zoom, setZoom] = useState(1);
 
   // Load TopoJSON
   useEffect(() => {
@@ -320,11 +446,13 @@ export function PuzzleClient({ initialSet = 'sea' }: { initialSet?: string }) {
   const handleSetChange = useCallback((id: string) => {
     setSelectedSetId(id);
     setPlaced(new Set());
-    setWrongPiece(null);
     setActiveId(null);
     setElapsed(0);
     setStartTime(null);
     setCompleted(false);
+    setExpEarned(null);
+    setSubmitting(false);
+    setZoom(1);
   }, []);
 
   const handleDragStart = useCallback(({ active }: DragStartEvent) => {
@@ -347,14 +475,29 @@ export function PuzzleClient({ initialSet = 'sea' }: { initialSet?: string }) {
         // Check completion
         if (next.size === puzzleSet.countries.length) {
           setCompleted(true);
-          setElapsed(prev2 => prev2); // freeze
+          const finalElapsed = Math.floor((Date.now() - (startTime ?? Date.now())) / 1000);
+          // Submit — giống handleSoloEnd trong map-guessing
+          setSubmitting(true);
+          setExpEarned(null);
+          fetch('/api/arena/puzzle/submit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ setId: selectedSetId, elapsed: finalElapsed, total: puzzleSet.countries.length }),
+          })
+            .then(r => r.json())
+            .then(d => {
+              if (d.success) {
+                setExpEarned(d.expEarned ?? 50);
+                window.dispatchEvent(new CustomEvent('arena-game-complete'));
+              }
+            })
+            .catch(() => {})
+            .finally(() => setSubmitting(false));
         }
         return next;
       });
     } else {
-      // Wrong — shake effect
-      setWrongPiece(pieceId);
-      setTimeout(() => setWrongPiece(null), 500);
+      // Wrong — do nothing (harder mode)
     }
   }, [puzzleSet.countries.length]);
 
@@ -408,7 +551,7 @@ export function PuzzleClient({ initialSet = 'sea' }: { initialSet?: string }) {
       <div className="flex items-center justify-between mb-4 px-1">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 border border-white font-bold text-sm text-[#082F49]">
-            ✅ <span className="text-cyan-600 font-black">{placed.size}</span>/{puzzleSet.countries.length} mảnh
+            <Icon icon="material-symbols:toys-and-games" width={22} /><span className="text-cyan-600 font-black">{placed.size}</span>/{puzzleSet.countries.length} mảnh
           </div>
           <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/70 border border-white font-bold text-sm text-[#082F49] tabular-nums">
             ⏱ {fmtTime(elapsed)}
@@ -416,9 +559,9 @@ export function PuzzleClient({ initialSet = 'sea' }: { initialSet?: string }) {
         </div>
         <button
           onClick={() => handleSetChange(selectedSetId)}
-          className="px-4 py-2 rounded-full bg-white/70 border border-white text-sm font-bold text-slate-500 hover:text-red-500 hover:border-red-200 transition-colors"
+          className="flex items-center px-4 py-2 rounded-full bg-white/70 border border-white text-sm font-bold text-slate-500 hover:text-red-500 hover:border-red-200 transition-colors"
         >
-          🔄 Đặt lại
+          <Icon icon="mingcute:refresh-4-fill" width={20} />&nbsp; Đặt lại
         </button>
       </div>
 
@@ -446,8 +589,8 @@ export function PuzzleClient({ initialSet = 'sea' }: { initialSet?: string }) {
                 maxHeight: '600px',
               }}
             >
-              <p className="text-xs font-black text-[#082F49] uppercase tracking-widest mb-3 px-1">
-                🧩 Mảnh ghép ({trayCountries.length} còn lại)
+              <p className="flex items-center text-xs font-black text-[#082F49] uppercase tracking-widest mb-3 px-1">
+                <Icon icon="material-symbols:toys-and-games" width={22} />&nbsp; Mảnh ghép ({trayCountries.length} còn lại)
               </p>
               <div className="grid grid-cols-2 gap-2">
                 {puzzleSet.countries.map(country => {
@@ -476,15 +619,38 @@ export function PuzzleClient({ initialSet = 'sea' }: { initialSet?: string }) {
                   boxShadow: '0 10px 30px rgba(14,165,233,0.08)',
                 }}
               >
-                <p className="text-xs font-black text-[#082F49] uppercase tracking-widest mb-3 px-1">
-                  🗺️ Bản đồ — kéo mảnh ghép vào đúng vị trí
-                </p>
+                {/* Map header + zoom controls */}
+                <div className="flex items-center gap-2 mb-3 px-1">
+                  <p className="flex items-center text-xs font-black text-[#082F49] uppercase tracking-widest">
+                    <Icon icon="material-symbols:map-rounded" width={22} />&nbsp;Bản đồ — kéo mảnh ghép vào đúng vị trí
+                  </p>
+                  <div className="ml-auto flex items-center gap-1">
+                    <button
+                      onClick={() => setZoom(z => Math.max(0.5, parseFloat((z - 0.2).toFixed(1))))}
+                      className="w-7 h-7 flex items-center justify-center rounded-full bg-white/80 border border-slate-200 text-slate-600 font-black text-base hover:bg-cyan-50 hover:border-cyan-300 hover:text-cyan-600 transition-colors select-none"
+                      title="Thu nhỏ"
+                    >−</button>
+                    <span className="text-[11px] font-bold text-slate-400 min-w-[38px] text-center tabular-nums">
+                      {Math.round(zoom * 100)}%
+                    </span>
+                    <button
+                      onClick={() => setZoom(z => Math.min(3, parseFloat((z + 0.2).toFixed(1))))}
+                      className="w-7 h-7 flex items-center justify-center rounded-full bg-white/80 border border-slate-200 text-slate-600 font-black text-base hover:bg-cyan-50 hover:border-cyan-300 hover:text-cyan-600 transition-colors select-none"
+                      title="Phóng to"
+                    >+</button>
+                    <button
+                      onClick={() => setZoom(1)}
+                      className="w-7 h-7 flex items-center justify-center rounded-full bg-white/80 border border-slate-200 text-slate-400 font-bold text-xs hover:bg-slate-100 transition-colors select-none"
+                      title="Đặt lại zoom"
+                    >↺</button>
+                  </div>
+                </div>
                 <MapBoard
                   features={features}
                   countryMap={countryMap}
                   placed={placed}
-                  wrongPiece={wrongPiece}
                   puzzleSet={puzzleSet}
+                  zoom={zoom}
                 />
               </div>
             </div>
@@ -528,19 +694,12 @@ export function PuzzleClient({ initialSet = 'sea' }: { initialSet?: string }) {
           elapsed={elapsed}
           total={puzzleSet.countries.length}
           onRestart={() => handleSetChange(selectedSetId)}
+          expEarned={expEarned}
+          submitting={submitting}
         />
       )}
 
-      {/* CSS for shake animation */}
-      <style>{`
-        @keyframes shake {
-          0%, 100% { transform: translateX(0); }
-          20% { transform: translateX(-6px); }
-          40% { transform: translateX(6px); }
-          60% { transform: translateX(-4px); }
-          80% { transform: translateX(4px); }
-        }
-      `}</style>
+      {/* (no shake animation needed) */}
     </div>
   );
 }

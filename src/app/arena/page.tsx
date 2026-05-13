@@ -16,6 +16,7 @@ export const metadata: Metadata = {
 };
 import MapGuessGateway from '@/components/arena/MapGuessGateway';
 import MapPuzzleGateway from '@/components/arena/MapPuzzleGateway';
+import FlagGuessGateway from '@/components/arena/FlagGuessGateway';
 import ArenaHistory from '@/components/arena/ArenaHistory';
 
 export default async function ArenaLobby() {
@@ -57,6 +58,9 @@ export default async function ArenaLobby() {
 
           {/* Card: Map Puzzle */}
           <MapPuzzleGateway />
+
+          {/* Card: Flag Guessing */}
+          <FlagGuessGateway />
 
         </div>
 

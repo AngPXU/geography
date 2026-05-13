@@ -9,14 +9,34 @@ const TOPIC_LABEL: Record<string, string> = {
   country_pop: '👥 Dân Số',
   country_gdp: '🏦 GDP',
   country_life: '❤️ Tuổi Thọ',
+  'flag-guess': '🚩 Đoán Cờ',
+  sea: '🌊 Đông Nam Á',
+  europe: '🌍 Châu Âu',
+  americas: '🇺🇸 Châu Mỹ',
+  africa: '🇦🇫 Châu Phi',
+  east_asia: '🏯 Đông Á',
+  south_asia: '🇮🇳 Nam Á',
 };
 
 const MODE_LABEL: Record<string, { label: string; icon: string; color: string }> = {
-  'map-guessing':     { label: 'Đơn',   icon: '🎮', color: 'text-cyan-600 bg-cyan-50 border-cyan-200' },
-  'map-guessing-duo': { label: 'Online', icon: '⚔️', color: 'text-rose-600 bg-rose-50 border-rose-200' },
+  'map-guessing':     { label: 'Đơn',     icon: '🎮', color: 'text-cyan-600 bg-cyan-50 border-cyan-200' },
+  'map-guessing-duo': { label: 'Online',   icon: '⚔️', color: 'text-rose-600 bg-rose-50 border-rose-200' },
+  'flag-guess':       { label: 'Đoán Cờ', icon: '🚩', color: 'text-violet-600 bg-violet-50 border-violet-200' },
+  'map-puzzle':       { label: 'Ghép Bản Đồ', icon: '🧩', color: 'text-amber-600 bg-amber-50 border-amber-200' },
 };
 
 function ResultBadge({ score, expEarned, gameMode }: { score: number; expEarned: number; gameMode: string }) {
+  if (gameMode === 'map-puzzle') {
+    if (score >= 7000) return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-amber-50 text-amber-600 border border-amber-200">🧩 Xuất sắc</span>;
+    if (score >= 5000) return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-cyan-50 text-cyan-600 border border-cyan-200">✅ Đạt</span>;
+    return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-amber-50 text-amber-600 border border-amber-200">📈 Cố gắng</span>;
+  }
+  if (gameMode === 'flag-guess') {
+    const pct = (score / 10000) * 100;
+    if (pct >= 80) return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-violet-50 text-violet-600 border border-violet-200">🚩 Xuất sắc</span>;
+    if (pct >= 50) return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-cyan-50 text-cyan-600 border border-cyan-200">✅ Đạt</span>;
+    return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-black bg-amber-50 text-amber-600 border border-amber-200">📈 Cố gắng</span>;
+  }
   const isDuo = gameMode === 'map-guessing-duo';
   if (isDuo) {
     if (expEarned > 0) return (
@@ -42,11 +62,18 @@ export default function ArenaHistory() {
   const [loading, setLoading] = useState(true);
   const [showAll, setShowAll] = useState(false);
 
-  useEffect(() => {
+  const fetchHistory = () => {
     fetch('/api/arena/map-guessing/history')
       .then(r => r.json())
       .then(d => { if (d.history) setHistory(d.history); })
       .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchHistory();
+    window.addEventListener('arena-game-complete', fetchHistory);
+    return () => window.removeEventListener('arena-game-complete', fetchHistory);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const displayed = showAll ? history : history.slice(0, 6);

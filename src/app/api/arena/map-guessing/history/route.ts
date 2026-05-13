@@ -12,10 +12,10 @@ export async function GET() {
 
     await dbConnect();
 
-    // Fetch the 20 most recent matches (solo + duo)
+    // Fetch the 20 most recent matches (solo + duo + flag-guess + puzzle)
     const history = await ArenaMatchHistory.find({ 
       username: session.user.name, 
-      gameMode: { $in: ['map-guessing', 'map-guessing-duo'] }
+      gameMode: { $in: ['map-guessing', 'map-guessing-duo', 'flag-guess', 'map-puzzle'] }
     })
       .sort({ playedAt: -1 })
       .limit(20)
