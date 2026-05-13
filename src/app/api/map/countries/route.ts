@@ -20,12 +20,14 @@ export async function GET() {
     const countries = await WorldCountry.find(
       {},
       {
-        cca2: 1, nameCommon: 1, nameOfficial: 1,
+        cca2: 1, cca3: 1, nameCommon: 1, nameOfficial: 1,
         capital: 1, capitalLat: 1, capitalLng: 1,
-        flag: 1, region: 1, subregion: 1,
+        flag: 1, flagPng: 1, tld: 1, callingCodes: 1,
+        region: 1, subregion: 1,
         population: 1, area: 1,
         centerLat: 1, centerLng: 1,
-        languages: 1, currencies: 1,  // cần cho info panel
+        languages: 1, currencies: 1,
+        unMember: 1, images: 1,
       }
     ).lean();
 
@@ -97,7 +99,10 @@ export async function POST() {
               capitalLat:   latlng[0] ?? 0,
               capitalLng:   latlng[1] ?? 0,
               flag:         c.flag ?? '',
-              flagPng:      '',             // mledoze không có flags.png
+              flagPng:      c.flags?.png ?? `https://flagcdn.com/w320/${(c.cca2 ?? '').toLowerCase()}.png`,
+              cca3:         c.cca3 ?? '',
+              tld:          c.tld ?? [],
+              callingCodes: (c.idd?.suffixes ?? []).map((s: string) => (c.idd?.root ?? '') + s),
               region:       c.region ?? '',
               subregion:    c.subregion ?? '',
               population:   c.population ?? 0,

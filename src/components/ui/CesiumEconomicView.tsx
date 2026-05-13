@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@iconify/react';
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 
 // ─── Load Cesium script (tránh webpack bundle) ─────────────────────────────────
@@ -58,6 +59,8 @@ interface EconomyFeature {
   tld?: string[];
   callingCodes?: string[];
   unMember?: boolean;
+  flagImage?: string;
+  images?: string[];
   // geography
   capitalCity?: string;
   region?: string;
@@ -258,10 +261,10 @@ export default function CesiumEconomicView({ className = '' }: Props) {
       {/* ── Nút chuyển chế độ (top-left) ── */}
       <div className="absolute top-4 left-4 z-[999] flex gap-1 p-1 bg-white/80 backdrop-blur-xl border border-white/60 rounded-[18px] shadow-lg">
         {([
-          ['3d',       '🌍', 'Quả cầu 3D'],
-          ['2d',       '🗺️', 'Phẳng 2D'],
-          ['columbus', '🧭', 'Columbus'],
-        ] as [SceneMode, string, string][]).map(([id, icon, label]) => (
+          ['3d',       <Icon key="3d" icon="material-symbols:3d-rounded" width={30} />],
+          ['2d',       <Icon key="2d" icon="material-symbols:2d-rounded" width={30} />],
+          ['columbus', <Icon key="col" icon="material-symbols:map-sharp" width={30} />],
+        ] as [SceneMode, React.ReactNode][]).map(([id, icon]) => (
           <button
             key={id}
             onClick={() => switchScene(id)}
@@ -272,7 +275,6 @@ export default function CesiumEconomicView({ className = '' }: Props) {
             }`}
           >
             <span className="text-base">{icon}</span>
-            {label}
           </button>
         ))}
       </div>
@@ -295,22 +297,23 @@ export default function CesiumEconomicView({ className = '' }: Props) {
         const cx = infoPanel.x - (containerRef.current?.getBoundingClientRect().left ?? 0);
         const cy = infoPanel.y - (containerRef.current?.getBoundingClientRect().top ?? 0);
         const panelW = 480;
-        const panelH = 540;
+        const panelH = 620;
         const cw = containerRef.current?.clientWidth ?? 800;
         const ch = containerRef.current?.clientHeight ?? 600;
 
-        const Row = ({ icon, label, value }: { icon: string; label: string; value: string }) => (
+        const Row = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
           <div className="flex flex-col gap-0.5">
-            <p className="text-[9px] font-extrabold uppercase tracking-widest text-[#94A3B8]">{icon} {label}</p>
+            <p className="flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-widest text-[#94A3B8]">{icon} {label}</p>
             <p className="text-[11px] font-bold text-[#082F49] leading-snug">{value}</p>
           </div>
         );
 
         return (
           <div
-            className="absolute z-[1000] overflow-hidden"
+            className="absolute z-[1000] overflow-hidden overflow-y-auto"
             style={{
               width: panelW,
+              maxHeight: ch - 16,
               left: Math.min(cx + 14, cw - panelW - 8),
               top:  Math.max(4, Math.min(cy - 20, ch - panelH - 8)),
               background: 'rgba(255, 255, 255, 0.88)',
@@ -322,41 +325,53 @@ export default function CesiumEconomicView({ className = '' }: Props) {
             }}
           >
             {/* Header */}
-            <div className="px-5 pt-4 pb-3 border-b border-white/70" style={{ background: 'rgba(255,255,255,0.6)' }}>
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-2xl leading-none">{e.emoji || '🌐'}</span>
-                    <div className="min-w-0">
-                      <p className="font-black text-[#082F49] text-base leading-tight">{e.name}</p>
-                      {e.nameOfficial && e.nameOfficial !== e.name && (
-                        <p className="text-[10px] text-[#94A3B8] font-medium leading-tight mt-0.5 truncate">{e.nameOfficial}</p>
+            <div className="border-b border-white/70" style={{ background: 'rgba(255,255,255,0.6)' }}>
+              {/* Flag image banner */}
+              {e.flagImage && (
+                <div className="w-full h-28 overflow-hidden rounded-t-[24px] relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={e.flagImage} alt={`Cờ ${e.name}`} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(255,255,255,0.85))' }} />
+                </div>
+              )}
+              <div className="px-5 pt-4 pb-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2.5">
+                      {!e.flagImage && (
+                        <span className="text-2xl leading-none">{e.emoji || '\uD83C\uDF10'}</span>
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-black text-[#082F49] text-base leading-tight">{e.name}</p>
+                        {e.nameOfficial && e.nameOfficial !== e.name && (
+                          <p className="text-[10px] text-[#94A3B8] font-medium leading-tight mt-0.5 truncate">{e.nameOfficial}</p>
+                        )}
+                      </div>
+                    </div>
+                    {/* Badge row */}
+                    <div className="flex flex-wrap gap-1.5 mt-2.5">
+                      {e.iso2 && (
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-white border border-slate-200 text-slate-500 shadow-sm">{e.iso2}</span>
+                      )}
+                      {e.iso3 && (
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-white border border-slate-200 text-slate-500 shadow-sm">{e.iso3}</span>
+                      )}
+                      {e.tld && e.tld.length > 0 && e.tld.map((t, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded-full text-[9px] font-black bg-[#E0F2FE] border border-[#BAE6FD] text-[#0284C7] shadow-sm">🌐 {t}</span>
+                      ))}
+                      {e.callingCodes && e.callingCodes.length > 0 && e.callingCodes.map((c, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded-full text-[9px] font-black bg-[#DCFCE7] border border-[#BBF7D0] text-[#16A34A] shadow-sm">📞 {c}</span>
+                      ))}
+                      {e.unMember === true && (
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-[#EFF6FF] border border-[#BFDBFE] text-[#1D4ED8] shadow-sm">🇺🇳 LHQ</span>
                       )}
                     </div>
                   </div>
-                  {/* Badge row */}
-                  <div className="flex flex-wrap gap-1.5 mt-2.5">
-                    {e.iso2 && (
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-white border border-slate-200 text-slate-500 shadow-sm">{e.iso2}</span>
-                    )}
-                    {e.iso3 && (
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-white border border-slate-200 text-slate-500 shadow-sm">{e.iso3}</span>
-                    )}
-                    {e.tld && e.tld.length > 0 && (
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-[#E0F2FE] border border-[#BAE6FD] text-[#0284C7] shadow-sm">🌐 {e.tld[0]}</span>
-                    )}
-                    {e.callingCodes && e.callingCodes.length > 0 && (
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-[#DCFCE7] border border-[#BBF7D0] text-[#16A34A] shadow-sm">📞 {e.callingCodes[0]}</span>
-                    )}
-                    {e.unMember === true && (
-                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-[#EFF6FF] border border-[#BFDBFE] text-[#1D4ED8] shadow-sm">🇺🇳 LHQ</span>
-                    )}
-                  </div>
+                  <button
+                    onClick={() => setInfoPanel(null)}
+                    className="w-7 h-7 rounded-full bg-white border border-slate-200 text-slate-400 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all text-xs flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm"
+                  >✕</button>
                 </div>
-                <button
-                  onClick={() => setInfoPanel(null)}
-                  className="w-7 h-7 rounded-full bg-white border border-slate-200 text-slate-400 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all text-xs flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm"
-                >✕</button>
               </div>
             </div>
 
@@ -376,26 +391,41 @@ export default function CesiumEconomicView({ className = '' }: Props) {
 
               {/* Cột trái: Địa lý & Hành chính */}
               <div className="space-y-2.5">
-                <p className="text-[9px] font-black text-[#94A3B8] uppercase tracking-widest pb-1 border-b border-slate-100">🗺️ Địa lý & Hành chính</p>
-                {e.capitalCity && <Row icon="🏛️" label="Thủ đô" value={e.capitalCity} />}
-                {e.region      && <Row icon="🌍" label="Khu vực" value={e.region} />}
-                {e.subregion && e.subregion !== e.region && <Row icon="📍" label="Tiểu vùng" value={e.subregion} />}
-                {e.area != null && <Row icon="📐" label="Diện tích" value={`${e.area.toLocaleString('vi-VN')} km²`} />}
+                <p className="flex items-center gap-1 text-[9px] font-black text-[#94A3B8] uppercase tracking-widest pb-1 border-b border-slate-100"><Icon icon="mingcute:map-line" width={14} /> Địa lý & Hành chính</p>
+                {e.capitalCity && <Row icon={<Icon icon="mingcute:city-line" width={12} />} label="Thủ đô" value={e.capitalCity} />}
+                {e.region      && <Row icon={<Icon icon="mingcute:earth-line" width={12} />} label="Khu vực" value={e.region} />}
+                {e.subregion && e.subregion !== e.region && <Row icon={<Icon icon="mingcute:location-line" width={12} />} label="Tiểu vùng" value={e.subregion} />}
+                {e.area != null && <Row icon={<Icon icon="mingcute:ruler-line" width={12} />} label="Diện tích" value={`${Number(e.area).toLocaleString('vi-VN')} km²`} />}
                 {e.currencies && e.currencies.length > 0 && (
-                  <Row icon="💱" label="Tiền tệ" value={e.currencies.slice(0, 2).join('\n')} />
+                  <Row icon={<Icon icon="mingcute:exchange-dollar-line" width={12} />} label="Tiền tệ" value={e.currencies.join(' · ')} />
                 )}
               </div>
 
               {/* Cột phải: Kinh tế */}
               <div className="space-y-2.5">
-                <p className="text-[9px] font-black text-[#94A3B8] uppercase tracking-widest pb-1 border-b border-slate-100">💰 Kinh tế</p>
-                {e.gdpPerCapita  != null && <Row icon="💵" label="GDP / Đầu người"  value={`${e.gdpPerCapita.toLocaleString('vi-VN')} USD`} />}
-                {e.gdpTotal      != null && <Row icon="🏦" label="Tổng GDP"         value={`${e.gdpTotal.toLocaleString('vi-VN')} tỷ USD`} />}
-                {e.population    != null && <Row icon="👥" label="Dân số"           value={e.population >= 1_000_000 ? `${(e.population / 1_000_000).toFixed(1)} triệu` : e.population.toLocaleString('vi-VN')} />}
-                {e.unemployment  != null && <Row icon="📉" label="Thất nghiệp"      value={`${e.unemployment}%`} />}
-                {e.lifeExpectancy != null && <Row icon="❤️" label="Tuổi thọ TB"     value={`${e.lifeExpectancy} tuổi`} />}
+                <p className="flex items-center gap-1 text-[9px] font-black text-[#94A3B8] uppercase tracking-widest pb-1 border-b border-slate-100"><Icon icon="mingcute:bank-line" width={14} /> Kinh tế</p>
+                {e.gdpPerCapita  != null && <Row icon={<Icon icon="mingcute:currency-dollar-line" width={12} />} label="GDP / Đầu người"  value={`${Number(e.gdpPerCapita).toLocaleString('vi-VN')} USD`} />}
+                {e.gdpTotal      != null && <Row icon={<Icon icon="mingcute:bank-card-line" width={12} />} label="Tổng GDP"         value={`${Number(e.gdpTotal).toLocaleString('vi-VN')} tỷ USD`} />}
+                {e.population    != null && <Row icon={<Icon icon="mingcute:group-2-line" width={12} />} label="Dân số"           value={e.population >= 1_000_000 ? `${(e.population / 1_000_000).toFixed(1)} triệu` : Number(e.population).toLocaleString('vi-VN')} />}
+                {e.unemployment  != null && <Row icon={<Icon icon="mingcute:trending-down-line" width={12} />} label="Thất nghiệp"      value={`${e.unemployment}%`} />}
+                {e.lifeExpectancy != null && <Row icon={<Icon icon="mingcute:heart-line" width={12} />} label="Tuổi thọ TB"     value={`${e.lifeExpectancy} tuổi`} />}
               </div>
             </div>
+
+            {/* Gallery ảnh quốc gia */}
+            {Array.isArray(e.images) && e.images.filter(Boolean).length > 0 && (
+              <div className="px-4 pb-4">
+                <p className="text-[9px] font-black text-[#94A3B8] uppercase tracking-widest mb-2">🖼️ Hình ảnh</p>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {e.images.filter(Boolean).map((url: string, i: number) => (
+                    <div key={i} className="flex-shrink-0 w-32 h-20 rounded-[14px] overflow-hidden border border-slate-100 bg-slate-50">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt={`${e.name} ${i + 1}`} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
         );
       })()}

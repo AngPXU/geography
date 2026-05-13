@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@iconify/react';
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 
 // ─── Load Cesium script (tránh webpack bundle) ─────────────────────────────────
@@ -147,10 +148,10 @@ export default function CesiumOceanView({ className = '' }: Props) {
       {/* ── Nút chuyển chế độ (top-left) ── */}
       <div className="absolute top-4 left-4 z-[999] flex gap-1 p-1 bg-white/80 backdrop-blur-xl border border-white/60 rounded-[18px] shadow-lg">
         {([
-          ['3d',       '🌍', 'Quả cầu 3D'],
-          ['2d',       '🗺️', 'Phẳng 2D'],
-          ['columbus', '🧭', 'Columbus'],
-        ] as [SceneMode, string, string][]).map(([id, icon, label]) => (
+          ['3d',       <Icon key="3d" icon="material-symbols:3d-rounded" width={30} />],
+          ['2d',       <Icon key="2d" icon="material-symbols:2d-rounded" width={30} />],
+          ['columbus', <Icon key="col" icon="material-symbols:map-sharp" width={30} />],
+        ] as [SceneMode, React.ReactNode][]).map(([id, icon]) => (
           <button
             key={id}
             onClick={() => switchScene(id)}
@@ -161,7 +162,6 @@ export default function CesiumOceanView({ className = '' }: Props) {
             }`}
           >
             <span className="text-base">{icon}</span>
-            {label}
           </button>
         ))}
       </div>

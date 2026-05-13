@@ -46,6 +46,27 @@ export async function POST() {
   const errors: string[] = [];
   let totalInserted = 0;
 
+  // ── Bảo lưu flagImage & images do admin nhập thủ công (key bằng iso3) ────────
+  const savedCustomFields: Record<string, { flagImage?: string; images?: string[] }> = {};
+  try {
+    const existingDocs = await GeoFeature.find(
+      { category: 'economic' },
+      { 'attributes.iso3': 1, 'attributes.flagImage': 1, 'attributes.images': 1 }
+    ).lean();
+    existingDocs.forEach((doc: any) => {
+      const iso3Key = doc.attributes?.iso3;
+      if (!iso3Key) return;
+      const fi = doc.attributes?.flagImage;
+      const imgs = doc.attributes?.images;
+      if (fi || (Array.isArray(imgs) && imgs.length > 0)) {
+        savedCustomFields[iso3Key] = {
+          ...(fi ? { flagImage: fi } : {}),
+          ...(Array.isArray(imgs) && imgs.length > 0 ? { images: imgs } : {}),
+        };
+      }
+    });
+  } catch (_) { /* không dừng nếu lỗi */ }
+
   try {
     // Xóa dữ liệu cũ trước khi nạp bộ mới
     await GeoFeature.deleteMany({});
@@ -234,6 +255,43 @@ export async function POST() {
         }
       } catch (_) { /* fallback gracefully — extra fields just won't be available */ }
 
+      // Dịch tên Region (World Bank) → tiếng Việt
+      const REGION_VI: Record<string, string> = {
+        'East Asia & Pacific':          'Đông Á & Thái Bình Dương',
+        'Europe & Central Asia':        'Châu Âu & Trung Á',
+        'Latin America & Caribbean':    'Mỹ Latinh & Caribbean',
+        'Middle East & North Africa':   'Trung Đông & Bắc Phi',
+        'North America':                'Bắc Mỹ',
+        'South Asia':                   'Nam Á',
+        'Sub-Saharan Africa':           'Châu Phi hạ Sahara',
+      };
+
+      // Dịch tên Subregion (mledoze) → tiếng Việt
+      const SUBREGION_VI: Record<string, string> = {
+        'South-Eastern Asia':           'Đông Nam Á',
+        'Eastern Asia':                 'Đông Á',
+        'Southern Asia':                'Nam Á',
+        'Central Asia':                 'Trung Á',
+        'Western Asia':                 'Tây Á',
+        'Northern Africa':              'Bắc Phi',
+        'Eastern Africa':               'Đông Phi',
+        'Western Africa':               'Tây Phi',
+        'Middle Africa':                'Trung Phi',
+        'Southern Africa':              'Nam Phi (tiểu vùng)',
+        'Northern America':             'Bắc Mỹ',
+        'Central America':              'Trung Mỹ',
+        'South America':                'Nam Mỹ',
+        'Caribbean':                    'Caribe',
+        'Northern Europe':              'Bắc Âu',
+        'Western Europe':               'Tây Âu',
+        'Eastern Europe':               'Đông Âu',
+        'Southern Europe':              'Nam Âu',
+        'Australia and New Zealand':    'Australia & New Zealand',
+        'Melanesia':                    'Melanesia',
+        'Micronesia':                   'Micronesia',
+        'Polynesia':                    'Polynesia',
+      };
+
       // income level → label tiếng Việt
       const INCOME_MAP: Record<string, { label: string; color: string }> = {
         'HIC':  { label: 'Quốc gia Phát triển cao',    color: '#16a34a' },
@@ -262,6 +320,10 @@ export async function POST() {
           // Dữ liệu bổ sung từ mledoze
           const ml = mledozeMap[iso2] ?? {};
           const nameOfficial = ml.name?.official ?? '';
+
+          // Tên tiếng Việt từ mledoze translations
+          const nameVI: string = ml.translations?.vie?.common ?? ml.name?.nativeName?.vie?.common ?? '';
+          const nameOfficialVI: string = ml.translations?.vie?.official ?? ml.name?.nativeName?.vie?.official ?? '';
           const area = ml.area ?? null;
           const tld: string[] = ml.tld ?? [];
           // IDD: root + suffixes, ví dụ "+84" cho Việt Nam
@@ -271,25 +333,29 @@ export async function POST() {
             ? iddSuffixes.map((s: string) => `${iddRoot}${s}`)
             : (iddRoot ? [iddRoot] : []);
           const unMember: boolean = ml.unMember ?? false;
-          const subregion: string = ml.subregion ?? c.region?.value ?? '';
+          const subregionEn: string = ml.subregion ?? '';
+          const subregion: string = SUBREGION_VI[subregionEn] || subregionEn || c.region?.value || '';
           // Tiền tệ: { USD: { name: "...", symbol: "$" }, ... }
           const currenciesRaw = ml.currencies ?? {};
           const currencies: string[] = Object.entries(currenciesRaw).map(
             ([code, val]: [string, any]) => `${val?.name ?? code} (${code}${val?.symbol ? ' ' + val.symbol : ''})`
           );
 
+          const docId = `wb-eco-${iso3.toLowerCase()}`;
+          const savedCF = savedCustomFields[iso3] ?? {};
+
           return {
-            id: `wb-eco-${iso3.toLowerCase()}`,
+            id: docId,
             category: 'economic',
             subCategory: 'country_economy',
-            name: c.name,
+            name: nameVI || c.name,
             lat: parseFloat(c.latitude),
             lng: parseFloat(c.longitude),
             attributes: {
               iso3,
               iso2,
-              nameOfficial,
-              region: c.region?.value,
+              nameOfficial: nameOfficialVI || nameOfficial,
+              region: REGION_VI[c.region?.value ?? ''] || c.region?.value,
               subregion,
               capitalCity: c.capitalCity,
               incomeLevel: label,
@@ -306,7 +372,10 @@ export async function POST() {
               unemployment: unem ? parseFloat(unem.toFixed(1)) : null,
               lifeExpectancy: lifeExp ? parseFloat(lifeExp.toFixed(1)) : null,
               emoji: incomeLv === 'HIC' ? '🟢' : incomeLv === 'UMC' ? '🔵' : incomeLv === 'LMC' ? '🟡' : '🔴',
-              desc: `${label} | Khu vực: ${c.region?.value || '—'}`,
+              desc: `${label} | Khu vực: ${REGION_VI[c.region?.value ?? ''] || c.region?.value || '—'}`,
+              // Bảo lưu flagImage & images do admin nhập thủ công
+              ...(savedCF.flagImage ? { flagImage: savedCF.flagImage } : {}),
+              ...(savedCF.images && savedCF.images.length > 0 ? { images: savedCF.images } : {}),
             },
           };
         });

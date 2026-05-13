@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -1640,6 +1640,7 @@ interface CdvForm {
   nameOfficial: string; area: string;
   tld: string; callingCodes: string; unMember: boolean;
   flagImage: string;
+  images: string[];
 }
 
 function CdvFieldLabel({ children }: { children: React.ReactNode }) {
@@ -1705,6 +1706,7 @@ function CountryDetailView({ country: initial, onBack, onDeleted, onUpdated }: {
       callingCodes: Array.isArray(a.callingCodes) ? a.callingCodes.join(', ') : (a.callingCodes ?? ''),
       unMember: a.unMember ?? true,
       flagImage: a.flagImage ?? '',
+      images: Array.isArray(a.images) ? a.images.filter(Boolean) : [],
     });
     setSaveError('');
     setEditing(true);
@@ -1731,6 +1733,7 @@ function CountryDetailView({ country: initial, onBack, onDeleted, onUpdated }: {
           callingCodes: form.callingCodes.split(',').map((s: string) => s.trim()).filter(Boolean),
           unMember: form.unMember,
           flagImage: form.flagImage.trim() || undefined,
+          images: (form.images ?? []).filter(Boolean),
         },
       };
       const res = await fetch(`/api/map/features/${country._id}`, {
@@ -1919,7 +1922,68 @@ function CountryDetailView({ country: initial, onBack, onDeleted, onUpdated }: {
         )}
       </div>
 
-      {/* 2-col grid */}
+      {/* Hình ảnh quốc gia — card riêng, luôn hiển thị */}
+      <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px] p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="font-black text-[#082F49]">🖼️ Hình ảnh quốc gia</h3>
+          {editing && (
+            <button type="button"
+              onClick={() => setForm(p => p && ({ ...p, images: [...(p.images ?? []), ''] }))}
+              className="text-xs font-bold text-white bg-cyan-500 hover:bg-cyan-400 px-4 py-1.5 rounded-full transition-all flex items-center gap-1.5">
+              + Thêm URL
+            </button>
+          )}
+        </div>
+
+        {editing ? (
+          <div className="space-y-2">
+            {(form!.images ?? []).length === 0 && (
+              <p className="text-sm text-[#94A3B8] italic text-center py-4">
+                Chưa có ảnh nào. Nhấn &ldquo;+ Thêm URL&rdquo; để bắt đầu.
+              </p>
+            )}
+            {(form!.images ?? []).map((url, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <input
+                  type="url"
+                  value={url}
+                  onChange={e => setForm(p => {
+                    if (!p) return p;
+                    const imgs = [...(p.images ?? [])]; imgs[i] = e.target.value;
+                    return { ...p, images: imgs };
+                  })}
+                  placeholder={`https://... (URL ảnh ${i + 1})`}
+                  className="flex-1 px-3 py-2.5 rounded-[14px] border border-slate-200 bg-white/80 text-sm text-[#334155]
+                    font-medium outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all"
+                />
+                <button type="button"
+                  onClick={() => setForm(p => {
+                    if (!p) return p;
+                    return { ...p, images: (p.images ?? []).filter((_, j) => j !== i) };
+                  })}
+                  className="w-8 h-8 rounded-full bg-rose-50 border border-rose-200 text-rose-500 flex items-center justify-center flex-shrink-0 hover:bg-rose-100 transition-all">
+                  <FaTimes className="text-[10px]" />
+                </button>
+              </div>
+            ))}
+          </div>
+        ) : (
+          Array.isArray(a.images) && a.images.filter(Boolean).length > 0 ? (
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+              {a.images.filter(Boolean).map((url: string, i: number) => (
+                <div key={i} className="aspect-video rounded-[16px] overflow-hidden border border-slate-100 bg-slate-50">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={url} alt={`${country.name} ${i + 1}`} className="w-full h-full object-cover" />
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-[#94A3B8] italic text-center py-4">
+              Chưa có hình ảnh. Nhấn &ldquo;Chỉnh sửa&rdquo; để thêm URL ảnh.
+            </p>
+          )
+        )}
+      </div>
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Địa lý & Hành chính */}
         <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px] p-6 shadow-sm space-y-4">
@@ -1953,7 +2017,7 @@ function CountryDetailView({ country: initial, onBack, onDeleted, onUpdated }: {
           <div><CdvFieldLabel>Tiền tệ (chỉ đọc)</CdvFieldLabel>
             <CdvReadonly value={
               Array.isArray(a.currencies) && a.currencies.length > 0
-                ? a.currencies.map((c: any) => `${c.code}${c.name ? ' (' + c.name + ')' : ''}`).join(' · ')
+                ? a.currencies.join(' · ')
                 : ''
             } /></div>
 
@@ -2320,8 +2384,6 @@ function MapTab() {
                       <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden sm:table-cell">Thủ đô</th>
                       <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden md:table-cell">Khu vực</th>
                       <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs">Thu nhập</th>
-                      <th className="text-right px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden lg:table-cell">GDP/người</th>
-                      <th className="text-right px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden lg:table-cell">Dân số</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -2339,7 +2401,7 @@ function MapTab() {
                               <span className="text-xl leading-none flex-shrink-0">{cf}</span>
                               <div className="min-w-0">
                                 <p className="font-bold text-[#082F49] group-hover:text-cyan-700 transition-colors leading-snug">{c.name}</p>
-                                <p className="text-[#94A3B8] text-[10px] font-semibold">{ca.iso2 || ''}{ca.iso2 && ca.iso3 ? ' · ' : ''}{ca.iso3 || ''}</p>
+                                <p className="text-[#94A3B8] text-[10px] font-semibold">{ca.nameOfficial || `${ca.iso2 || ''}${ca.iso2 && ca.iso3 ? ' · ' : ''}${ca.iso3 || ''}`}</p>
                               </div>
                             </div>
                           </td>
@@ -2353,8 +2415,6 @@ function MapTab() {
                               {inc.label}
                             </span>
                           </td>
-                          <td className="px-5 py-3 text-right text-xs font-mono text-[#334155] hidden lg:table-cell">{fmtUSD(ca.gdpPerCapita)}</td>
-                          <td className="px-5 py-3 text-right text-xs font-mono text-[#334155] hidden lg:table-cell">{fmtPop(ca.population)}</td>
                         </tr>
                       );
                     })}
@@ -2376,416 +2436,6 @@ function MapTab() {
     </div>
   );
 }
-
-/* ══════════════════════════════════════════════
-   GLOBE TAB — quản lý quốc gia trên địa cầu
-══════════════════════════════════════════════ */
-
-const CONTINENT_OPTIONS = ['Châu Á', 'Châu Âu', 'Châu Mỹ', 'Châu Phi', 'Châu Đại Dương', 'Châu Nam Cực', 'Châu Âu / Á'];
-
-const EMPTY_GLOBE_FORM = {
-  name: '', capital: '', population: '', description: '', color: '#06B6D4',
-  lat: '', lng: '', flag: '', area: '', language: '', currency: '', continent: '', funFact: '',
-  images: ['', '', ''],
-};
-
-type GlobeForm = typeof EMPTY_GLOBE_FORM;
-
-function GlobeTab() {
-  const [countries, setCountries] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState('');
-  const [modal, setModal] = useState<'add' | 'edit' | null>(null);
-  const [form, setForm] = useState<GlobeForm>(EMPTY_GLOBE_FORM);
-  const [editId, setEditId] = useState<string | null>(null);
-  const [saving, setSaving] = useState(false);
-  const [saveError, setSaveError] = useState('');
-  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
-  const [deleting, setDeleting] = useState(false);
-  const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
-
-  const showToast = (msg: string, ok = true) => {
-    setToast({ msg, ok }); setTimeout(() => setToast(null), 3500);
-  };
-
-  const fetchCountries = useCallback(async () => {
-    setLoading(true);
-    try {
-      const res = await fetch('/api/countries');
-      const data = await res.json();
-      setCountries(Array.isArray(data.countries) ? data.countries : []);
-    } catch { setCountries([]); }
-    finally { setLoading(false); }
-  }, []);
-
-  useEffect(() => { fetchCountries(); }, [fetchCountries]);
-
-  const filtered = useMemo(() => {
-    const q = search.toLowerCase();
-    return countries.filter(c =>
-      !q || c.name?.toLowerCase().includes(q) || c.capital?.toLowerCase().includes(q) || c.continent?.toLowerCase().includes(q)
-    );
-  }, [countries, search]);
-
-  const openAdd = () => {
-    setForm(EMPTY_GLOBE_FORM);
-    setEditId(null);
-    setSaveError('');
-    setModal('add');
-  };
-
-  const openEdit = (c: any) => {
-    const imgs = Array.isArray(c.images) ? [...c.images] : [];
-    while (imgs.length < 3) imgs.push('');
-    setForm({
-      name: c.name ?? '', capital: c.capital ?? '', population: c.population ?? '',
-      description: c.description ?? '', color: c.color ?? '#06B6D4',
-      lat: c.lat != null ? String(c.lat) : '', lng: c.lng != null ? String(c.lng) : '',
-      flag: c.flag ?? '', area: c.area ?? '', language: c.language ?? '',
-      currency: c.currency ?? '', continent: c.continent ?? '', funFact: c.funFact ?? '',
-      images: imgs.slice(0, 3) as [string, string, string],
-    });
-    setEditId(c._id);
-    setSaveError('');
-    setModal('edit');
-  };
-
-  const handleSave = async () => {
-    if (!form.name.trim() || !form.capital.trim()) {
-      setSaveError('Tên nước và thủ đô là bắt buộc.'); return;
-    }
-    setSaving(true); setSaveError('');
-    try {
-      const body = {
-        ...form,
-        lat: parseFloat(form.lat) || 0,
-        lng: parseFloat(form.lng) || 0,
-        images: form.images.filter(Boolean),
-      };
-      const url = modal === 'edit' ? `/api/countries/${editId}` : '/api/countries';
-      const method = modal === 'edit' ? 'PATCH' : 'POST';
-      const res = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Lưu thất bại');
-      showToast(modal === 'edit' ? '✅ Đã cập nhật!' : '✅ Đã thêm quốc gia!');
-      setModal(null);
-      fetchCountries();
-    } catch (e: any) { setSaveError(e.message); }
-    finally { setSaving(false); }
-  };
-
-  const handleDelete = async () => {
-    if (!confirmDeleteId) return;
-    setDeleting(true);
-    try {
-      const res = await fetch(`/api/countries/${confirmDeleteId}`, { method: 'DELETE' });
-      if (!res.ok) throw new Error('Xoá thất bại');
-      showToast('🗑️ Đã xoá quốc gia');
-      fetchCountries();
-    } catch (e: any) { showToast(e.message, false); }
-    finally { setDeleting(false); setConfirmDeleteId(null); }
-  };
-
-  const setImg = (i: number, v: string) => {
-    setForm(p => { const imgs = [...p.images] as [string, string, string]; imgs[i] = v; return { ...p, images: imgs }; });
-  };
-
-  return (
-    <div className="space-y-5">
-      {/* Toast */}
-      {toast && (
-        <div className={`fixed top-5 right-5 z-[99999] px-5 py-3 rounded-[20px] text-sm font-bold
-          shadow-[0_8px_24px_rgba(0,0,0,0.12)] border ${
-            toast.ok ? 'bg-[rgba(187,247,208,0.95)] border-emerald-200 text-[#16A34A]'
-                     : 'bg-[rgba(254,226,226,0.95)] border-red-200 text-[#DC2626]'
-          }`}>{toast.msg}</div>
-      )}
-
-      {/* Confirm delete */}
-      {confirmDeleteId && (
-        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" onClick={() => setConfirmDeleteId(null)} />
-          <div className="relative w-full max-w-sm bg-white/92 backdrop-blur-[24px] border border-white/80 rounded-[32px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] p-6 space-y-4">
-            <div className="w-12 h-12 rounded-full bg-red-100 text-red-500 flex items-center justify-center mx-auto">
-              <FaTrash className="text-lg" />
-            </div>
-            <p className="text-center font-bold text-[#082F49]">
-              Xoá quốc gia này?<br />
-              <span className="text-sm font-normal text-[#94A3B8]">Thao tác này không thể hoàn tác.</span>
-            </p>
-            <div className="flex gap-3">
-              <button onClick={() => setConfirmDeleteId(null)}
-                className="flex-1 py-2.5 rounded-full border border-slate-200 text-sm font-bold text-[#334155] hover:bg-slate-50 transition-all">Huỷ</button>
-              <button onClick={handleDelete} disabled={deleting}
-                className="flex-1 py-2.5 rounded-full bg-gradient-to-r from-red-500 to-rose-500 text-white text-sm font-bold flex items-center justify-center gap-2 disabled:opacity-60">
-                {deleting && <FaSpinner className="animate-spin text-xs" />} Xoá
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Add / Edit modal */}
-      {modal && (
-        <div className="fixed inset-0 z-[99998] flex items-start justify-center p-4 pt-16 overflow-y-auto">
-          <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" onClick={() => setModal(null)} />
-          <div className="relative w-full max-w-2xl bg-white/92 backdrop-blur-[24px] border border-white/80 rounded-[32px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] p-6 space-y-5 my-4">
-            <div className="flex items-center justify-between">
-              <h3 className="font-black text-[#082F49] text-lg">
-                {modal === 'add' ? '🌍 Thêm Quốc gia mới' : '✏️ Chỉnh sửa Quốc gia'}
-              </h3>
-              <button onClick={() => setModal(null)} className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-all">
-                <FaTimes className="text-xs text-slate-500" />
-              </button>
-            </div>
-
-            {saveError && (
-              <div className="bg-[rgba(254,226,226,0.9)] border border-red-200 text-red-700 text-sm font-bold px-4 py-3 rounded-[16px]">❌ {saveError}</div>
-            )}
-
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {/* Col 1 */}
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-bold text-[#334155] mb-1">Tên quốc gia *</label>
-                  <input value={form.name} onChange={e => setForm(p => ({ ...p, name: e.target.value }))} placeholder="VD: Việt Nam"
-                    className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#334155] mb-1">Thủ đô *</label>
-                  <input value={form.capital} onChange={e => setForm(p => ({ ...p, capital: e.target.value }))} placeholder="VD: Hà Nội"
-                    className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#334155] mb-1">Dân số</label>
-                  <input value={form.population} onChange={e => setForm(p => ({ ...p, population: e.target.value }))} placeholder="VD: 100 Triệu"
-                    className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs font-bold text-[#334155] mb-1">Vĩ độ</label>
-                    <input type="number" value={form.lat} onChange={e => setForm(p => ({ ...p, lat: e.target.value }))} placeholder="21.03"
-                      className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-[#334155] mb-1">Kinh độ</label>
-                    <input type="number" value={form.lng} onChange={e => setForm(p => ({ ...p, lng: e.target.value }))} placeholder="105.85"
-                      className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs font-bold text-[#334155] mb-1">Cờ (emoji)</label>
-                    <input value={form.flag} onChange={e => setForm(p => ({ ...p, flag: e.target.value }))} placeholder="🇻🇳"
-                      className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-[#334155] mb-1">Màu marker</label>
-                    <div className="flex items-center gap-2">
-                      <input type="color" value={form.color} onChange={e => setForm(p => ({ ...p, color: e.target.value }))}
-                        className="w-10 h-10 rounded-[12px] border border-slate-200 cursor-pointer p-0.5" />
-                      <span className="text-xs font-mono text-[#334155]">{form.color}</span>
-                    </div>
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#334155] mb-1">Châu lục</label>
-                  <select value={form.continent} onChange={e => setForm(p => ({ ...p, continent: e.target.value }))}
-                    className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 cursor-pointer">
-                    <option value="">— Chọn châu lục —</option>
-                    {CONTINENT_OPTIONS.map(c => <option key={c} value={c}>{c}</option>)}
-                  </select>
-                </div>
-                <div className="grid grid-cols-2 gap-2">
-                  <div>
-                    <label className="block text-xs font-bold text-[#334155] mb-1">Diện tích</label>
-                    <input value={form.area} onChange={e => setForm(p => ({ ...p, area: e.target.value }))} placeholder="331.212 km²"
-                      className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
-                  </div>
-                  <div>
-                    <label className="block text-xs font-bold text-[#334155] mb-1">Tiền tệ</label>
-                    <input value={form.currency} onChange={e => setForm(p => ({ ...p, currency: e.target.value }))} placeholder="Đồng (VND)"
-                      className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
-                  </div>
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#334155] mb-1">Ngôn ngữ</label>
-                  <input value={form.language} onChange={e => setForm(p => ({ ...p, language: e.target.value }))} placeholder="Tiếng Việt"
-                    className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
-                </div>
-              </div>
-
-              {/* Col 2 */}
-              <div className="space-y-3">
-                <div>
-                  <label className="block text-xs font-bold text-[#334155] mb-1">Mô tả ngắn</label>
-                  <textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} rows={4}
-                    placeholder="Mô tả về quốc gia..."
-                    className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all resize-none" />
-                </div>
-                <div>
-                  <label className="block text-xs font-bold text-[#334155] mb-1">Fun Fact</label>
-                  <textarea value={form.funFact} onChange={e => setForm(p => ({ ...p, funFact: e.target.value }))} rows={3}
-                    placeholder="Điều thú vị về quốc gia..."
-                    className="w-full px-3 py-2.5 rounded-[16px] border border-slate-200 bg-white text-sm text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all resize-none" />
-                </div>
-                <div className="space-y-2">
-                  <label className="block text-xs font-bold text-[#334155]">Ảnh (tối đa 3 link)</label>
-                  {form.images.map((url, i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <input value={url} onChange={e => setImg(i, e.target.value)}
-                        placeholder={`Link ảnh ${i + 1}...`}
-                        className="flex-1 px-3 py-2 rounded-[14px] border border-slate-200 bg-white text-xs text-[#082F49] font-semibold outline-none focus:border-cyan-400 focus:ring-2 focus:ring-cyan-100 transition-all" />
-                      {url && (
-                        <div className="w-10 h-8 rounded-[10px] overflow-hidden border border-slate-200 flex-shrink-0 bg-slate-50">
-                          {/* eslint-disable-next-line @next/next/no-img-element */}
-                          <img src={url} alt="" className="w-full h-full object-cover"
-                            onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-2 border-t border-slate-100">
-              <button onClick={() => setModal(null)}
-                className="px-5 py-2.5 rounded-full border border-slate-200 text-sm font-bold text-[#334155] hover:bg-slate-50 transition-all">
-                Huỷ
-              </button>
-              <button onClick={handleSave} disabled={saving}
-                className="flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-black text-white transition-all hover:-translate-y-0.5 disabled:opacity-60"
-                style={{ background: 'linear-gradient(135deg,#06B6D4,#0284c7)', boxShadow: '0 8px 20px rgba(6,182,212,0.35)' }}>
-                {saving && <FaSpinner className="animate-spin text-xs" />}
-                {saving ? 'Đang lưu...' : (modal === 'add' ? 'Thêm mới' : 'Lưu thay đổi')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
-        <div>
-          <h2 className="text-2xl font-black text-[#082F49]">🌍 Quốc gia trên Địa cầu</h2>
-          <p className="text-[#94A3B8] text-sm font-semibold mt-0.5">Quản lý marker + nội dung hiển thị trên trang chủ</p>
-        </div>
-        <button onClick={openAdd}
-          className="sm:ml-auto flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-black text-white transition-all hover:-translate-y-0.5"
-          style={{ background: 'linear-gradient(135deg,#22C55E,#16A34A)', boxShadow: '0 10px 25px rgba(34,197,94,0.35)' }}>
-          <FaPlus className="text-xs" /> Thêm Quốc gia
-        </button>
-      </div>
-
-      {/* Stats row */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {CONTINENT_OPTIONS.slice(0, 4).map(cont => {
-          const count = countries.filter(c => c.continent === cont).length;
-          return (
-            <div key={cont} className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[24px] p-4 shadow-sm">
-              <p className="text-[11px] font-extrabold text-[#94A3B8] uppercase tracking-wider">{cont}</p>
-              <p className="text-2xl font-black text-[#082F49] mt-1">{count}</p>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* Search + Table */}
-      <div>
-        <div className="flex items-center gap-3 mb-4">
-          <div className="flex items-center gap-2 bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-full px-4 py-2.5 flex-1 max-w-sm
-            focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-100 shadow-sm transition-all">
-            <FaSearch className="text-[#94A3B8] text-xs shrink-0" />
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Tìm theo tên, thủ đô, châu lục..."
-              className="bg-transparent text-sm font-semibold text-[#082F49] placeholder:text-[#94A3B8] outline-none flex-1" />
-            {search && <button onClick={() => setSearch('')}><FaTimes className="text-[#94A3B8] text-xs" /></button>}
-          </div>
-          <span className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-[#E0F2FE] text-[#0284C7] border border-[#BAE6FD]">
-            {filtered.length} / {countries.length}
-          </span>
-        </div>
-
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20 gap-4">
-            <FaSpinner className="text-4xl text-cyan-400 animate-spin" />
-            <p className="text-[#94A3B8] font-semibold text-sm">Đang tải...</p>
-          </div>
-        ) : (
-          <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px] shadow-[0_10px_30px_rgba(14,165,233,0.08)] overflow-hidden">
-            {filtered.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-20 gap-3">
-                <div className="w-16 h-16 rounded-[24px] bg-slate-100 flex items-center justify-center text-3xl">🌍</div>
-                <p className="text-[#082F49] font-bold">Chưa có quốc gia nào</p>
-                <p className="text-[#94A3B8] text-sm">Nhấn &ldquo;Thêm Quốc gia&rdquo; để bắt đầu</p>
-              </div>
-            ) : (
-              <div className="overflow-x-auto">
-                <table className="w-full text-sm">
-                  <thead>
-                    <tr className="border-b border-slate-100 bg-white/40 backdrop-blur-md">
-                      <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs w-10">#</th>
-                      <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs">Quốc gia</th>
-                      <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden sm:table-cell">Thủ đô</th>
-                      <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden md:table-cell">Châu lục</th>
-                      <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden lg:table-cell">Ảnh</th>
-                      <th className="text-right px-5 py-3.5 text-[#94A3B8] font-bold text-xs">Thao tác</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filtered.map((c, idx) => (
-                      <tr key={c._id} className="border-b border-white/50 hover:bg-cyan-50/40 transition-colors">
-                        <td className="px-5 py-3 text-[#94A3B8] text-xs font-bold">{idx + 1}</td>
-                        <td className="px-5 py-3">
-                          <div className="flex items-center gap-2.5">
-                            <span className="text-xl leading-none">{c.flag || '🌐'}</span>
-                            <div>
-                              <p className="font-bold text-[#082F49] leading-snug">{c.name}</p>
-                              <p className="text-[#94A3B8] text-[10px] font-semibold">{c.population || '—'}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="px-5 py-3 text-[#334155] text-xs hidden sm:table-cell">{c.capital || '—'}</td>
-                        <td className="px-5 py-3 text-[#334155] text-xs hidden md:table-cell">{c.continent || '—'}</td>
-                        <td className="px-5 py-3 hidden lg:table-cell">
-                          <div className="flex items-center gap-1">
-                            {(c.images ?? []).filter(Boolean).slice(0, 3).map((img: string, i: number) => (
-                              <div key={i} className="w-8 h-6 rounded-[8px] overflow-hidden border border-slate-200 bg-slate-50">
-                                {/* eslint-disable-next-line @next/next/no-img-element */}
-                                <img src={img} alt="" className="w-full h-full object-cover"
-                                  onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                              </div>
-                            ))}
-                            {(!c.images || c.images.filter(Boolean).length === 0) && (
-                              <span className="text-[#94A3B8] text-[10px]">Chưa có ảnh</span>
-                            )}
-                          </div>
-                        </td>
-                        <td className="px-5 py-3">
-                          <div className="flex items-center justify-end gap-2">
-                            <button onClick={() => openEdit(c)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-cyan-200 bg-cyan-50 text-xs font-bold text-cyan-700 hover:bg-cyan-100 transition-all">
-                              <FaEdit className="text-[10px]" /> Sửa
-                            </button>
-                            <button onClick={() => setConfirmDeleteId(c._id)}
-                              className="flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-rose-200 bg-rose-50 text-xs font-bold text-rose-600 hover:bg-rose-100 transition-all">
-                              <FaTrash className="text-[10px]" /> Xoá
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
 function DataTab() {
   const [subTab, setSubTab] = useState<'flashcards' | 'quizzes'>('flashcards');
 
@@ -4335,7 +3985,7 @@ function OverviewTab() {
 
 /* ═══════════════════════ MAIN ADMIN CLIENT ════════════════════════ */
 
-type SidebarTab = 'overview' | 'users' | 'classrooms' | 'data' | 'map' | 'globe';
+type SidebarTab = 'overview' | 'users' | 'classrooms' | 'data' | 'map';
 
 const SIDEBAR_ITEMS: { id: SidebarTab; label: string; icon: React.ReactNode; badge?: string }[] = [
   { id: 'overview',    label: 'Tổng quan',   icon: <FaChartBar /> },
@@ -4343,7 +3993,6 @@ const SIDEBAR_ITEMS: { id: SidebarTab; label: string; icon: React.ReactNode; bad
   { id: 'classrooms',  label: 'Lớp học',     icon: <FaSchool /> },
   { id: 'data',        label: 'Dữ liệu',     icon: <FaDatabase /> },
   { id: 'map',         label: 'Bản đồ',      icon: <FaGlobeAsia /> },
-  { id: 'globe',       label: 'Địa cầu',     icon: <FaGlobeAsia /> },
 ];
 
 export function AdminClient({ currentUser }: {
@@ -4474,7 +4123,6 @@ export function AdminClient({ currentUser }: {
             {activeTab === 'classrooms' && <ClassroomsTab />}
             {activeTab === 'data'       && <DataTab />}
             {activeTab === 'map'        && <MapTab />}
-            {activeTab === 'globe'      && <GlobeTab />}
           </main>
         </div>
       </div>

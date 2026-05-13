@@ -31,6 +31,12 @@ function loadStyle(href: string) {
 }
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+// ─── Countries shown on globe ────────────────────────────────────────────────────────────────
+const GLOBE_COUNTRY_NAMES = new Set([
+  'Egypt, Arab Rep.', 'Australia', 'Brazil', 'Canada', 'United States',
+  'Russian Federation', 'South Africa', 'China', 'Viet Nam', 'United Kingdom', 'India',
+]);
+
 export interface CountryData {
   _id: string;
   name: string;
@@ -108,7 +114,12 @@ function CountryInfoPanel({ country, onClose }: { country: CountryData; onClose:
         className="relative h-14 rounded-t-3xl flex items-center px-5 gap-3 flex-shrink-0"
         style={{ background: `linear-gradient(135deg, ${country.color}ee, ${country.color}99)` }}
       >
-        <span className="text-3xl drop-shadow">{country.flag ?? '🌍'}</span>
+        {country.flag && (country.flag.startsWith('/') || country.flag.startsWith('http')) ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={country.flag} alt={country.name} className="w-10 h-7 rounded-[6px] object-cover border border-white/30 flex-shrink-0 drop-shadow" />
+        ) : (
+          <span className="text-3xl drop-shadow">{country.flag ?? <Icon icon="mingcute:earth-3-line" width={22} />}</span>
+        )}
         <div>
           <p className="font-extrabold text-white text-base leading-tight drop-shadow">{country.name}</p>
           {country.continent && <p className="text-white/80 text-[10px] font-semibold">{country.continent}</p>}
@@ -161,10 +172,34 @@ export function HomepageGlobe() {
   // ── Fetch country markers ─────────────────────────────────────────────────
   const fetchCountries = useCallback(async () => {
     try {
-      const res = await fetch('/api/countries');
+      const res = await fetch('/api/map/features?category=economic');
       if (!res.ok) return;
-      const data = await res.json();
-      setCountries(data.countries ?? []);
+      const data: any[] = await res.json();
+      const mapped: CountryData[] = data
+        .filter((f: any) => GLOBE_COUNTRY_NAMES.has(f.name))
+        .map((f: any) => {
+          const a = f.attributes ?? {};
+          return {
+            _id: f._id,
+            name: f.name,
+            lat: f.lat ?? 0,
+            lng: f.lng ?? 0,
+            capital: a.capitalCity ?? '',
+            population: a.population != null ? Number(a.population).toLocaleString('vi-VN') + ' người' : '',
+            description: a.description ?? '',
+            color: a.color ?? '#06B6D4',
+            images: Array.isArray(a.images) ? a.images.filter(Boolean) : [],
+            flag: a.flagImage ?? undefined,
+            area: a.area != null ? Number(a.area).toLocaleString('vi-VN') + ' km²' : undefined,
+            language: a.language ?? undefined,
+            currency: Array.isArray(a.currencies) && a.currencies.length > 0
+              ? a.currencies.map((c: any) => c.code).join(', ')
+              : undefined,
+            continent: a.region ?? undefined,
+            funFact: a.funFact ?? undefined,
+          };
+        });
+      setCountries(mapped);
     } catch { /* ignore */ }
   }, []);
 

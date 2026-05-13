@@ -1,5 +1,6 @@
 'use client';
 
+import { Icon } from '@iconify/react';
 import React, { useEffect, useRef, useCallback, useState } from 'react';
 
 // ─── Load Cesium from pre-built script (avoids webpack SyntaxError) ────────────
@@ -41,6 +42,7 @@ const DEFAULT_COLOR = '#64748B';
 
 interface Country {
   cca2: string;
+  cca3?: string;
   nameCommon: string;
   nameOfficial: string;
   capital: string;
@@ -49,12 +51,17 @@ interface Country {
   centerLat: number;
   centerLng: number;
   flag: string;
+  flagPng?: string;
+  tld?: string[];
+  callingCodes?: string[];
   region: string;
   subregion: string;
   population: number;
   area: number;
   languages?: string;
   currencies?: string;
+  unMember?: boolean;
+  images?: string[];
 }
 
 interface InfoPanel {
@@ -263,10 +270,10 @@ export default function CesiumMapView({ initialScene = '3d', className = '' }: C
       {/* ── Nút chuyển chế độ (top-left) ── */}
       <div className="absolute top-4 left-4 z-[999] flex gap-1 p-1 bg-white/80 backdrop-blur-xl border border-white/60 rounded-[18px] shadow-lg">
         {([
-          ['3d',       '🌍', 'Quả cầu 3D'],
-          ['2d',       '🗺️', 'Phẳng 2D'],
-          ['columbus', '🧭', 'Columbus'],
-        ] as [SceneMode, string, string][]).map(([id, icon, label]) => (
+          ['3d',       <Icon key="3d" icon="material-symbols:3d-rounded" width={30} />],
+          ['2d',       <Icon key="2d" icon="material-symbols:2d-rounded" width={30} />],
+          ['columbus', <Icon key="col" icon="material-symbols:map-sharp" width={30} />],
+        ] as [SceneMode, React.ReactNode][]).map(([id, icon]) => (
           <button
             key={id}
             onClick={() => switchScene(id)}
@@ -277,7 +284,6 @@ export default function CesiumMapView({ initialScene = '3d', className = '' }: C
             }`}
           >
             <span className="text-base">{icon}</span>
-            {label}
           </button>
         ))}
       </div>
@@ -293,59 +299,162 @@ export default function CesiumMapView({ initialScene = '3d', className = '' }: C
       </div>
 
       {/* ── Info Panel (popup khi click marker) ── */}
-      {infoPanel && (
-        <div
-          className="absolute z-[1000] w-72 bg-white/95 backdrop-blur-2xl border border-white rounded-[24px] shadow-[0_20px_40px_rgba(8,47,73,0.15)] overflow-hidden"
-          style={{
-            left: Math.min(infoPanel.x - (containerRef.current?.getBoundingClientRect().left ?? 0) + 12, (containerRef.current?.clientWidth ?? 800) - 300),
-            top:  Math.min(infoPanel.y - (containerRef.current?.getBoundingClientRect().top ?? 0) - 20, (containerRef.current?.clientHeight ?? 600) - 320),
-          }}
-        >
-          {/* Header */}
-          <div className="px-5 pt-4 pb-3 bg-gradient-to-r from-cyan-50 to-sky-50 border-b border-white">
-            <div className="flex items-start justify-between gap-2">
-              <div>
-                <span className="text-3xl">{infoPanel.country.flag}</span>
-                <p className="font-black text-[#082F49] text-base leading-tight mt-1">{infoPanel.country.nameCommon}</p>
-                <p className="text-[10px] text-slate-400 font-medium">{infoPanel.country.subregion || infoPanel.country.region}</p>
-              </div>
-              <button
-                onClick={() => setInfoPanel(null)}
-                className="w-6 h-6 rounded-full bg-white/80 text-slate-400 hover:bg-rose-100 hover:text-rose-500 transition-colors text-xs flex items-center justify-center flex-shrink-0"
-              >✕</button>
-            </div>
-          </div>
+      {infoPanel && (() => {
+        const c = infoPanel.country;
+        const cx = infoPanel.x - (containerRef.current?.getBoundingClientRect().left ?? 0);
+        const cy = infoPanel.y - (containerRef.current?.getBoundingClientRect().top ?? 0);
+        const panelW = 420;
+        const cw = containerRef.current?.clientWidth ?? 800;
+        const ch = containerRef.current?.clientHeight ?? 600;
 
-          {/* Body */}
-          <div className="p-4 space-y-2">
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-blue-50 rounded-[12px] px-3 py-2">
-                <p className="text-[9px] font-bold text-blue-500 uppercase tracking-wider">Thủ đô</p>
-                <p className="text-xs font-bold text-[#082F49]">{infoPanel.country.capital || '—'}</p>
-              </div>
-              <div className="bg-emerald-50 rounded-[12px] px-3 py-2">
-                <p className="text-[9px] font-bold text-emerald-600 uppercase tracking-wider">Châu lục</p>
-                <p className="text-xs font-bold text-[#082F49]">{infoPanel.country.region}</p>
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div className="bg-violet-50 rounded-[12px] px-3 py-2">
-                <p className="text-[9px] font-bold text-violet-500 uppercase tracking-wider">Dân số</p>
-                <p className="text-xs font-bold text-[#082F49]">{fmt(infoPanel.country.population)}</p>
-              </div>
-              <div className="bg-amber-50 rounded-[12px] px-3 py-2">
-                <p className="text-[9px] font-bold text-amber-600 uppercase tracking-wider">Diện tích</p>
-                <p className="text-xs font-bold text-[#082F49]">{fmt(infoPanel.country.area)} km²</p>
-              </div>
-            </div>
-            <div className="bg-slate-50 rounded-[12px] px-3 py-2">
-              <p className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">Ngôn ngữ</p>
-              <p className="text-xs font-medium text-[#334155]">{parseLangs(infoPanel.country.languages)}</p>
-            </div>
-            <p className="text-[10px] text-slate-400 text-center">Tên chính thức: {infoPanel.country.nameOfficial}</p>
+        const parsedCurrencies: string[] = (() => {
+          try {
+            const obj = typeof c.currencies === 'string' ? JSON.parse(c.currencies) : c.currencies;
+            return Object.entries(obj ?? {}).map(([code, val]: [string, any]) =>
+              `${val?.name ?? code}${val?.symbol ? ' (' + val.symbol + ')' : ''}`
+            );
+          } catch { return []; }
+        })();
+
+        const parsedLangs: string[] = (() => {
+          try {
+            const obj = typeof c.languages === 'string' ? JSON.parse(c.languages) : c.languages;
+            return Object.values(obj ?? {}) as string[];
+          } catch { return []; }
+        })();
+
+        const Row = ({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) => (
+          <div className="flex flex-col gap-0.5">
+            <p className="flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-widest text-[#94A3B8]">{icon} {label}</p>
+            <p className="text-[11px] font-bold text-[#082F49] leading-snug">{value}</p>
           </div>
-        </div>
-      )}
+        );
+
+        const regionColor = REGION_COLOR[c.region] || DEFAULT_COLOR;
+
+        return (
+          <div
+            className="absolute z-[1000] overflow-hidden overflow-y-auto"
+            style={{
+              width: panelW,
+              maxHeight: ch - 16,
+              left: Math.min(cx + 14, cw - panelW - 8),
+              top: Math.max(4, Math.min(cy - 20, ch - 500)),
+              background: 'rgba(255, 255, 255, 0.88)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255, 255, 255, 1)',
+              boxShadow: '0 20px 50px rgba(14, 165, 233, 0.18), inset 0 1px 0 rgba(255,255,255,1)',
+              borderRadius: 24,
+            }}
+          >
+            {/* Header */}
+            <div className="border-b border-white/70" style={{ background: 'rgba(255,255,255,0.6)' }}>
+              {/* Flag image banner */}
+              {c.flagPng && (
+                <div className="w-full h-28 overflow-hidden rounded-t-[24px] relative">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src={c.flagPng} alt={`Cờ ${c.nameCommon}`} className="w-full h-full object-cover" />
+                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(255,255,255,0.85))' }} />
+                </div>
+              )}
+              <div className="px-5 pt-4 pb-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2.5">
+                      {!c.flagPng && (
+                        <span className="text-3xl leading-none flex-shrink-0">{c.flag}</span>
+                      )}
+                      <div className="min-w-0">
+                        <p className="font-black text-[#082F49] text-base leading-tight">{c.nameCommon}</p>
+                        {c.nameOfficial && c.nameOfficial !== c.nameCommon && (
+                          <p className="text-[10px] text-[#94A3B8] font-medium leading-tight mt-0.5">{c.nameOfficial}</p>
+                        )}
+                      </div>
+                    </div>
+                    {/* Badge row */}
+                    <div className="flex flex-wrap gap-1.5 mt-2.5">
+                      <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-white border border-slate-200 text-slate-500 shadow-sm">{c.cca2}</span>
+                      {c.cca3 && (
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-white border border-slate-200 text-slate-500 shadow-sm">{c.cca3}</span>
+                      )}
+                      {c.tld && c.tld.length > 0 && c.tld.map((t, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded-full text-[9px] font-black bg-[#E0F2FE] border border-[#BAE6FD] text-[#0284C7] shadow-sm">🌐 {t}</span>
+                      ))}
+                      {c.callingCodes && c.callingCodes.length > 0 && c.callingCodes.map((code, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded-full text-[9px] font-black bg-[#DCFCE7] border border-[#BBF7D0] text-[#16A34A] shadow-sm">📞 {code}</span>
+                      ))}
+                      {c.unMember && (
+                        <span className="px-2 py-0.5 rounded-full text-[9px] font-black bg-[#EFF6FF] border border-[#BFDBFE] text-[#1D4ED8] shadow-sm">🇺🇳 LHQ</span>
+                      )}
+                      <span
+                        className="px-2 py-0.5 rounded-full text-[9px] font-black shadow-sm border"
+                        style={{ background: regionColor + '18', borderColor: regionColor + '40', color: regionColor }}
+                      >{c.region}</span>
+                    </div>
+                  </div>
+                  <button
+                    onClick={() => setInfoPanel(null)}
+                    className="w-7 h-7 rounded-full bg-white border border-slate-200 text-slate-400 hover:bg-rose-50 hover:text-rose-500 hover:border-rose-200 transition-all text-xs flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm"
+                  >✕</button>
+                </div>
+              </div>
+            </div>
+
+            {/* 2 columns */}
+            <div className="grid grid-cols-2 gap-x-4 px-4 pb-4 pt-3">
+              {/* Cột trái: Địa lý & Hành chính */}
+              <div className="space-y-2.5">
+                <p className="flex items-center gap-1 text-[9px] font-black text-[#94A3B8] uppercase tracking-widest pb-1 border-b border-slate-100"><Icon icon="mingcute:map-line" width={14} /> Địa lý & Hành chính</p>
+                {c.capital && <Row icon={<Icon icon="mingcute:city-line" width={12} />} label="Thủ đô" value={c.capital} />}
+                {c.subregion && <Row icon={<Icon icon="mingcute:location-line" width={12} />} label="Tiểu vùng" value={c.subregion} />}
+                {c.area > 0 && <Row icon={<Icon icon="mingcute:ruler-line" width={12} />} label="Diện tích" value={`${Number(c.area).toLocaleString('vi-VN')} km²`} />}
+                {parsedCurrencies.length > 0 && (
+                  <Row icon={<Icon icon="mingcute:exchange-dollar-line" width={12} />} label="Tiền tệ" value={parsedCurrencies.join(' · ')} />
+                )}
+              </div>
+
+              {/* Cột phải: Dân số & Ngôn ngữ */}
+              <div className="space-y-2.5">
+                <p className="flex items-center gap-1 text-[9px] font-black text-[#94A3B8] uppercase tracking-widest pb-1 border-b border-slate-100"><Icon icon="mingcute:group-2-line" width={14} /> Dân số & Văn hóa</p>
+                {c.population > 0 && (
+                  <Row icon={<Icon icon="mingcute:group-2-line" width={12} />} label="Dân số" value={
+                    c.population >= 1_000_000
+                      ? `${(c.population / 1_000_000).toFixed(1)} triệu`
+                      : Number(c.population).toLocaleString('vi-VN')
+                  } />
+                )}
+                {parsedLangs.length > 0 && (
+                  <Row icon={<Icon icon="mingcute:translate-2-line" width={12} />} label="Ngôn ngữ" value={parsedLangs.join(', ')} />
+                )}
+              </div>
+            </div>
+
+            {/* Tên chính thức — full width footer */}
+            {c.nameOfficial && c.nameOfficial !== c.nameCommon && (
+              <div className="mx-4 mb-3 px-3 py-2 rounded-[12px] bg-slate-50 border border-slate-100">
+                <p className="flex items-center gap-1 text-[9px] font-extrabold uppercase tracking-widest text-[#94A3B8]"><Icon icon="mingcute:tag-line" width={12} /> Tên chính thức</p>
+                <p className="text-[11px] font-bold text-[#334155] mt-0.5">{c.nameOfficial}</p>
+              </div>
+            )}
+
+            {/* Gallery ảnh quốc gia */}
+            {Array.isArray(c.images) && c.images.filter(Boolean).length > 0 && (
+              <div className="px-4 pb-4">
+                <p className="text-[9px] font-black text-[#94A3B8] uppercase tracking-widest mb-2">🖼️ Hình ảnh</p>
+                <div className="flex gap-2 overflow-x-auto pb-1">
+                  {c.images.filter(Boolean).map((url: string, i: number) => (
+                    <div key={i} className="flex-shrink-0 w-32 h-20 rounded-[14px] overflow-hidden border border-slate-100 bg-slate-50">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img src={url} alt={`${c.nameCommon} ${i + 1}`} className="w-full h-full object-cover" />
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* Loading overlay */}
       {!ready && (
