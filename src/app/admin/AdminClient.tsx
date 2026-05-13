@@ -1705,7 +1705,7 @@ function CountryDetailView({ country: initial, onBack, onDeleted, onUpdated }: {
       tld: Array.isArray(a.tld) ? a.tld.join(', ') : (a.tld ?? ''),
       callingCodes: Array.isArray(a.callingCodes) ? a.callingCodes.join(', ') : (a.callingCodes ?? ''),
       unMember: a.unMember ?? true,
-      flagImage: a.flagImage ?? '',
+      flagImage: (a.flagImage ?? '').replace(/^\/flag\//, ''),
       images: Array.isArray(a.images) ? a.images.filter(Boolean) : [],
     });
     setSaveError('');
@@ -1732,7 +1732,7 @@ function CountryDetailView({ country: initial, onBack, onDeleted, onUpdated }: {
           tld: form.tld.split(',').map((s: string) => s.trim()).filter(Boolean),
           callingCodes: form.callingCodes.split(',').map((s: string) => s.trim()).filter(Boolean),
           unMember: form.unMember,
-          flagImage: form.flagImage.trim() || undefined,
+          flagImage: form.flagImage.trim() ? `/flag/${form.flagImage.trim().replace(/^\/flag\//, '')}` : undefined,
           images: (form.images ?? []).filter(Boolean),
         },
       };
@@ -1897,26 +1897,29 @@ function CountryDetailView({ country: initial, onBack, onDeleted, onUpdated }: {
         {/* Flag image path — chỉ hiện khi editing */}
         {editing && (
           <div className="mt-4 pt-4 border-t border-slate-100">
-            <CdvFieldLabel>Đường dẫn ảnh cờ (trong /public/flag/)</CdvFieldLabel>
+            <CdvFieldLabel>Tên file ảnh cờ (trong /public/flag/)</CdvFieldLabel>
             <div className="flex items-center gap-3">
-              <div className="flex-1">
-                <CdvInput
+              <div className="flex-1 flex items-center border-2 border-white/60 bg-white/40 backdrop-blur-md rounded-full overflow-hidden">
+                <span className="pl-4 pr-1 text-sm font-bold text-[#94A3B8] whitespace-nowrap select-none">/flag/</span>
+                <input
+                  type="text"
                   value={form!.flagImage}
-                  onChange={v => setForm(p => p && ({ ...p, flagImage: v }))}
-                  placeholder="VD: /flag/vn.png"
+                  onChange={e => setForm(p => p && ({ ...p, flagImage: e.target.value }))}
+                  placeholder="vn.png"
+                  className="flex-1 bg-transparent py-2.5 pr-4 text-sm text-[#334155] font-semibold placeholder:text-slate-300 outline-none"
                 />
               </div>
               {form!.flagImage && (
                 <div className="w-14 h-10 rounded-[12px] overflow-hidden border border-slate-200 flex-shrink-0 bg-slate-50">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={form!.flagImage} alt="preview"
+                  <img src={`/flag/${form!.flagImage.replace(/^\/flag\//, '')}`} alt="preview"
                     className="w-full h-full object-cover"
                     onError={e => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                 </div>
               )}
             </div>
             <p className="text-[10px] text-[#94A3B8] font-semibold mt-1.5">
-              Đặt ảnh vào thư mục <code className="bg-slate-100 px-1 rounded">public/flag/</code>, nhập đường dẫn bắt đầu từ <code className="bg-slate-100 px-1 rounded">/flag/</code>
+              Đặt ảnh vào thư mục <code className="bg-slate-100 px-1 rounded">public/flag/</code>, chỉ nhập tên file. VD: <code className="bg-slate-100 px-1 rounded">vn.png</code>
             </p>
           </div>
         )}

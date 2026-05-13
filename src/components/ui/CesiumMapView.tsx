@@ -194,7 +194,7 @@ export default function CesiumMapView({ initialScene = '3d', className = '' }: C
       const lat = c.capitalLat || c.centerLat;
       const lng = c.capitalLng || c.centerLng;
       // Bỏ qua tọa độ không hợp lệ
-      if (!lat || !lng || lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
+      if (lat == null || lng == null || lat < -90 || lat > 90 || lng < -180 || lng > 180) return;
 
       const hex = REGION_COLOR[c.region] || DEFAULT_COLOR;
       const color = Cesium.Color.fromCssColorString(hex);

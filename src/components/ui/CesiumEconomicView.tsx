@@ -200,7 +200,7 @@ export default function CesiumEconomicView({ className = '' }: Props) {
     const pointCollection = new Cesium.PointPrimitiveCollection();
 
     features.forEach(f => {
-      if (!f.lat || !f.lng || f.lat < -90 || f.lat > 90 || f.lng < -180 || f.lng > 180) return;
+      if (f.lat == null || f.lng == null || f.lat < -90 || f.lat > 90 || f.lng < -180 || f.lng > 180) return;
       const hex = INCOME_COLOR[f.incomeLevelCode || 'INX'] || '#94a3b8';
       const color = Cesium.Color.fromCssColorString(hex);
       pointCollection.add({
