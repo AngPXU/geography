@@ -306,6 +306,8 @@ export default function CesiumMapView({ initialScene = '3d', className = '' }: C
         const panelW = 420;
         const cw = containerRef.current?.clientWidth ?? 800;
         const ch = containerRef.current?.clientHeight ?? 600;
+        const actualW = Math.min(panelW, cw - 16);
+        const left = Math.max(8, Math.min(cx + 14, cw - actualW - 8));
 
         const parsedCurrencies: string[] = (() => {
           try {
@@ -336,9 +338,9 @@ export default function CesiumMapView({ initialScene = '3d', className = '' }: C
           <div
             className="absolute z-[1000] overflow-hidden overflow-y-auto"
             style={{
-              width: panelW,
+              width: actualW,
               maxHeight: ch - 16,
-              left: Math.min(cx + 14, cw - panelW - 8),
+              left,
               top: Math.max(4, Math.min(cy - 20, ch - 500)),
               background: 'rgba(255, 255, 255, 0.88)',
               backdropFilter: 'blur(24px)',
@@ -350,19 +352,14 @@ export default function CesiumMapView({ initialScene = '3d', className = '' }: C
           >
             {/* Header */}
             <div className="border-b border-white/70" style={{ background: 'rgba(255,255,255,0.6)' }}>
-              {/* Flag image banner */}
-              {c.flagPng && (
-                <div className="w-full h-28 overflow-hidden rounded-t-[24px] relative">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={c.flagPng} alt={`Cờ ${c.nameCommon}`} className="w-full h-full object-cover" />
-                  <div className="absolute inset-0" style={{ background: 'linear-gradient(to bottom, transparent 40%, rgba(255,255,255,0.85))' }} />
-                </div>
-              )}
               <div className="px-5 pt-4 pb-3">
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2.5">
-                      {!c.flagPng && (
+                      {c.flagPng ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={c.flagPng} alt={`Cờ ${c.nameCommon}`} className="w-14 h-9 rounded-[8px] object-cover flex-shrink-0 shadow-sm border border-white/80" />
+                      ) : (
                         <span className="text-3xl leading-none flex-shrink-0">{c.flag}</span>
                       )}
                       <div className="min-w-0">
