@@ -23,6 +23,11 @@ export type BlockType =
 
 // ── Sub-types ─────────────────────────────────────────────────────────────
 
+export interface FunFactFormula {
+  label?: string;   // optional text description above the formula
+  latex: string;    // KaTeX LaTeX string
+}
+
 export interface ChartDataPoint {
   label: string;
   value: number;
@@ -107,9 +112,12 @@ export interface StoryBlock {
   // ── List items (objectives, summary, activity steps...) ──
   items?: string[];
 
-  // ── FunFact (added emoji + tag) ──
+  // ── FunFact (added emoji + tag + formulas) ──
   emoji?: string;
   tag?: string;
+  funFactFormulas?: FunFactFormula[];
+  funFactContentAfter?: string;
+  funFactRawContent?: string; // unified plain-text + $$LaTeX$$ content
 
   // ── Quiz (improved — legacy single + new multi-question) ──
   question?: string;
@@ -145,17 +153,24 @@ export interface StoryBlock {
   tableHighlightRow?: number;
   tableUnit?: string;
   tableSource?: string;
+  tableSplitHeader?: boolean;
+  tableRowHeader?: string;
+  tableColHeader?: string;
+  tableHeaderBg?: string;
+  tableHeaderTextColor?: string;
 
   // ── Video (Phase 2) ──
   videoUrl?: string;
   videoCaption?: string;
 
   // ── Chart (Phase 2) ──
-  chartType?: 'bar' | 'line' | 'pie';
+  chartType?: 'bar' | 'column' | 'line' | 'pie';
   chartData?: ChartDataPoint[];
   chartUnit?: string;
   chartXLabel?: string;
   chartYLabel?: string;
+  chartCaption?: string;  // "Hình 1. Tên biểu đồ..."
+  chartSource?: string;   // "(Nguồn: Cục Thống kê năm 2025)"
 
   // ── Diagram (Phase 2) ──
   diagramImage?: string;
@@ -200,6 +215,7 @@ export interface StoryBlock {
 
   // ── Gallery (Phase 3) ──
   galleryImages?: GalleryImage[];
+  galleryDisplayMode?: 'inline' | 'panel'; // 'inline' = lưới ảnh trong nội dung, 'panel' = hiển thị ở khung phải như imageScenario
 
   // ── Summary — uses title + items + content (intro) ──
   summarySections?: SummarySection[];

@@ -6,10 +6,13 @@ import { Icon } from '@iconify/react';
 import { PresentationPreview } from './PresentationPreview';
 import { RichTextEditor } from './RichTextEditor';
 import dynamic from 'next/dynamic';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
+import { MathContentEditor } from './MathContentEditor';
 
 const CesiumGlobe = dynamic(() => import('./CesiumGlobe'), { ssr: false });
 
-import type { BlockType, StoryBlock, QuizQuestion, PracticeItem, SummarySection } from '@/types/presentation';
+import type { BlockType, StoryBlock, QuizQuestion, PracticeItem, SummarySection, FunFactFormula } from '@/types/presentation';
 
 function ImageSlider({ urls }: { urls: string[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -184,11 +187,13 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
   const [collapsedBlocks, setCollapsedBlocks] = useState<Set<string>>(new Set());
   const [blockViewMode, setBlockViewMode] = useState<'simple' | 'detailed'>('detailed');
+  const [formulaOpenMap, setFormulaOpenMap] = useState<Record<string, boolean>>({});
 
   // --- Block palette config ---
   const BLOCK_PALETTE: { type: BlockType; label: string; icon: string; bg: string; border: string; text: string; hoverBorder: string; hoverBg: string }[] = [
     { type: 'heading',       label: 'Tiêu đề',              icon: 'material-symbols:title-rounded', bg: 'bg-cyan-50',    border: 'border-cyan-200',    text: 'text-cyan-700',    hoverBorder: 'hover:border-cyan-500',    hoverBg: 'hover:bg-cyan-100' },
     { type: 'text',          label: 'Văn bản',              icon: 'ph:article',                     bg: 'bg-slate-50',   border: 'border-slate-200',   text: 'text-slate-700',   hoverBorder: 'hover:border-slate-500',   hoverBg: 'hover:bg-slate-100' },
+    { type: 'gallery',       label: 'Hình ảnh',                icon: 'ph:images-square',               bg: 'bg-cyan-50',    border: 'border-cyan-300',    text: 'text-cyan-800',    hoverBorder: 'hover:border-cyan-600',    hoverBg: 'hover:bg-cyan-200' },
     { type: 'objectives',    label: 'Nội dung bài học',     icon: 'ph:target',                      bg: 'bg-amber-50',   border: 'border-amber-200',   text: 'text-amber-700',   hoverBorder: 'hover:border-amber-500',   hoverBg: 'hover:bg-amber-100' },
     { type: 'imageScenario', label: 'Tình huống có Ảnh',    icon: 'ph:image',                       bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', hoverBorder: 'hover:border-emerald-500', hoverBg: 'hover:bg-emerald-100' },
     { type: 'funFact',       label: 'Có thể em chưa biết',  icon: 'ph:lightbulb-filament',          bg: 'bg-blue-50',    border: 'border-blue-200',    text: 'text-blue-700',    hoverBorder: 'hover:border-blue-500',    hoverBg: 'hover:bg-blue-100' },
@@ -199,16 +204,15 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
     { type: 'video',         label: 'Video',                 icon: 'ph:video-camera',                bg: 'bg-red-50',     border: 'border-red-200',     text: 'text-red-700',     hoverBorder: 'hover:border-red-500',     hoverBg: 'hover:bg-red-100' },
     { type: 'chart',         label: 'Biểu đồ',               icon: 'ph:chart-bar',                   bg: 'bg-indigo-50',  border: 'border-indigo-200',  text: 'text-indigo-700',  hoverBorder: 'hover:border-indigo-500',  hoverBg: 'hover:bg-indigo-100' },
     { type: 'diagram',       label: 'Sơ đồ',                 icon: 'ph:puzzle-piece',                bg: 'bg-lime-50',    border: 'border-lime-200',    text: 'text-lime-700',    hoverBorder: 'hover:border-lime-500',    hoverBg: 'hover:bg-lime-100' },
-    { type: 'compare',       label: 'So sánh',               icon: 'ph:scales',                      bg: 'bg-zinc-50',    border: 'border-zinc-200',    text: 'text-zinc-700',    hoverBorder: 'hover:border-zinc-500',    hoverBg: 'hover:bg-zinc-100' },
+    { type: 'compare',       label: 'So sánh',               icon: 'ph:scales',                      bg: 'bg-zinc-50',    border: 'border-lime-200',    text: 'text-zinc-700',    hoverBorder: 'hover:border-zinc-500',    hoverBg: 'hover:bg-zinc-100' },
     { type: 'callout',       label: 'Ghi chú',               icon: 'ph:warning',                     bg: 'bg-yellow-50',  border: 'border-yellow-200',  text: 'text-yellow-700',  hoverBorder: 'hover:border-yellow-500',  hoverBg: 'hover:bg-yellow-100' },
     { type: 'timeline',      label: 'Đường thời gian',       icon: 'ph:clock-counter-clockwise',     bg: 'bg-purple-50',  border: 'border-purple-200',  text: 'text-purple-700',  hoverBorder: 'hover:border-purple-500',  hoverBg: 'hover:bg-purple-100' },
     { type: 'groupActivity', label: 'Hoạt động nhóm',        icon: 'ph:users-three',                 bg: 'bg-green-50',   border: 'border-green-200',   text: 'text-green-700',   hoverBorder: 'hover:border-green-500',   hoverBg: 'hover:bg-green-100' },
-    { type: 'fillBlank',     label: 'Điền khuyết',           icon: 'ph:text-underline',              bg: 'bg-pink-50',    border: 'border-pink-200',    text: 'text-pink-700',    hoverBorder: 'hover:border-pink-500',    hoverBg: 'hover:bg-pink-100' },
+    { type: 'fillBlank',     label: 'Điền khuyết',           icon: 'ph:text-underline',              bg: 'bg-pink-50',    border: 'border-green-200',    text: 'text-pink-700',    hoverBorder: 'hover:border-pink-500',    hoverBg: 'hover:bg-pink-100' },
     { type: 'quote',         label: 'Trích dẫn',             icon: 'ph:quotes',                      bg: 'bg-stone-50',   border: 'border-stone-200',   text: 'text-stone-700',   hoverBorder: 'hover:border-stone-500',   hoverBg: 'hover:bg-stone-100' },
     { type: 'glossary',      label: 'Từ vựng',               icon: 'ph:book-open-text',              bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', text: 'text-fuchsia-700', hoverBorder: 'hover:border-fuchsia-500', hoverBg: 'hover:bg-fuchsia-100' },
-    { type: 'twoColumn',     label: '2 cột',                  icon: 'ph:columns',                     bg: 'bg-neutral-50', border: 'border-neutral-200', text: 'text-neutral-700', hoverBorder: 'hover:border-neutral-500', hoverBg: 'hover:bg-neutral-100' },
+    { type: 'twoColumn',     label: '2 cột',                  icon: 'ph:columns',                     bg: 'bg-neutral-50', border: 'border-rose-200', text: 'text-neutral-700', hoverBorder: 'hover:border-neutral-500', hoverBg: 'hover:bg-neutral-100' },
     { type: 'practice',      label: 'Luyện tập & Vận dụng', icon: 'ph:pencil-ruler',                bg: 'bg-rose-50',    border: 'border-rose-200',    text: 'text-rose-700',    hoverBorder: 'hover:border-rose-500',    hoverBg: 'hover:bg-rose-100' },
-    { type: 'gallery',       label: 'Bộ ảnh',                icon: 'ph:images-square',               bg: 'bg-cyan-50',    border: 'border-cyan-300',    text: 'text-cyan-800',    hoverBorder: 'hover:border-cyan-600',    hoverBg: 'hover:bg-cyan-200' },
     { type: 'summary',       label: 'Tổng kết',              icon: 'ph:clipboard-text',              bg: 'bg-sky-100',    border: 'border-sky-300',     text: 'text-sky-800',     hoverBorder: 'hover:border-sky-500',     hoverBg: 'hover:bg-sky-200' },
   ];
 
@@ -444,7 +448,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
       videoCaption: type === 'video' ? '' : undefined,
 
       // Phase 2: Chart
-      chartType: type === 'chart' ? 'bar' : undefined,
+      chartType: type === 'chart' ? 'column' : undefined,
       chartData: type === 'chart' ? [
         { label: '', value: 0, color: '#06B6D4' },
       ] : undefined,
@@ -765,17 +769,16 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                   />
                 </div>
 
-                {/* Content */}
+                {/* Content — unified text + math editor */}
                 <div>
                   <label className={labelCls}>Nội dung</label>
-                  <div className="bg-white border border-slate-200 rounded-xl overflow-hidden focus-within:border-cyan-400 focus-within:ring-2 focus-within:ring-cyan-100 transition-all">
-                    <RichTextEditor
-                      value={block.content || ''}
-                      onChange={(html) => updateBlock(block.id, { content: html })}
-                      placeholder="Gõ nội dung thú vị..."
-                    />
-                  </div>
+                  <MathContentEditor
+                    value={block.funFactRawContent || ''}
+                    onChange={(val) => updateBlock(block.id, { funFactRawContent: val })}
+                    placeholder={'Gõ nội dung thú vị...\nDán công thức LaTeX và bọc trong $$...$$ để hiển thị, ví dụ:\n$$\\frac{\\text{Dân số}}{\\text{Diện tích}}$$'}
+                  />
                 </div>
+
               </ModuleShell>
             )}
 
@@ -1032,7 +1035,20 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
             )}
 
             {/* DATA TABLE BLOCK */}
-            {block.type === 'dataTable' && (
+            {block.type === 'dataTable' && (() => {
+              const TABLE_HEADER_PRESETS = [
+                { label: 'Navy', bg: '#1e3a8a', text: '#ffffff' },
+                { label: 'Tím', bg: '#5b21b6', text: '#ffffff' },
+                { label: 'Cyan', bg: '#0e7490', text: '#ffffff' },
+                { label: 'Xanh lá', bg: '#166534', text: '#ffffff' },
+                { label: 'Đỏ', bg: '#9f1239', text: '#ffffff' },
+                { label: 'Xám thẫm', bg: '#1e293b', text: '#ffffff' },
+                { label: 'Cam', bg: '#92400e', text: '#ffffff' },
+                { label: 'Xanh lơ', bg: '#1d4ed8', text: '#ffffff' },
+              ];
+              const activeHeaderBg = block.tableHeaderBg || '#1e3a8a';
+              const activeHeaderText = block.tableHeaderTextColor || '#ffffff';
+              return (
               <ModuleShell
                 icon={<Icon icon="ph:table" width={20} />}
                 typeName="Bảng số liệu"
@@ -1052,13 +1068,42 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                   </span>
                 }
               >
-                {/* Table editor */}
+                {/* ── Màu sắc tiêu đề ── */}
+                <div className="p-4 rounded-2xl border border-slate-100" style={{background:'linear-gradient(135deg,#f8f5ff,#f0f4ff)'}}>
+                  <label className={labelCls}>Màu tiêu đề bảng</label>
+                  <div className="flex flex-wrap items-center gap-2 mt-1.5">
+                    {TABLE_HEADER_PRESETS.map(p => (
+                      <button
+                        key={p.bg}
+                        title={p.label}
+                        onClick={() => updateBlock(block.id, { tableHeaderBg: p.bg, tableHeaderTextColor: p.text })}
+                        className="w-7 h-7 rounded-lg transition-all hover:scale-110"
+                        style={{
+                          background: p.bg,
+                          border: activeHeaderBg === p.bg ? '2.5px solid #7c3aed' : '2px solid rgba(0,0,0,0.12)',
+                          transform: activeHeaderBg === p.bg ? 'scale(1.18)' : undefined,
+                          boxShadow: activeHeaderBg === p.bg ? '0 0 0 2px #ede9fe' : undefined,
+                        }}
+                      />
+                    ))}
+                    <label className="w-7 h-7 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center cursor-pointer hover:border-violet-400 overflow-hidden relative" title="Màu tùy chỉnh">
+                      <input type="color" value={activeHeaderBg} className="w-10 h-10 opacity-0 absolute cursor-pointer" onChange={e => updateBlock(block.id, { tableHeaderBg: e.target.value })} />
+                      <Icon icon="ph:eye-dropper" width={14} className="text-slate-400" />
+                    </label>
+                    {/* Preview chip */}
+                    <span className="ml-2 px-3 py-1 rounded-full text-xs font-black transition-all" style={{background: activeHeaderBg, color: activeHeaderText}}>
+                      Tiêu đề
+                    </span>
+                  </div>
+                </div>
+
+                {/* ── Table editor ── */}
                 <div className="overflow-x-auto rounded-xl border border-slate-200 bg-white">
                   <table className="w-full border-collapse text-sm">
                     <thead>
-                      <tr className="bg-violet-50/60 border-b border-violet-100">
+                      <tr style={{backgroundColor: activeHeaderBg}}>
                         {(block.tableHeaders || []).map((h, ci) => (
-                          <th key={ci} className="p-2 text-left">
+                          <th key={ci} className="p-2 text-left" style={{borderRight:'1px solid rgba(255,255,255,0.2)'}}>
                             <div className="flex items-center gap-1">
                               <input
                                 type="text"
@@ -1068,7 +1113,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                                   hs[ci] = e.target.value;
                                   updateBlock(block.id, { tableHeaders: hs });
                                 }}
-                                className="bg-transparent outline-none font-black text-violet-700 w-full min-w-[110px] placeholder:text-[#94A3B8]"
+                                style={{background:'transparent',outline:'none',color: activeHeaderText,fontWeight:800,width:'100%',minWidth:'110px'}}
                                 placeholder={`Cột ${ci + 1}`}
                               />
                               {(block.tableHeaders || []).length > 1 && (
@@ -1078,7 +1123,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                                     const rows = (block.tableRows || []).map(r => r.filter((_, i) => i !== ci));
                                     updateBlock(block.id, { tableHeaders: hs, tableRows: rows });
                                   }}
-                                  className="text-rose-400 hover:text-rose-600 shrink-0 text-xs"
+                                  style={{color:'rgba(255,255,255,0.6)',flexShrink:0,fontSize:'11px',lineHeight:1,background:'none',border:'none',cursor:'pointer'}}
                                   title="Xóa cột"
                                 >✕</button>
                               )}
@@ -1092,7 +1137,9 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                               const rows = (block.tableRows || []).map(r => [...r, '']);
                               updateBlock(block.id, { tableHeaders: hs, tableRows: rows });
                             }}
-                            className="text-violet-500 hover:text-violet-700 font-bold text-lg w-7 h-7 rounded-md hover:bg-violet-100 transition-all"
+                            style={{color: activeHeaderText,fontWeight:'bold',fontSize:'18px',width:'28px',height:'28px',borderRadius:'6px',background:'none',border:'none',cursor:'pointer',transition:'background 0.15s',opacity:0.8}}
+                            onMouseEnter={e => (e.currentTarget.style.background='rgba(255,255,255,0.2)')}
+                            onMouseLeave={e => (e.currentTarget.style.background='none')}
                             title="Thêm cột"
                           >+</button>
                         </th>
@@ -1100,7 +1147,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                     </thead>
                     <tbody>
                       {(block.tableRows || []).map((row, ri) => (
-                        <tr key={ri} className="border-t border-slate-100 hover:bg-slate-50/50">
+                        <tr key={ri} className="border-t border-slate-100 hover:bg-violet-50/40 transition-colors">
                           {row.map((cell, ci) => (
                             <td key={ci} className="p-1">
                               <input
@@ -1143,15 +1190,21 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     <div>
                       <label className={labelCls}>Cột nổi bật (thanh bar)</label>
-                      <select
-                        value={block.tableHighlightCol ?? 1}
-                        onChange={e => updateBlock(block.id, { tableHighlightCol: parseInt(e.target.value) })}
-                        className={`${inputCls} cursor-pointer`}
-                      >
-                        {(block.tableHeaders || []).map((h, i) => (
-                          <option key={i} value={i}>{h || `Cột ${i + 1}`}</option>
-                        ))}
-                      </select>
+                      <div className="relative">
+                        <select
+                          value={block.tableHighlightCol ?? 1}
+                          onChange={e => updateBlock(block.id, { tableHighlightCol: parseInt(e.target.value) })}
+                          className="cursor-pointer w-full rounded-2xl px-4 py-2.5 text-sm font-semibold outline-none transition-all duration-200"
+                          style={{background:'linear-gradient(135deg,#f5f3ff,#ede9fe)',border:'1.5px solid #a78bfa',color:'#5b21b6',appearance:'none',paddingRight:'2.5rem'}}
+                        >
+                          {(block.tableHeaders || []).map((h, i) => (
+                            <option key={i} value={i}>{h || `Cột ${i + 1}`}</option>
+                          ))}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center" style={{color:'#7c3aed'}}>
+                          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                        </div>
+                      </div>
                     </div>
                     <div>
                       <label className={labelCls}>Đơn vị</label>
@@ -1165,16 +1218,22 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                     </div>
                     <div>
                       <label className={labelCls}>Hàng nổi bật</label>
-                      <select
-                        value={block.tableHighlightRow ?? -1}
-                        onChange={e => updateBlock(block.id, { tableHighlightRow: parseInt(e.target.value) === -1 ? undefined : parseInt(e.target.value) })}
-                        className={`${inputCls} cursor-pointer`}
-                      >
-                        <option value={-1}>— Không —</option>
-                        {(block.tableRows || []).map((r, i) => (
-                          <option key={i} value={i}>Hàng {i + 1}: {r[0]?.substring(0, 20) || '(trống)'}</option>
-                        ))}
-                      </select>
+                      <div className="relative">
+                        <select
+                          value={block.tableHighlightRow ?? -1}
+                          onChange={e => updateBlock(block.id, { tableHighlightRow: parseInt(e.target.value) === -1 ? undefined : parseInt(e.target.value) })}
+                          className="cursor-pointer w-full rounded-2xl px-4 py-2.5 text-sm font-semibold outline-none transition-all duration-200"
+                          style={{background:'linear-gradient(135deg,#f5f3ff,#ede9fe)',border:'1.5px solid #a78bfa',color:'#5b21b6',appearance:'none',paddingRight:'2.5rem'}}
+                        >
+                          <option value={-1}>— Không —</option>
+                          {(block.tableRows || []).map((r, i) => (
+                            <option key={i} value={i}>Hàng {i + 1}: {r[0]?.substring(0, 20) || '(trống)'}</option>
+                          ))}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-3 flex items-center" style={{color:'#7c3aed'}}>
+                          <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
+                        </div>
+                      </div>
                     </div>
                     <div>
                       <label className={labelCls}>Nguồn dữ liệu</label>
@@ -1187,9 +1246,49 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                       />
                     </div>
                   </div>
+
+                  {/* Split header toggle */}
+                  <div className="mt-3 pt-3 border-t border-slate-100">
+                    <label className="flex items-center gap-2.5 cursor-pointer select-none group w-fit">
+                      <div
+                        onClick={() => updateBlock(block.id, { tableSplitHeader: !block.tableSplitHeader })}
+                        className="relative w-10 h-5 rounded-full transition-colors duration-200"
+                        style={{background: block.tableSplitHeader ? '#7c3aed' : '#e2e8f0'}}
+                      >
+                        <div className="absolute top-0.5 left-0.5 w-4 h-4 bg-white rounded-full shadow transition-transform duration-200" style={{transform: block.tableSplitHeader ? 'translateX(20px)' : 'translateX(0)'}} />
+                      </div>
+                      <span className="text-xs font-bold text-[#334155]">Ô tiêu đề chia chéo (kiểu sách giáo khoa)</span>
+                    </label>
+
+                    {block.tableSplitHeader && (
+                      <div className="mt-2.5 grid grid-cols-2 gap-2">
+                        <div>
+                          <label className={labelCls}>Nhãn hàng (góc dưới trái)</label>
+                          <input
+                            type="text"
+                            value={block.tableRowHeader || ''}
+                            onChange={e => updateBlock(block.id, { tableRowHeader: e.target.value })}
+                            placeholder="VD: Nhóm tuổi"
+                            className={inputCls}
+                          />
+                        </div>
+                        <div>
+                          <label className={labelCls}>Nhãn cột (góc trên phải)</label>
+                          <input
+                            type="text"
+                            value={block.tableColHeader || ''}
+                            onChange={e => updateBlock(block.id, { tableColHeader: e.target.value })}
+                            placeholder="VD: Năm"
+                            className={inputCls}
+                          />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </ModuleShell>
-            )}
+              );
+            })()}
 
             {/* QUIZ BLOCK — MULTI-QUESTION */}
             {block.type === 'quiz' && (() => {
@@ -1382,13 +1481,19 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                 }
                 headerRight={
                   <div className="flex gap-1 bg-white/80 rounded-lg p-1 border border-indigo-100">
-                    {(['bar', 'line', 'pie'] as const).map(t => (
+                    {([
+                      { id: 'column', icon: <Icon icon="mingcute:chart-bar-fill" width={22} />, label: 'Cột' },
+                      { id: 'bar',    icon: <Icon icon="mingcute:chart-horizontal-fill" width={22} />, label: 'Ngang' },
+                      { id: 'line',   icon: <Icon icon="mingcute:chart-line-fill" width={22} />, label: 'Đường' },
+                      { id: 'pie',    icon: <Icon icon="mingcute:chart-pie-2-fill" width={22} />, label: 'Tròn' },
+                    ] as const).map(t => (
                       <button
-                        key={t}
-                        onClick={() => updateBlock(block.id, { chartType: t })}
-                        className={`px-2 py-1 rounded-md text-[11px] font-black transition-all ${block.chartType === t ? 'bg-indigo-500 text-white shadow-sm' : 'text-slate-400 hover:text-indigo-600'}`}
+                        key={t.id}
+                        onClick={() => updateBlock(block.id, { chartType: t.id })}
+                        title={t.label}
+                        className={`px-2 py-1 rounded-md text-[11px] font-black transition-all ${(block.chartType || 'column') === t.id ? 'bg-indigo-500 text-white shadow-sm' : 'text-slate-400 hover:text-indigo-600'}`}
                       >
-                        {t === 'bar' ? '📊' : t === 'line' ? '📉' : '🥧'}
+                        {t.icon}
                       </button>
                     ))}
                   </div>
@@ -1396,16 +1501,16 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
               >
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                   <div>
-                    <label className={labelCls}>Trục X</label>
-                    <input type="text" value={block.chartXLabel || ''} onChange={e => updateBlock(block.id, { chartXLabel: e.target.value })} placeholder="vd: Thành phố" className={inputCls} />
+                    <label className={labelCls}>Nhãn trục X</label>
+                    <input type="text" value={block.chartXLabel || ''} onChange={e => updateBlock(block.id, { chartXLabel: e.target.value })} placeholder="vd: Năm" className={inputCls} />
                   </div>
                   <div>
-                    <label className={labelCls}>Trục Y</label>
-                    <input type="text" value={block.chartYLabel || ''} onChange={e => updateBlock(block.id, { chartYLabel: e.target.value })} placeholder="vd: Nhiệt độ" className={inputCls} />
+                    <label className={labelCls}>Nhãn trục Y</label>
+                    <input type="text" value={block.chartYLabel || ''} onChange={e => updateBlock(block.id, { chartYLabel: e.target.value })} placeholder="vd: Tỉ số giới tính" className={inputCls} />
                   </div>
                   <div>
-                    <label className={labelCls}>Đơn vị</label>
-                    <input type="text" value={block.chartUnit || ''} onChange={e => updateBlock(block.id, { chartUnit: e.target.value })} placeholder="vd: °C" className={inputCls} />
+                    <label className={labelCls}>Đơn vị (trục Y)</label>
+                    <input type="text" value={block.chartUnit || ''} onChange={e => updateBlock(block.id, { chartUnit: e.target.value })} placeholder="vd: %" className={inputCls} />
                   </div>
                 </div>
 
@@ -1456,6 +1561,18 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                       onClick={() => updateBlock(block.id, { chartData: [...(block.chartData || []), { label: 'Mới', value: 0, color: '#6366F1' }] })}
                       className={`text-xs font-bold px-3 py-1.5 bg-white rounded-lg border border-dashed transition-all ${ACCENT_MAP.indigo.dashBtn}`}
                     >+ Thêm dòng</button>
+                  </div>
+                </div>
+
+                {/* Caption & Source */}
+                <div className="grid grid-cols-1 gap-3">
+                  <div>
+                    <label className={labelCls}>Chú thích biểu đồ (Hình X.)</label>
+                    <input type="text" value={block.chartCaption || ''} onChange={e => updateBlock(block.id, { chartCaption: e.target.value })} placeholder="vd: Hình 1. Tỉ số giới tính của dân số nước ta giai đoạn 1999 – 2024" className={inputCls} />
+                  </div>
+                  <div>
+                    <label className={labelCls}>Nguồn dữ liệu</label>
+                    <input type="text" value={block.chartSource || ''} onChange={e => updateBlock(block.id, { chartSource: e.target.value })} placeholder="vd: (Nguồn: Cục Thống kê năm 2025)" className={inputCls} />
                   </div>
                 </div>
               </ModuleShell>
@@ -2197,9 +2314,36 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                   />
                 }
                 headerRight={
-                  <span className="px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 text-[11px] font-black">
-                    {block.galleryImages?.length || 0} ảnh
-                  </span>
+                  <div className="flex items-center gap-2">
+                    <span className="px-2.5 py-1 rounded-full bg-rose-100 text-rose-700 text-[11px] font-black">
+                      {block.galleryImages?.length || 0} ảnh
+                    </span>
+                    {/* Display mode toggle */}
+                    <div className="flex items-center gap-0.5 bg-slate-100 rounded-xl p-0.5">
+                      <button
+                        onClick={() => updateBlock(block.id, { galleryDisplayMode: 'inline' })}
+                        title="Hiển thị trong nội dung"
+                        className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-black transition-all ${
+                          (block.galleryDisplayMode || 'inline') === 'inline'
+                            ? 'bg-white shadow-sm text-rose-600'
+                            : 'text-slate-400 hover:text-slate-600'
+                        }`}
+                      >
+                        <Icon icon="ph:squares-four" width={12} /> Nội dung
+                      </button>
+                      <button
+                        onClick={() => updateBlock(block.id, { galleryDisplayMode: 'panel' })}
+                        title="Hiển thị ở khung phải"
+                        className={`flex items-center gap-1 px-2 py-1 rounded-lg text-[10px] font-black transition-all ${
+                          block.galleryDisplayMode === 'panel'
+                            ? 'bg-white shadow-sm text-rose-600'
+                            : 'text-slate-400 hover:text-slate-600'
+                        }`}
+                      >
+                        <Icon icon="ph:sidebar-simple" width={12} /> Khung phải
+                      </button>
+                    </div>
+                  </div>
                 }
               >
                 <div className="space-y-2">
@@ -2360,18 +2504,6 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                     <div key={idx} className="flex items-start gap-2 bg-white/70 rounded-2xl p-3 border border-amber-100">
                       {/* Number badge */}
                       <div className="w-7 h-7 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center shrink-0 mt-1">{idx + 1}</div>
-                      {/* Emoji picker */}
-                      <input
-                        type="text"
-                        value={item.icon || ''}
-                        onChange={e => {
-                          const next = [...(block.practiceItems || [])];
-                          next[idx] = { ...next[idx], icon: e.target.value };
-                          updateBlock(block.id, { practiceItems: next });
-                        }}
-                        placeholder="📚"
-                        className="w-10 h-10 text-center text-xl bg-amber-50 border border-amber-200 rounded-xl outline-none focus:border-amber-400 shrink-0"
-                      />
                       {/* Text */}
                       <textarea
                         value={item.text}
@@ -2613,12 +2745,15 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
             <div className={`absolute inset-0 transition-opacity duration-700 bg-transparent ${(
               (activeBlock?.type === 'imageScenario' && (activeBlock.imageUrls?.length || activeBlock.imageUrl)) ||
               (activeBlock?.type === 'openQuestion' && activeBlock.questionImage) ||
+              (activeBlock?.type === 'gallery' && activeBlock.galleryDisplayMode === 'panel' && (activeBlock.galleryImages?.length || 0) > 0) ||
               activeBlock?.imageUrl
             ) ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
               <ImageSlider urls={
                 activeBlock?.type === 'openQuestion'
                   ? (activeBlock.questionImage ? [activeBlock.questionImage] : [])
-                  : (activeBlock?.imageUrls || (activeBlock?.imageUrl ? [activeBlock.imageUrl] : []))
+                  : activeBlock?.type === 'gallery' && activeBlock.galleryDisplayMode === 'panel'
+                    ? (activeBlock.galleryImages?.map((g: { url: string; caption?: string }) => g.url).filter(Boolean) || [])
+                    : (activeBlock?.imageUrls || (activeBlock?.imageUrl ? [activeBlock.imageUrl] : []))
               } />
             </div>
 
@@ -2646,6 +2781,10 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
           ) : activeBlock?.type === 'openQuestion' && activeBlock.questionImage ? (
             <p className="text-xs text-slate-400 leading-relaxed">
               Khung bên phải đang hiển thị <b>Hình ảnh câu hỏi</b>. Ảnh sẽ hiển thị khi học sinh cuộn đến câu hỏi này.
+            </p>
+          ) : activeBlock?.type === 'gallery' && activeBlock.galleryDisplayMode === 'panel' ? (
+            <p className="text-xs text-slate-400 leading-relaxed">
+              Khung bên phải đang hiển thị <b>Bộ ảnh</b> ({activeBlock.galleryImages?.length || 0} ảnh). Ảnh sẽ trượt vào khi học sinh cuộn đến khối này.
             </p>
           ) : (
             <p className="text-xs text-slate-400 leading-relaxed">

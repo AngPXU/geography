@@ -1,116 +1,136 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { JSX, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import dynamic from 'next/dynamic';
+import katex from 'katex';
+import 'katex/dist/katex.min.css';
+import { renderMathText } from './MathContentEditor';
+import { Icon } from '@iconify/react';
 
 const CesiumGlobe = dynamic(() => import('./CesiumGlobe'), { ssr: false });
 
-import type { StoryBlock, QuizQuestion } from '@/types/presentation';
+import type { StoryBlock, QuizQuestion, FunFactFormula } from '@/types/presentation';
 
 function DataTablePreview({ block }: { block: StoryBlock }) {
   const [sortCol, setSortCol] = useState<number | null>(null);
   const [sortAsc, setSortAsc] = useState(true);
-  const [hoveredRow, setHoveredRow] = useState<number | null>(null);
 
   const headers = block.tableHeaders || [];
   const rawRows = block.tableRows || [];
-  const highlightCol = block.tableHighlightCol ?? 1;
+  const highlightCol = block.tableHighlightCol ?? -1;
+  const hasSplit = block.tableSplitHeader;
 
-  // Sort rows
   const rows = sortCol !== null
     ? [...rawRows].sort((a, b) => {
-      const va = parseFloat(a[sortCol]?.replace(/[^0-9.-]/g, '')) || 0;
-      const vb = parseFloat(b[sortCol]?.replace(/[^0-9.-]/g, '')) || 0;
-      const sv = va === 0 && vb === 0 ? (a[sortCol] || '').localeCompare(b[sortCol] || '') : va - vb;
-      return sortAsc ? sv : -sv;
-    })
+        const va = parseFloat(a[sortCol]?.replace(/[^0-9.-]/g, '')) || 0;
+        const vb = parseFloat(b[sortCol]?.replace(/[^0-9.-]/g, '')) || 0;
+        const sv = va === 0 && vb === 0 ? (a[sortCol] || '').localeCompare(b[sortCol] || '') : va - vb;
+        return sortAsc ? sv : -sv;
+      })
     : rawRows;
-
-  // Find max in highlight col for bar width
-  const numericValues = rows.map(r => parseFloat((r[highlightCol] || '0').replace(/[^0-9.-]/g, '')) || 0);
-  const maxVal = Math.max(...numericValues, 1);
 
   const handleSort = (ci: number) => {
     if (sortCol === ci) setSortAsc(!sortAsc);
     else { setSortCol(ci); setSortAsc(false); }
   };
 
+  const HEADER_BG = block.tableHeaderBg || '#1e3a8a';
+  const HEADER_TEXT = block.tableHeaderTextColor || '#ffffff';
+  const HEADER_BORDER = 'rgba(255,255,255,0.2)';
+  const CELL_BORDER = '#cbd5e1';
+
   return (
     <div className="relative z-10 mx-4 my-8">
-      <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-violet-200 shadow-[0_10px_40px_rgba(139,92,246,0.12)] overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-violet-600 to-purple-500 px-6 py-4 flex items-center gap-3">
-          <span className="text-2xl">📊</span>
-          <div>
-            <h3 className="font-black text-white text-xl">{block.tableTitle || 'Bảng số liệu'}</h3>
-            {block.tableUnit && <p className="text-violet-200 text-xs font-medium mt-0.5">Đơn vị: {block.tableUnit}</p>}
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-[0_8px_32px_rgba(30,58,138,0.10)] overflow-hidden">
+        {/* Title bar */}
+        {(block.tableTitle || block.tableUnit) && (
+          <div className="px-5 py-3 flex items-center justify-between gap-3" style={{background: HEADER_BG}}>
+            <h3 className="font-black text-base" style={{color: HEADER_TEXT}}>{block.tableTitle || 'Bảng số liệu'}</h3>
+            {block.tableUnit && <p className="text-xs font-medium" style={{color: HEADER_TEXT, opacity: 0.75}}>(Đơn vị: {block.tableUnit})</p>}
           </div>
-          <div className="ml-auto flex items-center gap-1 bg-white/20 rounded-full px-3 py-1">
-            <span className="text-white text-xs font-bold">Nhấn tiêu đề cột để sắp xếp</span>
-          </div>
-        </div>
+        )}
 
         {/* Table */}
         <div className="overflow-x-auto">
-          <table className="w-full">
+          <table className="w-full border-collapse text-sm">
             <thead>
-              <tr className="bg-violet-50 border-b-2 border-violet-100">
-                <th className="px-4 py-3 text-left text-xs font-black text-violet-400 uppercase tracking-wider w-8">#</th>
-                {headers.map((h, ci) => (
-                  <th
-                    key={ci}
-                    onClick={() => handleSort(ci)}
-                    className="px-4 py-3 text-left cursor-pointer hover:bg-violet-100 transition-colors select-none group"
-                  >
-                    <div className="flex items-center gap-1">
-                      <span className={`text-sm font-black ${ci === highlightCol ? 'text-violet-700' : 'text-[#082F49]'}`}>{h}</span>
-                      <span className="text-violet-400 text-xs opacity-0 group-hover:opacity-100 transition-opacity">
-                        {sortCol === ci ? (sortAsc ? '↑' : '↓') : '↕'}
-                      </span>
-                    </div>
-                  </th>
-                ))}
+              <tr>
+                {headers.map((h, ci) => {
+                  if (hasSplit && ci === 0) {
+                    return (
+                      <th
+                        key={ci}
+                        className="relative p-0"
+                        style={{
+                          background: HEADER_BG,
+                          minWidth: '130px',
+                          height: '72px',
+                          border: `1px solid ${HEADER_BORDER}`,
+                        }}
+                      >
+                        <svg className="absolute inset-0 w-full h-full" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+                          <line x1="0" y1="0" x2="100%" y2="100%" stroke="rgba(255,255,255,0.35)" strokeWidth="1.5" />
+                        </svg>
+                        <span className="absolute top-2.5 right-3 text-xs font-bold" style={{color: HEADER_TEXT, opacity:0.85}}>{block.tableColHeader || ''}</span>
+                        <span className="absolute bottom-2.5 left-3 text-xs font-bold" style={{color: HEADER_TEXT, opacity:0.85}}>{block.tableRowHeader || ''}</span>
+                      </th>
+                    );
+                  }
+                  return (
+                    <th
+                      key={ci}
+                      onClick={() => handleSort(ci)}
+                      className="px-4 py-3 text-center cursor-pointer select-none group"
+                      style={{
+                        background: HEADER_BG,
+                        border: `1px solid ${HEADER_BORDER}`,
+                        color: HEADER_TEXT,
+                        fontWeight: 700,
+                        fontSize: '13px',
+                        transition: 'background 0.15s',
+                        opacity: ci === highlightCol ? 1 : 0.88,
+                      }}
+                    >
+                      <div className="flex items-center justify-center gap-1">
+                        <span>{h}</span>
+                        <span className="text-xs opacity-0 group-hover:opacity-60 transition-opacity" style={{color: HEADER_TEXT}}>
+                          {sortCol === ci ? (sortAsc ? '↑' : '↓') : '↕'}
+                        </span>
+                      </div>
+                    </th>
+                  );
+                })}
               </tr>
             </thead>
             <tbody>
               {rows.map((row, ri) => {
-                const numVal = parseFloat((row[highlightCol] || '0').replace(/[^0-9.-]/g, '')) || 0;
-                const barPct = Math.round((numVal / maxVal) * 100);
-                const isHovered = hoveredRow === ri;
                 const isHighlightedRow = block.tableHighlightRow === ri;
                 return (
-                  <tr
-                    key={ri}
-                    onMouseEnter={() => setHoveredRow(ri)}
-                    onMouseLeave={() => setHoveredRow(null)}
-                    className={`border-b border-violet-50 transition-all duration-200 ${
-                      isHighlightedRow ? 'bg-amber-50 ring-2 ring-amber-300 ring-inset' :
-                      isHovered ? 'bg-violet-50' :
-                      ri % 2 === 0 ? 'bg-white' : 'bg-violet-50/30'
-                    }`}
-                  >
-                    <td className={`px-4 py-3 text-xs font-bold ${isHighlightedRow ? 'text-amber-600' : 'text-violet-300'}`}>
-                      {isHighlightedRow ? '⭐' : ri + 1}
-                    </td>
-                    {row.map((cell, ci) => (
-                      <td key={ci} className="px-4 py-3">
-                        {ci === highlightCol ? (
-                          <div className="flex items-center gap-3">
-                            <span className={`font-black text-base min-w-[60px] ${isHighlightedRow ? 'text-amber-700' : 'text-violet-700'}`}>{cell}</span>
-                            <div className={`flex-1 rounded-full h-2.5 overflow-hidden ${isHighlightedRow ? 'bg-amber-100' : 'bg-violet-100'}`}>
-                              <div
-                                className={`h-full rounded-full transition-all duration-700 ${isHighlightedRow ? 'bg-gradient-to-r from-amber-500 to-orange-400' : 'bg-gradient-to-r from-violet-500 to-purple-400'}`}
-                                style={{ width: `${barPct}%` }}
-                              />
-                            </div>
-                            <span className={`text-xs font-bold w-8 text-right ${isHighlightedRow ? 'text-amber-500' : 'text-violet-400'}`}>{barPct}%</span>
-                          </div>
-                        ) : (
-                          <span className={`font-medium ${isHighlightedRow ? 'text-amber-900 font-bold' : isHovered ? 'text-[#082F49] font-bold' : 'text-[#334155]'}`}>{cell}</span>
-                        )}
-                      </td>
-                    ))}
+                  <tr key={ri} className="transition-colors duration-150 hover:brightness-95">
+                    {row.map((cell, ci) => {
+                      const isFirstCol = ci === 0;
+                      const isHiCol = ci === highlightCol;
+                      let bg = ri % 2 === 0 ? '#ffffff' : '#f8f9ff';
+                      if (isFirstCol) bg = ri % 2 === 0 ? '#eff6ff' : '#dbeafe';
+                      if (isHighlightedRow) bg = '#fefce8';
+                      if (isFirstCol && isHighlightedRow) bg = '#fef9c3';
+                      return (
+                        <td
+                          key={ci}
+                          className="px-4 py-2.5 text-sm"
+                          style={{
+                            border: `1px solid ${CELL_BORDER}`,
+                            background: bg,
+                            textAlign: isFirstCol ? 'left' : 'center',
+                            fontWeight: isFirstCol ? 600 : isHiCol ? 700 : 400,
+                            color: isFirstCol ? '#1e3a8a' : isHiCol ? '#4c1d95' : isHighlightedRow ? '#92400e' : '#334155',
+                          }}
+                        >
+                          {cell}
+                        </td>
+                      );
+                    })}
                   </tr>
                 );
               })}
@@ -118,41 +138,76 @@ function DataTablePreview({ block }: { block: StoryBlock }) {
           </table>
         </div>
 
-        {/* Footer */}
-        <div className="bg-violet-50 px-6 py-3 flex items-center justify-between gap-2 text-xs text-violet-400 font-medium border-t border-violet-100 flex-wrap">
-          <span className="flex items-center gap-2">
-            <span>📌</span>
-            <span>{rows.length} mục dữ liệu • Cột "{headers[highlightCol]}" hiển thị thanh phần trăm</span>
-          </span>
-          {block.tableSource && (
-            <span className="text-violet-500 italic">Nguồn: {block.tableSource}</span>
-          )}
-        </div>
+        {/* Source footer */}
+        {block.tableSource && (
+          <div className="px-5 py-2.5 bg-slate-50 border-t border-slate-200 text-right">
+            <span className="text-xs italic text-slate-500">(Nguồn: {block.tableSource})</span>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
+
 function ImageSlider({ urls }: { urls: string[] }) {
+  const [displayUrls, setDisplayUrls] = useState<string[]>(urls);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // phase: idle | exit | snap | enter
+  const [phase, setPhase] = useState<'idle' | 'exit' | 'snap' | 'enter'>('idle');
+  const prevUrlKeyRef = useRef(urls.join(','));
 
   useEffect(() => { setMounted(true); }, []);
-  useEffect(() => { setCurrentIndex(0); }, [urls.join(',')]);
 
-  if (!urls || urls.length === 0) return (
+  const urlKey = urls.join(',');
+  useEffect(() => {
+    if (urlKey === prevUrlKeyRef.current) return;
+    prevUrlKeyRef.current = urlKey;
+
+    // Step 1: slide old content out to the left
+    setPhase('exit');
+
+    const t1 = setTimeout(() => {
+      // Step 2: snap new content to off-screen right (no transition)
+      setDisplayUrls(urls);
+      setCurrentIndex(0);
+      setPhase('snap');
+
+      // Step 3: next 2 frames → slide in from right
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          setPhase('enter');
+          setTimeout(() => setPhase('idle'), 460);
+        });
+      });
+    }, 370);
+
+    return () => clearTimeout(t1);
+  }, [urlKey]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const slideStyle: React.CSSProperties = (() => {
+    if (phase === 'exit')  return { transform: 'translateX(-110%)', opacity: 0,   transition: 'transform 350ms ease-in-out, opacity 300ms ease-in-out' };
+    if (phase === 'snap')  return { transform: 'translateX(110%)',  opacity: 0,   transition: 'none' };
+    if (phase === 'enter') return { transform: 'translateX(0%)',    opacity: 1,   transition: 'transform 430ms cubic-bezier(0.22,1,0.36,1), opacity 350ms ease-out' };
+    return                        { transform: 'translateX(0%)',    opacity: 1,   transition: 'transform 350ms ease-in-out, opacity 350ms ease-in-out' };
+  })();
+
+  if (!displayUrls || displayUrls.length === 0) return (
     <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-[#0a1628]">
-      <span className="text-6xl mb-4">🖼️</span>
+      <span className="text-6xl mb-4"><Icon icon="mingcute:photo-album-fill" width={50} /></span>
       <span className="text-xl font-bold">Chưa có hình ảnh minh họa</span>
     </div>
   );
 
-  const currentUrl = urls[currentIndex];
+  const currentUrl = displayUrls[currentIndex];
 
   return (
     <>
       <div className="w-full h-full relative overflow-hidden group">
+        {/* Slide-transition wrapper */}
+        <div className="absolute inset-0" style={slideStyle}>
         {/* Blurred full-bleed background */}
         <div
           key={`bg-${currentIndex}`}
@@ -167,13 +222,13 @@ function ImageSlider({ urls }: { urls: string[] }) {
         {/* Vignette */}
         <div className="absolute inset-0 z-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
 
-        {/* Ken Burns image */}
+        {/* Main image — no zoom, just fade in */}
         <div className="absolute inset-0 z-10 flex items-center justify-center p-6 lg:p-10 pointer-events-none">
           <img
             key={currentIndex}
             src={currentUrl}
             alt="Minh họa tình huống"
-            className="max-w-full max-h-full object-contain rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.6)] img-ken-burns"
+            className="max-w-full max-h-full object-contain rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.6)] animate-in fade-in duration-500"
           />
         </div>
 
@@ -189,18 +244,18 @@ function ImageSlider({ urls }: { urls: string[] }) {
         </button>
 
         {/* Nav buttons for multiple images */}
-        {urls.length > 1 && (
+        {displayUrls.length > 1 && (
           <>
             <button
-              onClick={() => setCurrentIndex(prev => prev === 0 ? urls.length - 1 : prev - 1)}
+              onClick={() => setCurrentIndex(prev => prev === 0 ? displayUrls.length - 1 : prev - 1)}
               className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white/15 hover:bg-white/30 backdrop-blur-md text-white text-lg font-bold rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all border border-white/20 pointer-events-auto"
             >←</button>
             <button
-              onClick={() => setCurrentIndex(prev => prev === urls.length - 1 ? 0 : prev + 1)}
+              onClick={() => setCurrentIndex(prev => prev === displayUrls.length - 1 ? 0 : prev + 1)}
               className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white/15 hover:bg-white/30 backdrop-blur-md text-white text-lg font-bold rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all border border-white/20 pointer-events-auto"
             >→</button>
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2 bg-black/30 backdrop-blur-md px-4 py-2 rounded-full pointer-events-auto">
-              {urls.map((_, idx) => (
+              {displayUrls.map((_, idx) => (
                 <button
                   key={idx}
                   onClick={() => setCurrentIndex(idx)}
@@ -210,6 +265,7 @@ function ImageSlider({ urls }: { urls: string[] }) {
             </div>
           </>
         )}
+        </div>{/* end slide-transition wrapper */}
       </div>
 
       {/* LIGHTBOX PORTAL */}
@@ -235,22 +291,22 @@ function ImageSlider({ urls }: { urls: string[] }) {
             />
           </div>
 
-          {urls.length > 1 && (
+          {displayUrls.length > 1 && (
             <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/70 text-sm font-bold">
-              {currentIndex + 1} / {urls.length}
+              {currentIndex + 1} / {displayUrls.length}
             </div>
           )}
 
-          {urls.length > 1 && (
+          {displayUrls.length > 1 && (
             <>
               <button
-                onClick={(e) => { e.stopPropagation(); setCurrentIndex(prev => prev === 0 ? urls.length - 1 : prev - 1); }}
+                onClick={(e) => { e.stopPropagation(); setCurrentIndex(prev => prev === 0 ? displayUrls.length - 1 : prev - 1); }}
                 className="absolute left-5 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/10 hover:bg-white/25 text-white text-2xl font-bold rounded-full flex items-center justify-center transition-all border border-white/20"
               >←</button>
               <button
-                onClick={(e) => { e.stopPropagation(); setCurrentIndex(prev => prev === urls.length - 1 ? 0 : prev + 1); }}
+                onClick={(e) => { e.stopPropagation(); setCurrentIndex(prev => prev === displayUrls.length - 1 ? 0 : prev + 1); }}
                 className="absolute right-5 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/10 hover:bg-white/25 text-white text-2xl font-bold rounded-full flex items-center justify-center transition-all border border-white/20"
-              >→</button>
+              >←</button>
             </>
           )}
         </div>,
@@ -361,7 +417,7 @@ function GroupActivityTimer({ duration }: { duration: string }) {
         </svg>
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           {done ? (
-            <span className="text-3xl animate-bounce">🎉</span>
+            <span className="text-3xl animate-bounce"><Icon icon="ic:round-share-arrival-time" width={30} color="#009966" /></span>
           ) : (
             <span className={`font-black text-2xl tabular-nums leading-none ${timeColor} ${running ? 'opacity-100' : 'opacity-80'}`}>
               {mm}:{ss}
@@ -496,26 +552,34 @@ export function PresentationPreview({ blocks, onClose }: Props) {
         window.requestAnimationFrame(() => {
           const mapActionElements = document.querySelectorAll('.preview-media-action');
           let activeEl: Element | null = null;
-          let minDistance = Infinity;
 
           const containerRect = container.getBoundingClientRect();
           const centerY = containerRect.top + containerRect.height / 2;
 
+          // "Zone" model: the active block is the LAST one whose center has
+          // already crossed (or reached) the viewport centre.  Elements are in
+          // DOM order top→bottom, so we walk forward and keep overwriting
+          // activeEl; once an element's centre is below centre we stop.
           for (let i = 0; i < mapActionElements.length; i++) {
             const el = mapActionElements[i];
             const rect = el.getBoundingClientRect();
-            // Center of the element
             const elCenterY = rect.top + rect.height / 2;
-            const distance = Math.abs(elCenterY - centerY);
 
-            if (distance < minDistance) {
-              minDistance = distance;
-              activeEl = el;
+            if (elCenterY <= centerY) {
+              activeEl = el; // this one has passed centre — keep going
+            } else {
+              break; // all following elements are lower, no need to check
             }
           }
 
-          if (activeEl) {
-            const type = activeEl.getAttribute('data-type');
+          // No block has reached centre yet → globe shows
+          if (!activeEl) {
+            setActiveMediaBlock(null);
+            ticking = false;
+            return;
+          }
+
+          const type = activeEl.getAttribute('data-type');
 
             if (type === 'mapAction') {
               const lat = parseFloat(activeEl.getAttribute('data-lat') || '0');
@@ -575,8 +639,15 @@ export function PresentationPreview({ blocks, onClose }: Props) {
                 if (prev?.type === 'openQuestion' && prev.questionImage === imgUrl) return prev;
                 return { type: 'openQuestion', questionImage: imgUrl };
               });
+            } else if (type === 'gallery') {
+              const urlsAttr = activeEl.getAttribute('data-imageurls') || '[]';
+              let parsedUrls: string[] = [];
+              try { parsedUrls = JSON.parse(urlsAttr); } catch (e) { }
+              setActiveMediaBlock((prev: any) => {
+                if (prev?.type === 'gallery' && JSON.stringify(prev.imageUrls) === JSON.stringify(parsedUrls)) return prev;
+                return { type: 'gallery', imageUrls: parsedUrls };
+              });
             }
-          }
           ticking = false;
         });
         ticking = true;
@@ -737,10 +808,48 @@ export function PresentationPreview({ blocks, onClose }: Props) {
                     </span>
                   )}
                 </div>
-                <div
-                  className="text-[#334155] text-lg leading-relaxed font-medium [&_b]:font-black [&_strong]:font-black [&_i]:italic [&_em]:italic [&_u]:underline [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:my-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:my-2 [&_li]:my-1 [&_h2]:text-2xl [&_h2]:font-black [&_h2]:text-cyan-700 [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:text-xl [&_h3]:font-black [&_h3]:text-cyan-600 [&_h3]:mt-4 [&_h3]:mb-2 [&_h4]:text-lg [&_h4]:font-bold [&_h4]:text-slate-700 [&_h4]:mt-3 [&_h4]:mb-1"
-                  dangerouslySetInnerHTML={{ __html: block.content || '' }}
-                />
+{/* New unified math content */}
+                {block.funFactRawContent ? (
+                  <div
+                    className="text-[#334155] text-lg leading-relaxed font-medium"
+                    dangerouslySetInnerHTML={{ __html: renderMathText(block.funFactRawContent) }}
+                  />
+                ) : (
+                  <>
+                    <div
+                      className="text-[#334155] text-lg leading-relaxed font-medium [&_b]:font-black [&_strong]:font-black [&_i]:italic [&_em]:italic [&_u]:underline [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:my-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:my-2 [&_li]:my-1 [&_h2]:text-2xl [&_h2]:font-black [&_h2]:text-cyan-700 [&_h2]:mt-6 [&_h2]:mb-2 [&_h3]:text-xl [&_h3]:font-black [&_h3]:text-cyan-600 [&_h3]:mt-4 [&_h3]:mb-2 [&_h4]:text-lg [&_h4]:font-bold [&_h4]:text-slate-700 [&_h4]:mt-3 [&_h4]:mb-1"
+                      dangerouslySetInnerHTML={{ __html: block.content || '' }}
+                    />
+                    {(block.funFactFormulas || []).length > 0 && (
+                      <div className="mt-5 space-y-4">
+                        {(block.funFactFormulas as FunFactFormula[]).map((f, fi) => {
+                          let rendered = '';
+                          let hasError = false;
+                          try {
+                            rendered = katex.renderToString(f.latex || '', { displayMode: true, throwOnError: false, trust: false });
+                          } catch {
+                            hasError = true;
+                          }
+                          return (
+                            <div key={fi} className="bg-white/80 backdrop-blur-sm rounded-2xl border border-cyan-200 px-5 py-4 shadow-sm">
+                              {f.label && <p className="text-sm font-semibold text-[#334155] mb-2">{f.label}</p>}
+                              {hasError
+                                ? <p className="text-rose-500 text-sm font-mono">[Lỗi cú pháp LaTeX]</p>
+                                : <div className="overflow-x-auto text-center" dangerouslySetInnerHTML={{ __html: rendered }} />
+                              }
+                            </div>
+                          );
+                        })}
+                      </div>
+                    )}
+                    {block.funFactContentAfter && (
+                      <div
+                        className="mt-4 text-[#334155] text-base leading-relaxed font-medium [&_b]:font-black [&_strong]:font-black [&_i]:italic [&_em]:italic [&_u]:underline [&>ul]:list-disc [&>ul]:ml-6 [&>ul]:my-2 [&>ol]:list-decimal [&>ol]:ml-6 [&>ol]:my-2 [&_li]:my-1"
+                        dangerouslySetInnerHTML={{ __html: block.funFactContentAfter }}
+                      />
+                    )}
+                  </>
+                )}
               </div>
             );
           }
@@ -905,64 +1014,198 @@ export function PresentationPreview({ blocks, onClose }: Props) {
             const data = block.chartData || [];
             const max = Math.max(...data.map(d => d.value), 1);
             const total = data.reduce((s, d) => s + d.value, 0) || 1;
-            const chartType = block.chartType || 'bar';
+            const chartType = block.chartType || 'column';
+
+            // ── SGK-style Column Chart (vertical bars) ──
+            const renderColumnChart = () => {
+              if (data.length === 0) return <p className="text-slate-400 text-sm text-center py-8">Chưa có dữ liệu</p>;
+              // Compute nice Y-axis max & ticks
+              const rawMax = max * 1.15;
+              const magnitude = Math.pow(10, Math.floor(Math.log10(rawMax)));
+              const niceStep = [1, 2, 2.5, 5, 10].map(f => f * magnitude).find(s => rawMax / s <= 6) || magnitude * 10;
+              const yMax = Math.ceil(rawMax / niceStep) * niceStep;
+              const yTicks: number[] = [];
+              for (let v = 0; v <= yMax; v += niceStep) yTicks.push(v);
+
+              // SVG layout constants
+              const SVG_W = 480;
+              const SVG_H = 260;
+              const PAD_L = 58;  // space for Y-axis labels
+              const PAD_R = 16;
+              const PAD_T = 28;  // space for value labels above bars
+              const PAD_B = 44;  // space for X-axis labels
+              const chartW = SVG_W - PAD_L - PAD_R;
+              const chartH = SVG_H - PAD_T - PAD_B;
+              const barGroupW = chartW / data.length;
+              const barW = Math.min(barGroupW * 0.55, 60);
+
+              const xOf = (i: number) => PAD_L + barGroupW * i + barGroupW / 2;
+              const yOf = (v: number) => PAD_T + chartH * (1 - v / yMax);
+
+              return (
+                <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} className="w-full" style={{ maxHeight: 320 }}>
+                  {/* Y-axis title */}
+                  {block.chartYLabel && (
+                    <text
+                      x={12}
+                      y={PAD_T + chartH / 2}
+                      textAnchor="middle"
+                      dominantBaseline="middle"
+                      fontSize={10}
+                      fill="#334155"
+                      transform={`rotate(-90, 12, ${PAD_T + chartH / 2})`}
+                    >{block.chartYLabel}{block.chartUnit ? `\n(${block.chartUnit})` : ''}</text>
+                  )}
+                  {/* Grid lines + Y-axis ticks */}
+                  {yTicks.map((v, i) => (
+                    <g key={i}>
+                      <line x1={PAD_L} y1={yOf(v)} x2={SVG_W - PAD_R} y2={yOf(v)}
+                        stroke={v === 0 ? '#94a3b8' : '#e2e8f0'} strokeWidth={v === 0 ? 1.5 : 1} />
+                      <text x={PAD_L - 6} y={yOf(v)} textAnchor="end" dominantBaseline="middle"
+                        fontSize={10} fill="#64748b">{v}</text>
+                    </g>
+                  ))}
+                  {/* Y-axis line */}
+                  <line x1={PAD_L} y1={PAD_T} x2={PAD_L} y2={PAD_T + chartH} stroke="#94a3b8" strokeWidth={1.5} />
+                  {/* Bars */}
+                  {data.map((d, i) => {
+                    const bh = chartH * (d.value / yMax);
+                    const bx = xOf(i) - barW / 2;
+                    const by = yOf(d.value);
+                    return (
+                      <g key={i}>
+                        <rect x={bx} y={by} width={barW} height={bh}
+                          fill={d.color || '#E9C46A'} rx={2} />
+                        {/* Value label on top */}
+                        <text x={xOf(i)} y={by - 5} textAnchor="middle" fontSize={11} fontWeight="bold" fill="#334155">
+                          {d.value}{block.chartUnit && !block.chartYLabel ? block.chartUnit : ''}
+                        </text>
+                        {/* X label */}
+                        <text x={xOf(i)} y={PAD_T + chartH + 14} textAnchor="middle" fontSize={11} fill="#334155">
+                          {d.label}
+                        </text>
+                      </g>
+                    );
+                  })}
+                  {/* X-axis arrow tip */}
+                  <line x1={PAD_L} y1={PAD_T + chartH} x2={SVG_W - PAD_R + 8} y2={PAD_T + chartH} stroke="#94a3b8" strokeWidth={1.5} />
+                  <polygon points={`${SVG_W - PAD_R + 8},${PAD_T + chartH - 4} ${SVG_W - PAD_R + 14},${PAD_T + chartH} ${SVG_W - PAD_R + 8},${PAD_T + chartH + 4}`} fill="#94a3b8" />
+                  {/* X-axis label (e.g., "Năm") at end */}
+                  {block.chartXLabel && (
+                    <text x={SVG_W - PAD_R + 16} y={PAD_T + chartH + 4} textAnchor="start" fontSize={11} fontStyle="italic" fill="#334155">{block.chartXLabel}</text>
+                  )}
+                </svg>
+              );
+            };
+
+            // ── SGK-style Horizontal Bar Chart ──
+            const renderBarChart = () => {
+              if (data.length === 0) return <p className="text-slate-400 text-sm text-center py-8">Chưa có dữ liệu</p>;
+              const SVG_W = 480;
+              const rowH = 36;
+              const PAD_L = 100;
+              const PAD_R = 60;
+              const PAD_T = 8;
+              const chartW = SVG_W - PAD_L - PAD_R;
+              const SVG_H = PAD_T + data.length * rowH + 20;
+              return (
+                <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} className="w-full" style={{ maxHeight: 400 }}>
+                  {data.map((d, i) => {
+                    const bw = chartW * (d.value / max);
+                    const by = PAD_T + i * rowH + rowH * 0.2;
+                    const bh = rowH * 0.6;
+                    return (
+                      <g key={i}>
+                        <text x={PAD_L - 8} y={by + bh / 2} textAnchor="end" dominantBaseline="middle" fontSize={11} fill="#334155">{d.label}</text>
+                        <rect x={PAD_L} y={by} width={bw} height={bh} fill={d.color || '#6366F1'} rx={3} />
+                        <text x={PAD_L + bw + 6} y={by + bh / 2} dominantBaseline="middle" fontSize={11} fontWeight="bold" fill="#334155">
+                          {d.value}{block.chartUnit || ''}
+                        </text>
+                      </g>
+                    );
+                  })}
+                  <line x1={PAD_L} y1={PAD_T} x2={PAD_L} y2={SVG_H - 12} stroke="#94a3b8" strokeWidth={1.5} />
+                  {block.chartYLabel && (
+                    <text x={PAD_L + chartW / 2} y={SVG_H - 2} textAnchor="middle" fontSize={10} fill="#64748b" fontStyle="italic">{block.chartYLabel}</text>
+                  )}
+                </svg>
+              );
+            };
+
+            // ── SGK-style Line Chart ──
+            const renderLineChart = () => {
+              if (data.length < 2) return <p className="text-slate-400 text-sm text-center py-8">Cần ít nhất 2 điểm dữ liệu</p>;
+              const rawMax = max * 1.15;
+              const magnitude = Math.pow(10, Math.floor(Math.log10(rawMax)));
+              const niceStep = [1, 2, 2.5, 5, 10].map(f => f * magnitude).find(s => rawMax / s <= 6) || magnitude * 10;
+              const yMax = Math.ceil(rawMax / niceStep) * niceStep;
+              const yTicks: number[] = [];
+              for (let v = 0; v <= yMax; v += niceStep) yTicks.push(v);
+
+              const SVG_W = 480;
+              const SVG_H = 260;
+              const PAD_L = 58;
+              const PAD_R = 16;
+              const PAD_T = 28;
+              const PAD_B = 44;
+              const chartW = SVG_W - PAD_L - PAD_R;
+              const chartH = SVG_H - PAD_T - PAD_B;
+              const xOf = (i: number) => PAD_L + (i / (data.length - 1)) * chartW;
+              const yOf = (v: number) => PAD_T + chartH * (1 - v / yMax);
+              const lineColor = data[0]?.color || '#6366F1';
+              const points = data.map((d, i) => `${xOf(i)},${yOf(d.value)}`).join(' ');
+
+              return (
+                <svg viewBox={`0 0 ${SVG_W} ${SVG_H}`} className="w-full" style={{ maxHeight: 320 }}>
+                  {block.chartYLabel && (
+                    <text x={12} y={PAD_T + chartH / 2} textAnchor="middle" dominantBaseline="middle" fontSize={10} fill="#334155"
+                      transform={`rotate(-90, 12, ${PAD_T + chartH / 2})`}>{block.chartYLabel}</text>
+                  )}
+                  {yTicks.map((v, i) => (
+                    <g key={i}>
+                      <line x1={PAD_L} y1={yOf(v)} x2={SVG_W - PAD_R} y2={yOf(v)} stroke={v === 0 ? '#94a3b8' : '#e2e8f0'} strokeWidth={v === 0 ? 1.5 : 1} />
+                      <text x={PAD_L - 6} y={yOf(v)} textAnchor="end" dominantBaseline="middle" fontSize={10} fill="#64748b">{v}</text>
+                    </g>
+                  ))}
+                  <line x1={PAD_L} y1={PAD_T} x2={PAD_L} y2={PAD_T + chartH} stroke="#94a3b8" strokeWidth={1.5} />
+                  <polyline fill="none" stroke={lineColor} strokeWidth={2.5} strokeLinejoin="round" points={points} />
+                  {data.map((d, i) => (
+                    <g key={i}>
+                      <circle cx={xOf(i)} cy={yOf(d.value)} r={5} fill={d.color || lineColor} stroke="white" strokeWidth={2} />
+                      <text x={xOf(i)} y={yOf(d.value) - 10} textAnchor="middle" fontSize={11} fontWeight="bold" fill="#334155">
+                        {d.value}{block.chartUnit && !block.chartYLabel ? block.chartUnit : ''}
+                      </text>
+                      <text x={xOf(i)} y={PAD_T + chartH + 14} textAnchor="middle" fontSize={11} fill="#334155">{d.label}</text>
+                    </g>
+                  ))}
+                  <line x1={PAD_L} y1={PAD_T + chartH} x2={SVG_W - PAD_R + 8} y2={PAD_T + chartH} stroke="#94a3b8" strokeWidth={1.5} />
+                  <polygon points={`${SVG_W - PAD_R + 8},${PAD_T + chartH - 4} ${SVG_W - PAD_R + 14},${PAD_T + chartH} ${SVG_W - PAD_R + 8},${PAD_T + chartH + 4}`} fill="#94a3b8" />
+                  {block.chartXLabel && (
+                    <text x={SVG_W - PAD_R + 16} y={PAD_T + chartH + 4} textAnchor="start" fontSize={11} fontStyle="italic" fill="#334155">{block.chartXLabel}</text>
+                  )}
+                </svg>
+              );
+            };
 
             return (
-              <div key={block.id} className="relative z-10 bg-white/90 backdrop-blur-xl p-6 rounded-3xl border border-indigo-200 shadow-[0_10px_30px_rgba(99,102,241,0.1)] mx-4 my-6">
+              <div key={block.id} className="relative z-10 bg-white/95 backdrop-blur-xl p-6 rounded-3xl border border-indigo-100 shadow-[0_10px_30px_rgba(99,102,241,0.08)] mx-4 my-6">
                 {block.title && (
-                  <h3 className="font-black text-indigo-700 mb-1 flex items-center gap-3 text-xl"><span>📈</span>{block.title}</h3>
+                  <h3 className="font-black text-[#082F49] mb-4 text-lg">{block.title}</h3>
                 )}
-                {(block.chartXLabel || block.chartYLabel || block.chartUnit) && (
-                  <p className="text-xs text-slate-500 mb-4">
-                    {block.chartXLabel}{block.chartYLabel ? ` × ${block.chartYLabel}` : ''}{block.chartUnit ? ` (${block.chartUnit})` : ''}
-                  </p>
-                )}
-
-                {chartType === 'bar' && (
-                  <div className="space-y-3">
-                    {data.map((d, i) => (
-                      <div key={i} className="flex items-center gap-3">
-                        <span className="w-24 text-sm font-bold text-[#082F49] text-right shrink-0 truncate">{d.label}</span>
-                        <div className="flex-1 bg-slate-100 rounded-full h-6 overflow-hidden relative">
-                          <div
-                            className="h-full rounded-full transition-all duration-1000 flex items-center justify-end px-2"
-                            style={{ width: `${(d.value / max) * 100}%`, background: d.color || '#6366F1' }}
-                          >
-                            <span className="text-xs font-black text-white">{d.value}{block.chartUnit}</span>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                {/* Y-axis unit label above chart */}
+                {(block.chartYLabel || block.chartUnit) && (
+                  <div className="text-xs text-slate-600 mb-1 pl-1 leading-tight">
+                    {block.chartYLabel}
+                    {block.chartUnit ? <span className="block">({block.chartUnit})</span> : null}
                   </div>
                 )}
 
-                {chartType === 'line' && (
-                  <div className="relative w-full h-64 bg-slate-50 rounded-xl p-4">
-                    <svg viewBox="0 0 400 200" className="w-full h-full" preserveAspectRatio="none">
-                      <polyline
-                        fill="none"
-                        stroke="#6366F1"
-                        strokeWidth="2"
-                        points={data.map((d, i) => `${(i / Math.max(data.length - 1, 1)) * 380 + 10},${190 - (d.value / max) * 170}`).join(' ')}
-                      />
-                      {data.map((d, i) => (
-                        <circle key={i}
-                          cx={(i / Math.max(data.length - 1, 1)) * 380 + 10}
-                          cy={190 - (d.value / max) * 170}
-                          r="4"
-                          fill={d.color || '#6366F1'}
-                        />
-                      ))}
-                    </svg>
-                    <div className="flex justify-between mt-2 text-xs text-slate-500 font-medium">
-                      {data.map((d, i) => <span key={i} className="truncate">{d.label}</span>)}
-                    </div>
-                  </div>
-                )}
-
+                {(chartType === 'column') && renderColumnChart()}
+                {(chartType === 'bar') && renderBarChart()}
+                {(chartType === 'line') && renderLineChart()}
                 {chartType === 'pie' && (
                   <div className="flex flex-col md:flex-row items-center gap-6">
-                    <svg viewBox="-1 -1 2 2" className="w-48 h-48 -rotate-90">
+                    <svg viewBox="-1 -1 2 2" className="w-48 h-48 -rotate-90 shrink-0">
                       {(() => {
                         let cumulative = 0;
                         return data.map((d, i) => {
@@ -994,6 +1237,18 @@ export function PresentationPreview({ blocks, onClose }: Props) {
                         </div>
                       ))}
                     </div>
+                  </div>
+                )}
+
+                {/* Caption & Source — SGK style */}
+                {(block.chartCaption || block.chartSource) && (
+                  <div className="mt-4 text-center space-y-0.5">
+                    {block.chartCaption && (
+                      <p className="text-sm font-bold text-[#334155] italic">{block.chartCaption}</p>
+                    )}
+                    {block.chartSource && (
+                      <p className="text-xs text-slate-500 italic">{block.chartSource}</p>
+                    )}
                   </div>
                 )}
               </div>
@@ -1123,12 +1378,12 @@ export function PresentationPreview({ blocks, onClose }: Props) {
           }
 
           if (block.type === 'callout') {
-            const variantStyles: Record<string, { bg: string; border: string; text: string; icon: string; ring: string }> = {
-              info:    { bg: 'bg-sky-50',     border: 'border-sky-400',     text: 'text-sky-800',     icon: 'ℹ️', ring: 'bg-sky-400' },
-              warning: { bg: 'bg-amber-50',   border: 'border-amber-400',   text: 'text-amber-800',   icon: '⚠️', ring: 'bg-amber-400' },
-              danger:  { bg: 'bg-rose-50',    border: 'border-rose-400',    text: 'text-rose-800',    icon: '🚨', ring: 'bg-rose-400' },
-              success: { bg: 'bg-emerald-50', border: 'border-emerald-400', text: 'text-emerald-800', icon: '✅', ring: 'bg-emerald-400' },
-              tip:     { bg: 'bg-violet-50',  border: 'border-violet-400',  text: 'text-violet-800',  icon: '💡', ring: 'bg-violet-400' },
+            const variantStyles: Record<string, { bg: string; border: string; text: string; icon: JSX.Element; ring: string }> = {
+              info:    { bg: 'bg-sky-50',     border: 'border-sky-400',     text: 'text-sky-800',     icon: <Icon icon="ph:info" width={40} color="#0084D1"/>, ring: 'bg-sky-400' },
+              warning: { bg: 'bg-amber-50',   border: 'border-amber-400',   text: 'text-amber-800',   icon: <Icon icon="ph:warning" width={40} color="#BB4D00" />, ring: 'bg-amber-400' },
+              danger:  { bg: 'bg-rose-50',    border: 'border-rose-400',    text: 'text-rose-800',    icon: <Icon icon="ph:warning-octagon" width={40} color="#EC003F" />, ring: 'bg-rose-400' },
+              success: { bg: 'bg-emerald-50', border: 'border-emerald-400', text: 'text-emerald-800', icon: <Icon icon="ph:check-circle" width={40} color="#009966" />, ring: 'bg-emerald-400' },
+              tip:     { bg: 'bg-violet-50',  border: 'border-violet-400',  text: 'text-violet-800',  icon: <Icon icon="ph:lightbulb" width={40} color="#7F22FE" />, ring: 'bg-violet-400' },
             };
             const v = block.calloutVariant || 'info';
             const style = variantStyles[v];
@@ -1384,11 +1639,48 @@ export function PresentationPreview({ blocks, onClose }: Props) {
 
           if (block.type === 'gallery') {
             const images = block.galleryImages || [];
+            const isPanel = block.galleryDisplayMode === 'panel';
+            const imageUrls = images.map((img: { url: string; caption?: string }) => img.url).filter(Boolean);
+
+            if (isPanel) {
+              // Panel mode: trigger right-side ImageSlider via scroll mechanism
+              return (
+                <div
+                  key={block.id}
+                  className="preview-media-action relative z-10 mx-4 my-8"
+                  data-type="gallery"
+                  data-imageurls={JSON.stringify(imageUrls)}
+                >
+                  <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-rose-200 shadow-[0_10px_30px_rgba(244,63,94,0.1)] px-6 py-4 flex items-center gap-4">
+                    <div className="w-12 h-12 rounded-2xl bg-rose-100 flex items-center justify-center text-2xl shrink-0">🖼️</div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-black text-[#082F49] text-base">{block.title || 'Bộ ảnh'}</p>
+                      <p className="text-xs text-slate-400 font-medium mt-0.5">{images.length} ảnh — hiển thị ở khung phải</p>
+                    </div>
+                    {/* Mini thumbnail strip */}
+                    <div className="flex gap-1 shrink-0">
+                      {imageUrls.slice(0, 3).map((url: string, i: number) => (
+                        <div key={i} className="w-10 h-10 rounded-lg overflow-hidden border border-rose-100 bg-slate-100">
+                          <img src={url} alt="" className="w-full h-full object-cover" />
+                        </div>
+                      ))}
+                      {imageUrls.length > 3 && (
+                        <div className="w-10 h-10 rounded-lg bg-rose-100 border border-rose-200 flex items-center justify-center text-[10px] font-black text-rose-600">
+                          +{imageUrls.length - 3}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
+            // Inline mode: grid layout
             return (
               <div key={block.id} className="relative z-10 mx-4 my-6">
                 {block.title && <h3 className="font-black text-rose-700 mb-4 flex items-center gap-3 text-xl"><span>🖼️</span>{block.title}</h3>}
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-                  {images.map((img, idx) => (
+                  {images.map((img: { url: string; caption?: string }, idx: number) => (
                     <a key={idx} href={img.url} target="_blank" rel="noopener noreferrer" className="group block bg-white border border-rose-200 rounded-2xl overflow-hidden shadow-sm hover:shadow-lg hover:-translate-y-0.5 transition-all">
                       <div className="aspect-square bg-slate-100 overflow-hidden">
                         {img.url && <img src={img.url} alt={img.caption || `Ảnh ${idx + 1}`} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />}
@@ -1511,12 +1803,6 @@ export function PresentationPreview({ blocks, onClose }: Props) {
                         <div className="w-8 h-8 rounded-full bg-amber-500 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-md border-2 border-white">
                           {idx + 1}
                         </div>
-                        {/* Icon (character illustration) */}
-                        {item.icon && (
-                          <div className="w-12 h-12 rounded-2xl bg-white/70 border-2 border-amber-200 flex items-center justify-center text-2xl shrink-0 shadow-sm">
-                            {item.icon}
-                          </div>
-                        )}
                         {/* Text */}
                         <p className="text-[#334155] font-semibold leading-relaxed text-base flex-1 pt-1">{item.text}</p>
                       </div>
@@ -1594,16 +1880,20 @@ export function PresentationPreview({ blocks, onClose }: Props) {
               />
             </div>
 
-            {/* LAYER 2: IMAGE SCENARIO + OPEN QUESTION */}
-            <div className={`absolute inset-0 bg-transparent transition-all duration-300 ease-out ${
-              activeMediaBlock?.type === 'imageScenario' || (activeMediaBlock?.type === 'openQuestion' && activeMediaBlock.questionImage)
+            {/* LAYER 2: IMAGE SCENARIO + OPEN QUESTION + GALLERY PANEL */}
+            <div className={`absolute inset-0 bg-transparent transition-all duration-500 ease-in-out ${
+              activeMediaBlock?.type === 'imageScenario' ||
+              (activeMediaBlock?.type === 'openQuestion' && activeMediaBlock.questionImage) ||
+              (activeMediaBlock?.type === 'gallery' && (activeMediaBlock.imageUrls?.length || 0) > 0)
                 ? 'opacity-100 translate-x-0 z-20 pointer-events-auto'
                 : 'opacity-0 translate-x-full z-0 pointer-events-none'
             }`}>
               <ImageSlider urls={
                 activeMediaBlock?.type === 'openQuestion'
                   ? (activeMediaBlock.questionImage ? [activeMediaBlock.questionImage] : [])
-                  : (activeMediaBlock?.imageUrls || (activeMediaBlock?.imageUrl ? [activeMediaBlock.imageUrl] : []))
+                  : activeMediaBlock?.type === 'gallery'
+                    ? (activeMediaBlock.imageUrls || [])
+                    : (activeMediaBlock?.imageUrls || (activeMediaBlock?.imageUrl ? [activeMediaBlock.imageUrl] : []))
               } />
             </div>
 
@@ -1626,13 +1916,6 @@ export function PresentationPreview({ blocks, onClose }: Props) {
         </div>
       </div>
       <style dangerouslySetInnerHTML={{__html: `
-        @keyframes kenBurns {
-          from { transform: scale(1); }
-          to   { transform: scale(1.08); }
-        }
-        .img-ken-burns {
-          animation: kenBurns 8s ease-out forwards;
-        }
         .left-panel-preview {
           height: 55vh;
           flex: none;
