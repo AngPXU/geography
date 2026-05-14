@@ -17,7 +17,9 @@ export type BlockType =
   | 'video' | 'chart' | 'diagram' | 'compare' | 'callout'
   // ── 9 module nâng cao (Phase 3) ──
   | 'timeline' | 'groupActivity' | 'openQuestion' | 'fillBlank'
-  | 'quote' | 'glossary' | 'twoColumn' | 'gallery' | 'summary';
+  | 'quote' | 'glossary' | 'twoColumn' | 'gallery' | 'summary'
+  // ── module đặc biệt ──
+  | 'practice';
 
 // ── Sub-types ─────────────────────────────────────────────────────────────
 
@@ -48,6 +50,16 @@ export interface TimelineEvent {
   icon?: string;
 }
 
+export interface PracticeItem {
+  text: string;
+  icon?: string;  // emoji nhân vật minh họa
+}
+
+export interface SummarySection {
+  title: string;  // e.g. "1. Hệ thống kinh, vĩ tuyến"
+  body: string;   // multiline — lines with "-" prefix = bullet, lines ending ":" = sub-header
+}
+
 export interface GlossaryTerm {
   term: string;
   definition: string;
@@ -67,6 +79,16 @@ export interface GalleryImage {
 
 export type CalloutVariant = 'info' | 'warning' | 'danger' | 'success' | 'tip';
 
+// ── Quiz (multi-question) ──
+export interface QuizQuestion {
+  id: string;
+  question: string;
+  options: string[];      // always 4 options A/B/C/D
+  correctIndex: number;
+  explanation?: string;
+  questionImage?: string;
+}
+
 // ── Block ──────────────────────────────────────────────────────────────────
 
 export interface StoryBlock {
@@ -79,6 +101,8 @@ export interface StoryBlock {
 
   // ── Heading ──
   level?: 1 | 2 | 3;
+  headingBg?: string;    // custom background color / gradient
+  headingColor?: string; // custom text color
 
   // ── List items (objectives, summary, activity steps...) ──
   items?: string[];
@@ -87,12 +111,13 @@ export interface StoryBlock {
   emoji?: string;
   tag?: string;
 
-  // ── Quiz (improved) ──
+  // ── Quiz (improved — legacy single + new multi-question) ──
   question?: string;
   options?: string[];
   correctIndex?: number;
   explanation?: string;
   questionImage?: string;
+  quizQuestions?: QuizQuestion[];  // multi-question (new)
 
   // ── MapAction (unchanged) ──
   lat?: number;
@@ -154,6 +179,7 @@ export interface StoryBlock {
   // ── OpenQuestion (Phase 3) — uses `question`, `content` (placeholder) ──
   expectedKeywords?: string[];
   questionType?: 'short' | 'long';
+  openAnswer?: string; // Đáp án — chỉ hiện khi giáo viên mở
 
   // ── FillBlank (Phase 3) ──
   // template dùng {{0}}, {{1}}... để đánh dấu chỗ trống
@@ -176,4 +202,9 @@ export interface StoryBlock {
   galleryImages?: GalleryImage[];
 
   // ── Summary — uses title + items + content (intro) ──
+  summarySections?: SummarySection[];
+  summaryImage?: string;
+
+  // ── Practice (Luyện tập & Vận dụng) ──
+  practiceItems?: PracticeItem[];
 }

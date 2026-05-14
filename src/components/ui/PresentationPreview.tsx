@@ -6,7 +6,7 @@ import dynamic from 'next/dynamic';
 
 const CesiumGlobe = dynamic(() => import('./CesiumGlobe'), { ssr: false });
 
-import type { StoryBlock } from '@/types/presentation';
+import type { StoryBlock, QuizQuestion } from '@/types/presentation';
 
 function DataTablePreview({ block }: { block: StoryBlock }) {
   const [sortCol, setSortCol] = useState<number | null>(null);
@@ -135,51 +135,270 @@ function DataTablePreview({ block }: { block: StoryBlock }) {
 
 function ImageSlider({ urls }: { urls: string[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  useEffect(() => {
-    setCurrentIndex(0);
-  }, [urls.join(',')]);
+  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => { setCurrentIndex(0); }, [urls.join(',')]);
 
   if (!urls || urls.length === 0) return (
-    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-slate-100">
+    <div className="w-full h-full flex flex-col items-center justify-center text-slate-400 bg-[#0a1628]">
       <span className="text-6xl mb-4">🖼️</span>
       <span className="text-xl font-bold">Chưa có hình ảnh minh họa</span>
     </div>
   );
 
+  const currentUrl = urls[currentIndex];
+
   return (
-    <div className="w-full h-full relative group bg-slate-50/50 flex items-center justify-center p-8 backdrop-blur-sm">
-      <img
-        src={urls[currentIndex]}
-        alt="Minh họa tình huống"
-        className="max-w-full max-h-full object-contain drop-shadow-2xl rounded-2xl transition-all duration-500 animate-in fade-in zoom-in-95"
-        key={currentIndex} // force re-render for animation
-      />
-      {urls.length > 1 && (
-        <>
+    <>
+      <div className="w-full h-full relative overflow-hidden group">
+        {/* Blurred full-bleed background */}
+        <div
+          key={`bg-${currentIndex}`}
+          className="absolute inset-0 z-0 scale-110"
+          style={{
+            backgroundImage: `url(${currentUrl})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+            filter: 'blur(28px) brightness(0.4) saturate(1.2)',
+          }}
+        />
+        {/* Vignette */}
+        <div className="absolute inset-0 z-0 bg-gradient-to-b from-black/30 via-transparent to-black/50" />
+
+        {/* Ken Burns image */}
+        <div className="absolute inset-0 z-10 flex items-center justify-center p-6 lg:p-10 pointer-events-none">
+          <img
+            key={currentIndex}
+            src={currentUrl}
+            alt="Minh họa tình huống"
+            className="max-w-full max-h-full object-contain rounded-2xl shadow-[0_20px_60px_rgba(0,0,0,0.6)] img-ken-burns"
+          />
+        </div>
+
+        {/* Hover zoom button — bottom right */}
+        <button
+          className="absolute bottom-4 right-4 z-30 w-11 h-11 bg-black/55 hover:bg-black/80 backdrop-blur-md text-white rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-200 border border-white/25 pointer-events-auto shadow-lg"
+          onClick={() => setLightboxOpen(true)}
+          title="Phóng to ảnh"
+        >
+          <svg width="17" height="17" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3.75v4.5m0-4.5h4.5m-4.5 0L9 9M3.75 20.25v-4.5m0 4.5h4.5m-4.5 0L9 15M20.25 3.75h-4.5m4.5 0v4.5m0-4.5L15 9m5.25 11.25h-4.5m4.5 0v-4.5m0 4.5L15 15" />
+          </svg>
+        </button>
+
+        {/* Nav buttons for multiple images */}
+        {urls.length > 1 && (
+          <>
+            <button
+              onClick={() => setCurrentIndex(prev => prev === 0 ? urls.length - 1 : prev - 1)}
+              className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white/15 hover:bg-white/30 backdrop-blur-md text-white text-lg font-bold rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all border border-white/20 pointer-events-auto"
+            >←</button>
+            <button
+              onClick={() => setCurrentIndex(prev => prev === urls.length - 1 ? 0 : prev + 1)}
+              className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 bg-white/15 hover:bg-white/30 backdrop-blur-md text-white text-lg font-bold rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all border border-white/20 pointer-events-auto"
+            >→</button>
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex gap-2 bg-black/30 backdrop-blur-md px-4 py-2 rounded-full pointer-events-auto">
+              {urls.map((_, idx) => (
+                <button
+                  key={idx}
+                  onClick={() => setCurrentIndex(idx)}
+                  className={`h-2 rounded-full transition-all ${idx === currentIndex ? 'bg-white w-6' : 'bg-white/40 w-2 hover:bg-white/70'}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* LIGHTBOX PORTAL */}
+      {mounted && lightboxOpen && createPortal(
+        <div
+          className="fixed inset-0 z-[999999] bg-black/92 backdrop-blur-sm flex items-center justify-center animate-in fade-in duration-150"
+          onClick={() => setLightboxOpen(false)}
+        >
           <button
-            onClick={() => setCurrentIndex(prev => prev === 0 ? urls.length - 1 : prev - 1)}
-            className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 hover:bg-white text-[#082F49] text-xl font-bold rounded-full shadow-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all pointer-events-auto border border-slate-100 hover:scale-110"
+            className="absolute top-5 right-5 z-10 w-12 h-12 bg-white/10 hover:bg-white/25 text-white rounded-full flex items-center justify-center text-xl font-bold transition-all border border-white/20"
+            onClick={() => setLightboxOpen(false)}
+          >✕</button>
+
+          <div
+            className="relative flex items-center justify-center max-w-[88vw] max-h-[88vh]"
+            onClick={(e) => e.stopPropagation()}
           >
-            ←
-          </button>
-          <button
-            onClick={() => setCurrentIndex(prev => prev === urls.length - 1 ? 0 : prev + 1)}
-            className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/90 hover:bg-white text-[#082F49] text-xl font-bold rounded-full shadow-xl flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all pointer-events-auto border border-slate-100 hover:scale-110"
-          >
-            →
-          </button>
-          <div className="absolute bottom-6 left-1/2 -translate-x-1/2 flex gap-2 bg-white/50 backdrop-blur-md px-4 py-2 rounded-full border border-white/50 shadow-sm pointer-events-auto">
-            {urls.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentIndex(idx)}
-                className={`h-2.5 rounded-full transition-all ${idx === currentIndex ? 'bg-emerald-500 w-8' : 'bg-slate-400 w-2.5 hover:bg-slate-500'}`}
-              />
-            ))}
+            <img
+              key={`lb-${currentIndex}`}
+              src={currentUrl}
+              alt="Phóng to"
+              className="max-w-full max-h-[88vh] object-contain rounded-2xl shadow-2xl animate-in zoom-in-95 duration-200"
+            />
           </div>
-        </>
+
+          {urls.length > 1 && (
+            <div className="absolute bottom-5 left-1/2 -translate-x-1/2 text-white/70 text-sm font-bold">
+              {currentIndex + 1} / {urls.length}
+            </div>
+          )}
+
+          {urls.length > 1 && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); setCurrentIndex(prev => prev === 0 ? urls.length - 1 : prev - 1); }}
+                className="absolute left-5 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/10 hover:bg-white/25 text-white text-2xl font-bold rounded-full flex items-center justify-center transition-all border border-white/20"
+              >←</button>
+              <button
+                onClick={(e) => { e.stopPropagation(); setCurrentIndex(prev => prev === urls.length - 1 ? 0 : prev + 1); }}
+                className="absolute right-5 top-1/2 -translate-y-1/2 w-14 h-14 bg-white/10 hover:bg-white/25 text-white text-2xl font-bold rounded-full flex items-center justify-center transition-all border border-white/20"
+              >→</button>
+            </>
+          )}
+        </div>,
+        document.body
       )}
+    </>
+  );
+}
+
+function parseDurationToSeconds(str: string): number {
+  if (!str) return 0;
+  const s = str.toLowerCase().trim();
+  const minSecMatch = s.match(/(\d+)\s*ph[uú]t\s*(\d+)\s*gi[aâ]y/);
+  if (minSecMatch) return parseInt(minSecMatch[1]) * 60 + parseInt(minSecMatch[2]);
+  const hourMatch = s.match(/(\d+)\s*gi[o\u1901]/);
+  if (hourMatch) return parseInt(hourMatch[1]) * 3600;
+  const minMatch = s.match(/(\d+)\s*ph[uú]t/);
+  if (minMatch) return parseInt(minMatch[1]) * 60;
+  const secMatch = s.match(/(\d+)\s*gi[aâ]y/);
+  if (secMatch) return parseInt(secMatch[1]);
+  const numMatch = s.match(/^(\d+)$/);
+  if (numMatch) return parseInt(numMatch[1]) * 60;
+  return 0;
+}
+
+function GroupActivityTimer({ duration }: { duration: string }) {
+  const totalSeconds = parseDurationToSeconds(duration);
+  const [remaining, setRemaining] = useState(totalSeconds);
+  const [running, setRunning] = useState(false);
+  const [done, setDone] = useState(false);
+  const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  useEffect(() => {
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, []);
+
+  useEffect(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setRemaining(totalSeconds);
+    setRunning(false);
+    setDone(false);
+  }, [totalSeconds]);
+
+  if (totalSeconds === 0) return null;
+
+  const start = () => {
+    if (done || remaining <= 0) return;
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    setRunning(true);
+    intervalRef.current = setInterval(() => {
+      setRemaining(prev => {
+        if (prev <= 1) {
+          clearInterval(intervalRef.current!);
+          intervalRef.current = null;
+          setRunning(false);
+          setDone(true);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+  };
+
+  const pause = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = null;
+    setRunning(false);
+  };
+
+  const reset = () => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = null;
+    setRunning(false);
+    setDone(false);
+    setRemaining(totalSeconds);
+  };
+
+  const mm = String(Math.floor(remaining / 60)).padStart(2, '0');
+  const ss = String(remaining % 60).padStart(2, '0');
+  const pct = totalSeconds > 0 ? remaining / totalSeconds : 0;
+  const radius = 52;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference * (1 - pct);
+  const ringColor = done ? '#22c55e' : pct > 0.35 ? '#84cc16' : pct > 0.15 ? '#f59e0b' : '#ef4444';
+  const timeColor = done ? 'text-emerald-500' : pct > 0.35 ? 'text-lime-700' : pct > 0.15 ? 'text-amber-600' : 'text-red-600';
+
+  return (
+    <div className={`flex flex-col items-center gap-3 py-4 px-5 rounded-2xl border-2 transition-all duration-500 ${
+      done ? 'bg-emerald-50 border-emerald-400 shadow-[0_0_24px_rgba(34,197,94,0.25)]' :
+      running ? 'bg-white/80 border-lime-400 shadow-[0_0_24px_rgba(132,204,22,0.25)]' :
+      'bg-white/60 border-lime-200'
+    }`}>
+      {/* Ring timer */}
+      <div className="relative">
+        <svg width={120} height={120}>
+          <circle cx={60} cy={60} r={radius} fill="none" stroke="#e2e8f0" strokeWidth={7} />
+          <circle
+            cx={60} cy={60} r={radius}
+            fill="none"
+            stroke={ringColor}
+            strokeWidth={7}
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            transform="rotate(-90 60 60)"
+            style={{ transition: 'stroke-dashoffset 0.9s linear, stroke 0.4s ease' }}
+          />
+        </svg>
+        <div className="absolute inset-0 flex flex-col items-center justify-center">
+          {done ? (
+            <span className="text-3xl animate-bounce">🎉</span>
+          ) : (
+            <span className={`font-black text-2xl tabular-nums leading-none ${timeColor} ${running ? 'opacity-100' : 'opacity-80'}`}>
+              {mm}:{ss}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {done && <p className="text-emerald-600 font-black text-sm -mt-1">Hết giờ rồi!</p>}
+
+      {/* Controls */}
+      <div className="flex gap-2">
+        {!running && !done && (
+          <button
+            onClick={start}
+            className="px-4 py-1.5 bg-lime-500 hover:bg-lime-600 active:scale-95 text-white font-black rounded-xl text-sm transition-all shadow-md"
+          >
+            {remaining === totalSeconds ? '▶ Bắt đầu' : '▶ Tiếp tục'}
+          </button>
+        )}
+        {running && (
+          <button
+            onClick={pause}
+            className="px-4 py-1.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-white font-black rounded-xl text-sm transition-all shadow-md"
+          >
+            ⏸ Dừng
+          </button>
+        )}
+        {(running || remaining < totalSeconds) && (
+          <button
+            onClick={reset}
+            className="px-3 py-1.5 bg-slate-200 hover:bg-slate-300 active:scale-95 text-slate-700 font-black rounded-xl text-sm transition-all"
+          >
+            ↺
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -234,7 +453,9 @@ export function PresentationPreview({ blocks, onClose }: Props) {
   const [activePin, setActivePin] = useState<any>(null);
   const [selectedPin, setSelectedPin] = useState<any>(null);
   const [activeMediaBlock, setActiveMediaBlock] = useState<any>(null);
-  const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({}); // blockId -> selected index
+  const [quizAnswers, setQuizAnswers] = useState<Record<string, number>>({}); // `${blockId}_${qIdx}` -> selected option index
+  const [quizCurrent, setQuizCurrent] = useState<Record<string, number>>({}); // blockId -> current question index
+  const [openAnswerShown, setOpenAnswerShown] = useState<Record<string, boolean>>({}); // blockId -> revealed
   const globeRef = useRef<any>(null);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
@@ -348,6 +569,12 @@ export function PresentationPreview({ blocks, onClose }: Props) {
                   imageUrls: parsedUrls
                 };
               });
+            } else if (type === 'openQuestion') {
+              const imgUrl = activeEl.getAttribute('data-questionimage') || '';
+              setActiveMediaBlock((prev: any) => {
+                if (prev?.type === 'openQuestion' && prev.questionImage === imgUrl) return prev;
+                return { type: 'openQuestion', questionImage: imgUrl };
+              });
             }
           }
           ticking = false;
@@ -415,9 +642,21 @@ export function PresentationPreview({ blocks, onClose }: Props) {
           {blocks.map((block) => {
 
           if (block.type === 'heading') {
+            const hasBg = !!block.headingBg;
+            const hasColor = !!block.headingColor;
             return (
-              <div key={block.id} className="relative z-10 bg-gradient-to-r from-cyan-50 to-transparent p-6 rounded-2xl border-l-4 border-[#06B6D4]">
-                <h2 className={`font-black text-[#082F49] ${block.level === 1 ? 'text-5xl leading-tight' : block.level === 2 ? 'text-3xl text-cyan-700' : 'text-2xl text-cyan-600'}`}>
+              <div
+                key={block.id}
+                className="relative z-10 p-6 rounded-2xl border-l-4"
+                style={{
+                  background: block.headingBg || 'linear-gradient(135deg, #E0F2FE, transparent)',
+                  borderLeftColor: block.headingColor || '#06B6D4',
+                }}
+              >
+                <h2
+                  className={`font-black ${block.level === 1 ? 'text-5xl leading-tight' : block.level === 2 ? 'text-3xl' : 'text-2xl'}`}
+                  style={{ color: block.headingColor || (block.level === 3 ? '#0891B2' : block.level === 2 ? '#0E7490' : '#082F49') }}
+                >
                   {block.content}
                 </h2>
               </div>
@@ -440,7 +679,7 @@ export function PresentationPreview({ blocks, onClose }: Props) {
             return (
               <div key={block.id} className="relative z-10 bg-gradient-to-br from-orange-50 to-amber-50 backdrop-blur-xl p-8 rounded-3xl border border-orange-200 shadow-[0_10px_30px_rgba(245,158,11,0.15)] mx-4 my-8">
                 <h3 className="font-black text-orange-600 mb-4 flex items-center gap-3 text-xl drop-shadow-sm">
-                  🎯 Yêu cầu cần đạt:
+                  🎯 Học xong bài này, em sẽ:
                 </h3>
                 {hasItems ? (
                   <ul className="space-y-2.5">
@@ -511,64 +750,123 @@ export function PresentationPreview({ blocks, onClose }: Props) {
           }
 
           if (block.type === 'quiz') {
-            const selectedIdx = quizAnswers[block.id];
+            // Normalise: support legacy single-question blocks
+            const questions: QuizQuestion[] = block.quizQuestions && block.quizQuestions.length > 0
+              ? block.quizQuestions
+              : [{
+                  id: block.id + '_q0',
+                  question: block.question || '',
+                  options: block.options?.length === 4 ? block.options : ['', '', '', ''],
+                  correctIndex: block.correctIndex ?? 0,
+                  explanation: block.explanation || '',
+                  questionImage: block.questionImage || '',
+                }];
+
+            const currentQIdx = quizCurrent[block.id] ?? 0;
+            const q = questions[currentQIdx];
+            const answerKey = `${block.id}_${currentQIdx}`;
+            const selectedIdx = quizAnswers[answerKey];
             const hasAnswered = selectedIdx !== undefined;
-            const isCorrect = selectedIdx === block.correctIndex;
+            const isCorrect = selectedIdx === q.correctIndex;
+            const totalAnswered = questions.filter((_, i) => quizAnswers[`${block.id}_${i}`] !== undefined).length;
 
             return (
-              <div key={block.id} className="relative z-10 bg-white/80 backdrop-blur-xl p-8 rounded-3xl border border-orange-200 shadow-[0_10px_30px_rgba(249,115,22,0.1)] mx-4">
-                <h3 className="font-bold text-[#082F49] mb-4 text-xl drop-shadow-sm">❓ {block.question}</h3>
-
-                {/* Question image */}
-                {block.questionImage && (
-                  <div className="mb-6 rounded-2xl overflow-hidden border border-orange-100 bg-slate-50 max-h-[300px] flex items-center justify-center">
-                    <img src={block.questionImage} alt="Câu hỏi" className="max-w-full max-h-[300px] object-contain" />
+              <div key={block.id} className="relative z-10 bg-white/80 backdrop-blur-xl rounded-3xl border border-orange-200 shadow-[0_10px_30px_rgba(249,115,22,0.12)] mx-4 overflow-hidden">
+                {/* Progress bar + header */}
+                <div className="bg-gradient-to-r from-orange-500 to-amber-400 px-6 py-3 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-white font-black text-sm">❓ Trắc nghiệm</span>
+                    {questions.length > 1 && (
+                      <span className="bg-white/20 text-white text-xs font-bold px-2.5 py-1 rounded-full">
+                        {totalAnswered}/{questions.length} đã trả lời
+                      </span>
+                    )}
                   </div>
-                )}
-
-                <div className="space-y-3">
-                  {block.options?.map((opt, idx) => {
-                    const isSelected = selectedIdx === idx;
-                    const isCorrectOpt = idx === block.correctIndex;
-
-                    let optClass = "w-full text-left p-4 rounded-xl border font-bold text-lg transition-all shadow-sm ";
-                    if (!hasAnswered) {
-                      optClass += "bg-slate-50/50 hover:bg-orange-100 border-slate-200 hover:border-orange-400 text-[#334155] cursor-pointer";
-                    } else if (isCorrectOpt) {
-                      optClass += "bg-green-100 border-green-400 text-green-800";
-                    } else if (isSelected && !isCorrectOpt) {
-                      optClass += "bg-red-100 border-red-400 text-red-700";
-                    } else {
-                      optClass += "bg-slate-50 border-slate-200 text-slate-400 opacity-60";
-                    }
-
-                    return (
-                      <button
-                        key={idx}
-                        onClick={() => !hasAnswered && setQuizAnswers(prev => ({ ...prev, [block.id]: idx }))}
-                        className={optClass}
-                      >
-                        <span className="flex items-center gap-3">
-                          <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black shrink-0
-                            ${!hasAnswered ? 'bg-orange-100 text-orange-600' : isCorrectOpt ? 'bg-green-500 text-white' : isSelected ? 'bg-red-400 text-white' : 'bg-slate-200 text-slate-400'}`}>
-                            {hasAnswered && isCorrectOpt ? '✓' : hasAnswered && isSelected && !isCorrectOpt ? '✕' : String.fromCharCode(65 + idx)}
-                          </span>
-                          {opt}
-                        </span>
-                      </button>
-                    );
-                  })}
+                  {questions.length > 1 && (
+                    <div className="flex items-center gap-1.5">
+                      {questions.map((_, i) => (
+                        <button
+                          key={i}
+                          onClick={() => setQuizCurrent(prev => ({ ...prev, [block.id]: i }))}
+                          className={`transition-all duration-200 rounded-full ${
+                            i === currentQIdx ? 'w-5 h-5 bg-white text-orange-600 text-[10px] font-black flex items-center justify-center shadow' :
+                            quizAnswers[`${block.id}_${i}`] !== undefined
+                              ? (quizAnswers[`${block.id}_${i}`] === questions[i].correctIndex ? 'w-3 h-3 bg-green-300' : 'w-3 h-3 bg-red-300')
+                              : 'w-3 h-3 bg-white/40 hover:bg-white/70'
+                          }`}
+                        >{i === currentQIdx ? i + 1 : ''}</button>
+                      ))}
+                    </div>
+                  )}
                 </div>
 
-                {/* Explanation - chỉ hiện sau khi đã trả lời */}
-                {hasAnswered && block.explanation && (
-                  <div className={`mt-5 p-4 rounded-2xl border-l-4 ${isCorrect ? 'bg-green-50 border-green-500' : 'bg-amber-50 border-amber-500'} animate-in slide-in-from-bottom-2 fade-in duration-500`}>
-                    <p className={`text-xs font-black uppercase tracking-widest mb-2 flex items-center gap-2 ${isCorrect ? 'text-green-700' : 'text-amber-700'}`}>
-                      <span>💡</span> {isCorrect ? 'Chính xác! Giải thích:' : 'Chưa đúng. Giải thích:'}
-                    </p>
-                    <p className="text-[#334155] text-base leading-relaxed font-medium">{block.explanation}</p>
+                <div className="p-6 space-y-4">
+                  {/* Question number + text */}
+                  {questions.length > 1 && (
+                    <p className="text-[10px] font-black text-orange-400 uppercase tracking-widest">Câu {currentQIdx + 1} / {questions.length}</p>
+                  )}
+                  <h3 className="font-bold text-[#082F49] text-xl leading-snug">{q.question || '(Chưa có câu hỏi)'}</h3>
+
+                  {/* Question image */}
+                  {q.questionImage && (
+                    <div className="rounded-2xl overflow-hidden border border-orange-100 bg-slate-50 max-h-[260px] flex items-center justify-center">
+                      <img src={q.questionImage} alt="Câu hỏi" className="max-w-full max-h-[260px] object-contain" />
+                    </div>
+                  )}
+
+                  {/* Options */}
+                  <div className="space-y-2.5">
+                    {q.options.map((opt, idx) => {
+                      const isSelected = selectedIdx === idx;
+                      const isCorrectOpt = idx === q.correctIndex;
+                      let cls = 'w-full text-left p-4 rounded-2xl border-2 font-semibold text-base transition-all duration-200 ';
+                      if (!hasAnswered) cls += 'bg-slate-50/60 hover:bg-orange-50 border-slate-200 hover:border-orange-400 text-[#334155] cursor-pointer active:scale-[0.98]';
+                      else if (isCorrectOpt) cls += 'bg-green-100 border-green-400 text-green-800';
+                      else if (isSelected) cls += 'bg-red-100 border-red-400 text-red-700';
+                      else cls += 'bg-slate-50 border-slate-200 text-slate-400 opacity-60';
+                      return (
+                        <button key={idx} className={cls} onClick={() => !hasAnswered && setQuizAnswers(prev => ({ ...prev, [answerKey]: idx }))}>
+                          <span className="flex items-center gap-3">
+                            <span className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-black shrink-0 transition-all ${
+                              !hasAnswered ? 'bg-orange-100 text-orange-600' :
+                              isCorrectOpt ? 'bg-green-500 text-white' :
+                              isSelected ? 'bg-red-400 text-white' : 'bg-slate-200 text-slate-400'
+                            }`}>
+                              {hasAnswered && isCorrectOpt ? '✓' : hasAnswered && isSelected && !isCorrectOpt ? '✕' : String.fromCharCode(65 + idx)}
+                            </span>
+                            {opt}
+                          </span>
+                        </button>
+                      );
+                    })}
                   </div>
-                )}
+
+                  {/* Explanation */}
+                  {hasAnswered && q.explanation && (
+                    <div className={`p-4 rounded-2xl border-l-4 ${isCorrect ? 'bg-green-50 border-green-500' : 'bg-amber-50 border-amber-500'} animate-in slide-in-from-bottom-2 fade-in duration-400`}>
+                      <p className={`text-xs font-black uppercase tracking-widest mb-2 flex items-center gap-2 ${isCorrect ? 'text-green-700' : 'text-amber-700'}`}>
+                        💡 {isCorrect ? 'Chính xác! Giải thích:' : 'Chưa đúng. Giải thích:'}
+                      </p>
+                      <p className="text-[#334155] leading-relaxed font-medium">{q.explanation}</p>
+                    </div>
+                  )}
+
+                  {/* Navigation buttons */}
+                  {questions.length > 1 && (
+                    <div className="flex justify-between pt-2">
+                      <button
+                        onClick={() => setQuizCurrent(prev => ({ ...prev, [block.id]: Math.max(0, currentQIdx - 1) }))}
+                        disabled={currentQIdx === 0}
+                        className="px-4 py-2 rounded-xl bg-orange-100 text-orange-700 font-bold text-sm disabled:opacity-30 hover:bg-orange-200 transition-all"
+                      >← Trước</button>
+                      <button
+                        onClick={() => setQuizCurrent(prev => ({ ...prev, [block.id]: Math.min(questions.length - 1, currentQIdx + 1) }))}
+                        disabled={currentQIdx === questions.length - 1}
+                        className="px-4 py-2 rounded-xl bg-orange-500 text-white font-bold text-sm disabled:opacity-30 hover:bg-orange-600 transition-all"
+                      >Tiếp →</button>
+                    </div>
+                  )}
+                </div>
               </div>
             );
           }
@@ -746,38 +1044,80 @@ export function PresentationPreview({ blocks, onClose }: Props) {
           }
 
           if (block.type === 'compare') {
-            const colorMap: Record<string, string> = {
-              blue:   'from-blue-50 to-cyan-50 border-blue-200 text-blue-700',
-              green:  'from-emerald-50 to-green-50 border-emerald-200 text-emerald-700',
-              orange: 'from-orange-50 to-amber-50 border-orange-200 text-orange-700',
-              rose:   'from-rose-50 to-pink-50 border-rose-200 text-rose-700',
-              violet: 'from-violet-50 to-purple-50 border-violet-200 text-violet-700',
-              amber:  'from-amber-50 to-yellow-50 border-amber-200 text-amber-700',
+            const COL_PRESETS: Record<string, { bg: string; accent: string; text: string; bullet: string }> = {
+              'Xanh dương': { bg: 'linear-gradient(135deg,#E0F2FE,#BAE6FD)', accent: '#0284C7', text: '#0C4A6E', bullet: '#0284C7' },
+              'Xanh cyan':  { bg: 'linear-gradient(135deg,#CFFAFE,#A5F3FC)', accent: '#06B6D4', text: '#164E63', bullet: '#06B6D4' },
+              'Xanh lá':    { bg: 'linear-gradient(135deg,#DCFCE7,#BBF7D0)', accent: '#16A34A', text: '#14532D', bullet: '#16A34A' },
+              'Vàng':       { bg: 'linear-gradient(135deg,#FEF9C3,#FDE68A)', accent: '#D97706', text: '#78350F', bullet: '#D97706' },
+              'Cam':        { bg: 'linear-gradient(135deg,#FEF3C7,#FDBA74)', accent: '#EA580C', text: '#7C2D12', bullet: '#EA580C' },
+              'Hồng':       { bg: 'linear-gradient(135deg,#FFE4E6,#FECDD3)', accent: '#DB2777', text: '#831843', bullet: '#DB2777' },
+              'Tím':        { bg: 'linear-gradient(135deg,#EDE9FE,#DDD6FE)', accent: '#7C3AED', text: '#3B0764', bullet: '#7C3AED' },
+              'Đen':        { bg: 'linear-gradient(135deg,#1E293B,#334155)', accent: '#94A3B8', text: '#F8FAFC', bullet: '#94A3B8' },
+              // fallback for old data
+              'blue':   { bg: 'linear-gradient(135deg,#E0F2FE,#BAE6FD)', accent: '#0284C7', text: '#0C4A6E', bullet: '#0284C7' },
+              'green':  { bg: 'linear-gradient(135deg,#DCFCE7,#BBF7D0)', accent: '#16A34A', text: '#14532D', bullet: '#16A34A' },
+              'orange': { bg: 'linear-gradient(135deg,#FEF3C7,#FDBA74)', accent: '#EA580C', text: '#7C2D12', bullet: '#EA580C' },
+              'rose':   { bg: 'linear-gradient(135deg,#FFE4E6,#FECDD3)', accent: '#DB2777', text: '#831843', bullet: '#DB2777' },
+              'violet': { bg: 'linear-gradient(135deg,#EDE9FE,#DDD6FE)', accent: '#7C3AED', text: '#3B0764', bullet: '#7C3AED' },
+              'amber':  { bg: 'linear-gradient(135deg,#FEF9C3,#FDE68A)', accent: '#D97706', text: '#78350F', bullet: '#D97706' },
             };
+            const cols = block.compareColumns || [];
+            // Group into pairs: [0,1], [2,3], ...
+            const pairs: (typeof cols)[] = [];
+            for (let i = 0; i < cols.length; i += 2) {
+              pairs.push(cols.slice(i, i + 2));
+            }
             return (
-              <div key={block.id} className="relative z-10 mx-4 my-6">
-                {block.title && <h3 className="font-black text-[#082F49] mb-4 flex items-center gap-3 text-xl"><span>⚖️</span>{block.title}</h3>}
-                <div className={`grid gap-4 ${(block.compareColumns?.length || 2) >= 3 ? 'md:grid-cols-3' : 'md:grid-cols-2'}`}>
-                  {(block.compareColumns || []).map((col, ci) => {
-                    const styleClass = colorMap[col.color || 'blue'] || colorMap.blue;
-                    return (
-                      <div key={ci} className={`bg-gradient-to-br ${styleClass} border-2 rounded-2xl p-5 shadow-sm`}>
-                        <div className="flex items-center gap-2 mb-3 pb-3 border-b border-current/20">
-                          <span className="text-3xl">{col.icon || '•'}</span>
-                          <h4 className="font-black text-lg">{col.title}</h4>
-                        </div>
-                        <ul className="space-y-2">
-                          {col.items.filter(i => i.trim()).map((it, ii) => (
-                            <li key={ii} className="flex items-start gap-2 text-sm">
-                              <span className="text-current font-black mt-0.5">✓</span>
-                              <span className="text-[#334155] font-medium leading-relaxed">{it}</span>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    );
-                  })}
-                </div>
+              <div key={block.id} className="relative z-10 mx-4 my-6 space-y-6">
+                {block.title && (
+                  <h3 className="font-black text-[#082F49] flex items-center gap-3 text-xl">
+                    <span>⚖️</span>{block.title}
+                  </h3>
+                )}
+                {pairs.map((pair, pi) => (
+                  <div key={pi} className="flex gap-0 items-stretch rounded-3xl overflow-hidden shadow-[0_8px_32px_rgba(14,165,233,0.12)] border border-white">
+                    {pair.map((col, ci) => {
+                      const preset = COL_PRESETS[col.color || 'Xanh dương'] || COL_PRESETS['Xanh dương'];
+                      const isLeft = ci === 0;
+                      return (
+                        <>
+                          <div
+                            key={ci}
+                            className="flex-1 flex flex-col"
+                            style={{ background: preset.bg }}
+                          >
+                            {/* Column header */}
+                            <div
+                              className="px-5 py-4 border-b-2"
+                              style={{ borderColor: preset.accent }}
+                            >
+                              <h4 className="font-black text-lg" style={{ color: preset.text }}>
+                                {col.title || `Cột ${pi * 2 + ci + 1}`}
+                              </h4>
+                            </div>
+                            {/* Items */}
+                            <ul className="px-5 py-4 space-y-2.5 flex-1">
+                              {col.items.filter(i => i.trim()).map((it, ii) => (
+                                <li key={ii} className="flex items-start gap-2.5 text-sm">
+                                  <span className="font-black mt-0.5 shrink-0" style={{ color: preset.bullet }}>✓</span>
+                                  <span className="text-[#334155] font-medium leading-relaxed">{it}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                          {/* VS divider between the two */}
+                          {isLeft && pair.length === 2 && (
+                            <div className="w-10 flex flex-col items-center justify-center bg-white/70 backdrop-blur-sm shrink-0 gap-1 py-4">
+                              <div className="w-px flex-1 bg-slate-200" />
+                              <span className="text-[10px] font-black text-slate-400 tracking-widest rotate-0 select-none">VS</span>
+                              <div className="w-px flex-1 bg-slate-200" />
+                            </div>
+                          )}
+                        </>
+                      );
+                    })}
+                  </div>
+                ))}
               </div>
             );
           }
@@ -840,62 +1180,97 @@ export function PresentationPreview({ blocks, onClose }: Props) {
                   <h3 className="font-black text-lime-800 flex items-center gap-3 text-xl">
                     <span>👥</span>{block.title || 'Hoạt động nhóm'}
                   </h3>
+                </div>
+
+                <div className="flex flex-col lg:flex-row gap-4">
+                  {/* Left: info */}
+                  <div className="flex-1 space-y-3">
+                    {block.activityGoal && (
+                      <div className="bg-white/80 rounded-xl p-3 border-l-4 border-lime-500">
+                        <p className="text-xs font-black text-lime-700 uppercase tracking-widest mb-1">🎯 Mục tiêu</p>
+                        <p className="text-[#082F49] font-medium">{block.activityGoal}</p>
+                      </div>
+                    )}
+                    {(block.activitySteps?.length || 0) > 0 && (
+                      <div className="bg-white/80 rounded-xl p-3">
+                        <p className="text-xs font-black text-lime-700 uppercase tracking-widest mb-2">📋 Các bước</p>
+                        <ol className="space-y-2">
+                          {block.activitySteps!.filter(s => s.trim()).map((step, idx) => (
+                            <li key={idx} className="flex items-start gap-2">
+                              <span className="w-6 h-6 rounded-full bg-lime-500 text-white text-xs font-black flex items-center justify-center shrink-0 mt-0.5">{idx + 1}</span>
+                              <span className="text-[#334155] font-medium leading-relaxed">{step}</span>
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+                    {block.activityOutput && (
+                      <div className="bg-white/80 rounded-xl p-3 border-l-4 border-emerald-500">
+                        <p className="text-xs font-black text-emerald-700 uppercase tracking-widest mb-1">🎁 Sản phẩm cần đạt</p>
+                        <p className="text-[#082F49] font-medium">{block.activityOutput}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right: countdown timer */}
                   {block.activityDuration && (
-                    <span className="px-3 py-1 rounded-full bg-lime-500 text-white text-xs font-black flex items-center gap-1.5">
-                      <span>⏱️</span>{block.activityDuration}
-                    </span>
+                    <div className="flex flex-col items-center gap-1 shrink-0">
+                      <p className="text-[10px] font-black text-lime-600 uppercase tracking-widest">⏱ Đếm ngược</p>
+                      <GroupActivityTimer duration={block.activityDuration} />
+                    </div>
                   )}
                 </div>
-                {block.activityGoal && (
-                  <div className="bg-white/80 rounded-xl p-3 mb-3 border-l-4 border-lime-500">
-                    <p className="text-xs font-black text-lime-700 uppercase tracking-widest mb-1">🎯 Mục tiêu</p>
-                    <p className="text-[#082F49] font-medium">{block.activityGoal}</p>
-                  </div>
-                )}
-                {(block.activitySteps?.length || 0) > 0 && (
-                  <div className="bg-white/80 rounded-xl p-3 mb-3">
-                    <p className="text-xs font-black text-lime-700 uppercase tracking-widest mb-2">📋 Các bước</p>
-                    <ol className="space-y-2">
-                      {block.activitySteps!.filter(s => s.trim()).map((step, idx) => (
-                        <li key={idx} className="flex items-start gap-2">
-                          <span className="w-6 h-6 rounded-full bg-lime-500 text-white text-xs font-black flex items-center justify-center shrink-0 mt-0.5">{idx + 1}</span>
-                          <span className="text-[#334155] font-medium leading-relaxed">{step}</span>
-                        </li>
-                      ))}
-                    </ol>
-                  </div>
-                )}
-                {block.activityOutput && (
-                  <div className="bg-white/80 rounded-xl p-3 border-l-4 border-emerald-500">
-                    <p className="text-xs font-black text-emerald-700 uppercase tracking-widest mb-1">🎁 Sản phẩm cần đạt</p>
-                    <p className="text-[#082F49] font-medium">{block.activityOutput}</p>
-                  </div>
-                )}
               </div>
             );
           }
 
           if (block.type === 'openQuestion') {
+            const shown = !!openAnswerShown[block.id];
             return (
-              <div key={block.id} className="relative z-10 bg-gradient-to-br from-cyan-50 to-blue-50 backdrop-blur-xl p-6 rounded-3xl border border-cyan-200 shadow-[0_10px_30px_rgba(6,182,212,0.1)] mx-4 my-6">
-                <h3 className="font-black text-cyan-800 mb-4 flex items-center gap-3 text-xl">
-                  <span>✍️</span>{block.question || '(Chưa có câu hỏi)'}
-                </h3>
-                <textarea
-                  placeholder={block.questionType === 'long' ? 'Nhập bài làm chi tiết của em...' : 'Nhập câu trả lời...'}
-                  rows={block.questionType === 'long' ? 8 : 3}
-                  className="w-full bg-white border-2 border-cyan-200 rounded-xl px-4 py-3 outline-none focus:border-cyan-400 text-[#334155] font-medium leading-relaxed"
-                />
-                {(block.expectedKeywords?.length || 0) > 0 && (
-                  <details className="mt-3">
-                    <summary className="text-xs font-bold text-cyan-600 cursor-pointer hover:text-cyan-800">💡 Gợi ý từ khóa</summary>
-                    <div className="flex flex-wrap gap-1.5 mt-2">
-                      {block.expectedKeywords!.map((kw, i) => (
-                        <span key={i} className="px-2 py-0.5 rounded-full bg-cyan-100 text-cyan-700 text-xs font-bold">{kw}</span>
-                      ))}
+              <div
+                key={block.id}
+                className="preview-media-action relative z-10 bg-white/80 backdrop-blur-xl rounded-3xl border border-cyan-200 shadow-[0_10px_30px_rgba(6,182,212,0.12)] mx-4 overflow-hidden"
+                data-type="openQuestion"
+                data-questionimage={block.questionImage || ''}
+              >
+                {/* Header */}
+                <div className="bg-gradient-to-r from-cyan-500 to-sky-400 px-6 py-3">
+                  <span className="text-white font-black text-sm">✍️ Tự luận</span>
+                </div>
+
+                <div className="p-6 space-y-4">
+                  <h3 className="font-bold text-[#082F49] text-xl leading-snug">{block.question || '(Chưa có câu hỏi)'}</h3>
+
+                  <textarea
+                    placeholder={block.questionType === 'long' ? 'Nhập bài làm chi tiết của em...' : 'Nhập câu trả lời...'}
+                    rows={block.questionType === 'long' ? 8 : 3}
+                    className="w-full bg-slate-50/60 border-2 border-cyan-200 rounded-2xl px-4 py-3 outline-none focus:border-cyan-400 text-[#334155] font-medium leading-relaxed resize-none"
+                  />
+
+                  {/* Reveal answer button */}
+                  {block.openAnswer && (
+                    <div>
+                      <button
+                        onClick={() => setOpenAnswerShown(prev => ({ ...prev, [block.id]: !prev[block.id] }))}
+                        className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-black transition-all ${
+                          shown
+                            ? 'bg-emerald-100 text-emerald-700 hover:bg-emerald-200'
+                            : 'bg-cyan-100 text-cyan-700 hover:bg-cyan-200'
+                        }`}
+                      >
+                        <span>{shown ? '🔒' : '🔓'}</span>
+                        {shown ? 'Ẩn đáp án' : 'Xem đáp án'}
+                      </button>
+
+                      {shown && (
+                        <div className="mt-3 p-4 rounded-2xl bg-emerald-50 border-l-4 border-emerald-500 animate-in slide-in-from-bottom-2 fade-in duration-300">
+                          <p className="text-xs font-black text-emerald-700 uppercase tracking-widest mb-2">💬 Đáp án gợi ý</p>
+                          <p className="text-[#334155] leading-relaxed font-medium whitespace-pre-wrap">{block.openAnswer}</p>
+                        </div>
+                      )}
                     </div>
-                  </details>
-                )}
+                  )}
+                </div>
               </div>
             );
           }
@@ -1029,23 +1404,125 @@ export function PresentationPreview({ blocks, onClose }: Props) {
           }
 
           if (block.type === 'summary') {
+            const hasSections = (block.summarySections?.length || 0) > 0 &&
+              block.summarySections!.some((s: { title: string; body: string }) => s.title.trim() || s.body.trim());
+
             return (
-              <div key={block.id} className="relative z-10 bg-gradient-to-br from-sky-50 to-cyan-50 backdrop-blur-xl p-8 rounded-3xl border-2 border-sky-300 shadow-[0_10px_30px_rgba(14,165,233,0.15)] mx-4 my-8">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-2xl bg-sky-500 text-white flex items-center justify-center text-2xl shadow-md">📋</div>
-                  <h3 className="font-black text-sky-800 text-2xl">{block.title || 'Em đã học được gì?'}</h3>
+              <div key={block.id} className="relative z-10 mx-4 my-8">
+                <div className="bg-gradient-to-br from-sky-50 to-cyan-50 backdrop-blur-xl rounded-3xl border-2 border-sky-300 shadow-[0_10px_30px_rgba(14,165,233,0.15)] overflow-hidden">
+                  {/* Header bar */}
+                  <div className="flex items-center gap-3 px-7 py-5 border-b border-sky-200/60">
+                    <div className="w-12 h-12 rounded-2xl bg-sky-500 text-white flex items-center justify-center text-2xl shadow-md shrink-0">📋</div>
+                    <h3 className="font-black text-sky-800 text-2xl">{block.title || 'Em đã học được gì?'}</h3>
+                  </div>
+
+                  {/* Body area — two columns if image present */}
+                  <div className={`flex gap-0 ${block.summaryImage ? 'flex-col md:flex-row' : ''}`}>
+                    {/* Content column */}
+                    <div className="flex-1 px-7 py-5 space-y-5 min-w-0">
+                      {block.content && (
+                        <p className="text-[#334155] italic leading-relaxed border-l-4 border-sky-300 pl-4">{block.content}</p>
+                      )}
+
+                      {hasSections ? (
+                        // New structured sections
+                        <div className="space-y-5">
+                          {block.summarySections!
+                            .filter((s: { title: string; body: string }) => s.title.trim() || s.body.trim())
+                            .map((sec: { title: string; body: string }, si: number) => (
+                              <div key={si} className="bg-white/80 rounded-2xl border border-sky-100 shadow-sm overflow-hidden">
+                                {sec.title && (
+                                  <div className="flex items-center gap-3 px-4 py-3 bg-sky-500/10 border-b border-sky-100">
+                                    <span className="w-7 h-7 rounded-full bg-sky-500 text-white text-xs font-black flex items-center justify-center shrink-0">{si + 1}</span>
+                                    <h4 className="font-black text-sky-800 text-base">{sec.title}</h4>
+                                  </div>
+                                )}
+                                {sec.body && (
+                                  <div
+                                    className="px-5 py-3 text-sm text-[#334155] leading-relaxed summary-rich-body"
+                                    dangerouslySetInnerHTML={{ __html: sec.body }}
+                                  />
+                                )}
+                              </div>
+                            ))}
+                        </div>
+                      ) : (
+                        // Fallback: old flat items list
+                        <ul className="space-y-2">
+                          {(block.items || []).filter((i: string) => i.trim()).map((item: string, idx: number) => (
+                            <li key={idx} className="flex items-start gap-3 bg-white/80 rounded-xl px-4 py-3 border border-sky-100 shadow-sm">
+                              <span className="w-7 h-7 rounded-full bg-sky-500 text-white text-xs font-black flex items-center justify-center shrink-0 mt-0.5">{idx + 1}</span>
+                              <span className="text-[#082F49] font-medium leading-relaxed flex-1">{item}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+
+                    {/* Optional image panel */}
+                    {block.summaryImage && (
+                      <div className="md:w-64 shrink-0 flex items-stretch">
+                        <div className="w-full relative min-h-[200px]">
+                          <img
+                            src={block.summaryImage}
+                            alt="Minh họa"
+                            className="w-full h-full object-cover"
+                            style={{ minHeight: '200px' }}
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-l from-transparent to-sky-50/30 pointer-events-none" />
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-                {block.content && (
-                  <p className="text-[#334155] italic mb-4 leading-relaxed">{block.content}</p>
-                )}
-                <ul className="space-y-2">
-                  {(block.items || []).filter(i => i.trim()).map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-3 bg-white/80 rounded-xl px-4 py-3 border border-sky-100 shadow-sm">
-                      <span className="w-7 h-7 rounded-full bg-sky-500 text-white text-xs font-black flex items-center justify-center shrink-0 mt-0.5">{idx + 1}</span>
-                      <span className="text-[#082F49] font-medium leading-relaxed flex-1">{item}</span>
-                    </li>
-                  ))}
-                </ul>
+              </div>
+            );
+          }
+
+          if (block.type === 'practice') {
+            const items = (block.practiceItems || []).filter((it: { text: string; icon?: string }) => it.text?.trim());
+            return (
+              <div key={block.id} className="relative z-10 mx-4 my-8">
+                {/* Card with warm amber background */}
+                <div className="relative bg-gradient-to-br from-[#FEF9C3] to-[#FDE68A] rounded-3xl border-2 border-amber-300 shadow-[0_8px_32px_rgba(217,119,6,0.18)] overflow-visible pt-6 pb-6 px-6">
+
+                  {/* Decorative badge — top-left sticker */}
+                  <div className="absolute -top-5 -left-2 z-10">
+                    <div className="relative bg-gradient-to-br from-amber-400 to-orange-400 text-white px-4 py-2 rounded-2xl shadow-lg border-2 border-white rotate-[-3deg]">
+                      <div className="font-black text-sm leading-tight text-center" style={{ fontFamily: "'Nunito', 'Quicksand', sans-serif" }}>
+                        <div>Luyện tập</div>
+                        <div className="text-[11px] font-bold opacity-90">và Vận dụng</div>
+                      </div>
+                      {/* Small circle decoration */}
+                      <div className="absolute -bottom-1.5 left-1/2 -translate-x-1/2 w-3 h-3 bg-orange-400 rounded-full border-2 border-white" />
+                    </div>
+                  </div>
+
+                  {/* Optional custom title */}
+                  {block.title && block.title !== 'Luyện tập và Vận dụng' && (
+                    <h3 className="font-black text-amber-900 text-xl mb-4 mt-2">{block.title}</h3>
+                  )}
+
+                  {/* Items */}
+                  <div className="mt-4 space-y-4">
+                    {items.map((item: { text: string; icon?: string }, idx: number) => (
+                      <div key={idx} className="flex items-start gap-4">
+                        {/* Number */}
+                        <div className="w-8 h-8 rounded-full bg-amber-500 text-white font-black text-sm flex items-center justify-center shrink-0 shadow-md border-2 border-white">
+                          {idx + 1}
+                        </div>
+                        {/* Icon (character illustration) */}
+                        {item.icon && (
+                          <div className="w-12 h-12 rounded-2xl bg-white/70 border-2 border-amber-200 flex items-center justify-center text-2xl shrink-0 shadow-sm">
+                            {item.icon}
+                          </div>
+                        )}
+                        {/* Text */}
+                        <p className="text-[#334155] font-semibold leading-relaxed text-base flex-1 pt-1">{item.text}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
             );
           }
@@ -1117,9 +1594,17 @@ export function PresentationPreview({ blocks, onClose }: Props) {
               />
             </div>
 
-            {/* LAYER 2: IMAGE SCENARIO */}
-            <div className={`absolute inset-0 bg-transparent transition-opacity duration-700 ${activeMediaBlock?.type === 'imageScenario' ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
-              <ImageSlider urls={activeMediaBlock?.imageUrls || (activeMediaBlock?.imageUrl ? [activeMediaBlock.imageUrl] : [])} />
+            {/* LAYER 2: IMAGE SCENARIO + OPEN QUESTION */}
+            <div className={`absolute inset-0 bg-transparent transition-all duration-300 ease-out ${
+              activeMediaBlock?.type === 'imageScenario' || (activeMediaBlock?.type === 'openQuestion' && activeMediaBlock.questionImage)
+                ? 'opacity-100 translate-x-0 z-20 pointer-events-auto'
+                : 'opacity-0 translate-x-full z-0 pointer-events-none'
+            }`}>
+              <ImageSlider urls={
+                activeMediaBlock?.type === 'openQuestion'
+                  ? (activeMediaBlock.questionImage ? [activeMediaBlock.questionImage] : [])
+                  : (activeMediaBlock?.imageUrls || (activeMediaBlock?.imageUrl ? [activeMediaBlock.imageUrl] : []))
+              } />
             </div>
 
           </div>
@@ -1141,6 +1626,13 @@ export function PresentationPreview({ blocks, onClose }: Props) {
         </div>
       </div>
       <style dangerouslySetInnerHTML={{__html: `
+        @keyframes kenBurns {
+          from { transform: scale(1); }
+          to   { transform: scale(1.08); }
+        }
+        .img-ken-burns {
+          animation: kenBurns 8s ease-out forwards;
+        }
         .left-panel-preview {
           height: 55vh;
           flex: none;
@@ -1152,15 +1644,32 @@ export function PresentationPreview({ blocks, onClose }: Props) {
         @media (min-width: 1024px) {
           .left-panel-preview {
             height: 100% !important;
-            width: 50% !important;
-            max-width: 50% !important;
+            width: 60% !important;
+            max-width: 60% !important;
             flex: none !important;
           }
           .right-panel-preview {
             height: 100% !important;
-            flex: 1 1 0% !important;
+            width: 40% !important;
+            flex: none !important;
           }
         }
+        /* Rich text body inside summary sections */
+        .summary-rich-body h1,.summary-rich-body h2,.summary-rich-body h3,.summary-rich-body h4 {
+          font-weight: 900; color: #082F49; margin-top: 0.75em; margin-bottom: 0.25em;
+        }
+        .summary-rich-body h2 { font-size: 1.05rem; }
+        .summary-rich-body h3 { font-size: 0.95rem; }
+        .summary-rich-body h4 { font-size: 0.875rem; }
+        .summary-rich-body p  { margin: 0.25em 0; }
+        .summary-rich-body ul { list-style: none; padding: 0; margin: 0.25em 0; }
+        .summary-rich-body ul li { display: flex; align-items: flex-start; gap: 0.5rem; margin: 0.2em 0; }
+        .summary-rich-body ul li::before { content: "▸"; color: #0284C7; font-weight: 900; font-size: 0.7rem; margin-top: 0.2rem; flex-shrink: 0; }
+        .summary-rich-body ol { padding-left: 1.4em; margin: 0.25em 0; }
+        .summary-rich-body ol li { margin: 0.2em 0; }
+        .summary-rich-body strong { font-weight: 800; color: #082F49; }
+        .summary-rich-body em { font-style: italic; }
+        .summary-rich-body u  { text-decoration: underline; text-decoration-color: #0284C7; }
       `}} />
     </div>
   );

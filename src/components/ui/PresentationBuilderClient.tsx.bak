@@ -9,7 +9,7 @@ import dynamic from 'next/dynamic';
 
 const CesiumGlobe = dynamic(() => import('./CesiumGlobe'), { ssr: false });
 
-import type { BlockType, StoryBlock, QuizQuestion, PracticeItem, SummarySection } from '@/types/presentation';
+import type { BlockType, StoryBlock } from '@/types/presentation';
 
 function ImageSlider({ urls }: { urls: string[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -69,10 +69,10 @@ const ANNOTATION_PRESETS: Record<string, any[]> = {
   'latlng': [
     { lat: 0, lng: 90, label: 'Xích đạo (Vĩ tuyến gốc)', isAnnotation: true, color: 'text-red-500' },
     { lat: 45, lng: 0, label: 'Kinh tuyến gốc', isAnnotation: true, color: 'text-blue-600' },
-    { lat: 30, lng: 45, label: 'Vĩ tuyến Bắc', isAnnotation: true, color: 'text-orange-700' },
-    { lat: -30, lng: 45, label: 'Vĩ tuyến Nam', isAnnotation: true, color: 'text-orange-700' },
-    { lat: 15, lng: 45, label: 'Kinh tuyến Đông', isAnnotation: true, color: 'text-orange-700' },
-    { lat: 15, lng: -45, label: 'Kinh tuyến Tây', isAnnotation: true, color: 'text-orange-700' },
+    { lat: 30, lng: 45, label: 'Vĩ tuyến Bắc', isAnnotation: true, color: 'text-slate-700' },
+    { lat: -30, lng: 45, label: 'Vĩ tuyến Nam', isAnnotation: true, color: 'text-slate-700' },
+    { lat: 15, lng: 45, label: 'Kinh tuyến Đông', isAnnotation: true, color: 'text-slate-700' },
+    { lat: 15, lng: -45, label: 'Kinh tuyến Tây', isAnnotation: true, color: 'text-slate-700' },
     { lat: 20, lng: 0, label: '20°B', isAnnotation: true, isSmall: true, color: 'text-red-400' },
     { lat: 40, lng: 0, label: '40°B', isAnnotation: true, isSmall: true, color: 'text-red-400' },
     { lat: 60, lng: 0, label: '60°B', isAnnotation: true, isSmall: true, color: 'text-red-400' },
@@ -183,34 +183,6 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
 
   const [activeBlockId, setActiveBlockId] = useState<string | null>(null);
   const [collapsedBlocks, setCollapsedBlocks] = useState<Set<string>>(new Set());
-  const [blockViewMode, setBlockViewMode] = useState<'simple' | 'detailed'>('detailed');
-
-  // --- Block palette config ---
-  const BLOCK_PALETTE: { type: BlockType; label: string; icon: string; bg: string; border: string; text: string; hoverBorder: string; hoverBg: string }[] = [
-    { type: 'heading',       label: 'Tiêu đề',              icon: 'material-symbols:title-rounded', bg: 'bg-cyan-50',    border: 'border-cyan-200',    text: 'text-cyan-700',    hoverBorder: 'hover:border-cyan-500',    hoverBg: 'hover:bg-cyan-100' },
-    { type: 'text',          label: 'Văn bản',              icon: 'ph:article',                     bg: 'bg-slate-50',   border: 'border-slate-200',   text: 'text-slate-700',   hoverBorder: 'hover:border-slate-500',   hoverBg: 'hover:bg-slate-100' },
-    { type: 'objectives',    label: 'Nội dung bài học',     icon: 'ph:target',                      bg: 'bg-amber-50',   border: 'border-amber-200',   text: 'text-amber-700',   hoverBorder: 'hover:border-amber-500',   hoverBg: 'hover:bg-amber-100' },
-    { type: 'imageScenario', label: 'Tình huống có Ảnh',    icon: 'ph:image',                       bg: 'bg-emerald-50', border: 'border-emerald-200', text: 'text-emerald-700', hoverBorder: 'hover:border-emerald-500', hoverBg: 'hover:bg-emerald-100' },
-    { type: 'funFact',       label: 'Có thể em chưa biết',  icon: 'ph:lightbulb-filament',          bg: 'bg-blue-50',    border: 'border-blue-200',    text: 'text-blue-700',    hoverBorder: 'hover:border-blue-500',    hoverBg: 'hover:bg-blue-100' },
-    { type: 'mapAction',     label: 'Hành động Bản đồ',     icon: 'ph:globe-hemisphere-east',       bg: 'bg-teal-50',    border: 'border-teal-200',    text: 'text-teal-700',    hoverBorder: 'hover:border-teal-500',    hoverBg: 'hover:bg-teal-100' },
-    { type: 'quiz',          label: 'Câu hỏi trắc nghiệm',  icon: 'ph:question',                    bg: 'bg-orange-50',  border: 'border-orange-200',  text: 'text-orange-700',  hoverBorder: 'hover:border-orange-500',  hoverBg: 'hover:bg-orange-100' },
-    { type: 'openQuestion',  label: 'Câu hỏi tự luận',      icon: 'ph:pencil-line',                 bg: 'bg-sky-50',     border: 'border-sky-200',     text: 'text-sky-700',     hoverBorder: 'hover:border-sky-500',     hoverBg: 'hover:bg-sky-100' },
-    { type: 'dataTable',     label: 'Bảng số liệu',          icon: 'ph:table',                       bg: 'bg-violet-50',  border: 'border-violet-200',  text: 'text-violet-700',  hoverBorder: 'hover:border-violet-500',  hoverBg: 'hover:bg-violet-100' },
-    { type: 'video',         label: 'Video',                 icon: 'ph:video-camera',                bg: 'bg-red-50',     border: 'border-red-200',     text: 'text-red-700',     hoverBorder: 'hover:border-red-500',     hoverBg: 'hover:bg-red-100' },
-    { type: 'chart',         label: 'Biểu đồ',               icon: 'ph:chart-bar',                   bg: 'bg-indigo-50',  border: 'border-indigo-200',  text: 'text-indigo-700',  hoverBorder: 'hover:border-indigo-500',  hoverBg: 'hover:bg-indigo-100' },
-    { type: 'diagram',       label: 'Sơ đồ',                 icon: 'ph:puzzle-piece',                bg: 'bg-lime-50',    border: 'border-lime-200',    text: 'text-lime-700',    hoverBorder: 'hover:border-lime-500',    hoverBg: 'hover:bg-lime-100' },
-    { type: 'compare',       label: 'So sánh',               icon: 'ph:scales',                      bg: 'bg-zinc-50',    border: 'border-zinc-200',    text: 'text-zinc-700',    hoverBorder: 'hover:border-zinc-500',    hoverBg: 'hover:bg-zinc-100' },
-    { type: 'callout',       label: 'Ghi chú',               icon: 'ph:warning',                     bg: 'bg-yellow-50',  border: 'border-yellow-200',  text: 'text-yellow-700',  hoverBorder: 'hover:border-yellow-500',  hoverBg: 'hover:bg-yellow-100' },
-    { type: 'timeline',      label: 'Đường thời gian',       icon: 'ph:clock-counter-clockwise',     bg: 'bg-purple-50',  border: 'border-purple-200',  text: 'text-purple-700',  hoverBorder: 'hover:border-purple-500',  hoverBg: 'hover:bg-purple-100' },
-    { type: 'groupActivity', label: 'Hoạt động nhóm',        icon: 'ph:users-three',                 bg: 'bg-green-50',   border: 'border-green-200',   text: 'text-green-700',   hoverBorder: 'hover:border-green-500',   hoverBg: 'hover:bg-green-100' },
-    { type: 'fillBlank',     label: 'Điền khuyết',           icon: 'ph:text-underline',              bg: 'bg-pink-50',    border: 'border-pink-200',    text: 'text-pink-700',    hoverBorder: 'hover:border-pink-500',    hoverBg: 'hover:bg-pink-100' },
-    { type: 'quote',         label: 'Trích dẫn',             icon: 'ph:quotes',                      bg: 'bg-stone-50',   border: 'border-stone-200',   text: 'text-stone-700',   hoverBorder: 'hover:border-stone-500',   hoverBg: 'hover:bg-stone-100' },
-    { type: 'glossary',      label: 'Từ vựng',               icon: 'ph:book-open-text',              bg: 'bg-fuchsia-50', border: 'border-fuchsia-200', text: 'text-fuchsia-700', hoverBorder: 'hover:border-fuchsia-500', hoverBg: 'hover:bg-fuchsia-100' },
-    { type: 'twoColumn',     label: '2 cột',                  icon: 'ph:columns',                     bg: 'bg-neutral-50', border: 'border-neutral-200', text: 'text-neutral-700', hoverBorder: 'hover:border-neutral-500', hoverBg: 'hover:bg-neutral-100' },
-    { type: 'practice',      label: 'Luyện tập & Vận dụng', icon: 'ph:pencil-ruler',                bg: 'bg-rose-50',    border: 'border-rose-200',    text: 'text-rose-700',    hoverBorder: 'hover:border-rose-500',    hoverBg: 'hover:bg-rose-100' },
-    { type: 'gallery',       label: 'Bộ ảnh',                icon: 'ph:images-square',               bg: 'bg-cyan-50',    border: 'border-cyan-300',    text: 'text-cyan-800',    hoverBorder: 'hover:border-cyan-600',    hoverBg: 'hover:bg-cyan-200' },
-    { type: 'summary',       label: 'Tổng kết',              icon: 'ph:clipboard-text',              bg: 'bg-sky-100',    border: 'border-sky-300',     text: 'text-sky-800',     hoverBorder: 'hover:border-sky-500',     hoverBg: 'hover:bg-sky-200' },
-  ];
 
   // --- Helper Functions for Collapsed State ---
   const BLOCK_ICON_MAP: Record<string, string> = {
@@ -236,7 +208,6 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
     twoColumn: 'ph:columns',
     gallery: 'ph:images-square',
     summary: 'ph:clipboard-text',
-    practice: 'ph:pencil-ruler',
   };
   const getBlockIcon = (type: string) => {
     return <Icon icon={BLOCK_ICON_MAP[type] || 'ph:file'} width={22} />;
@@ -268,7 +239,6 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
       case 'twoColumn': return '2 cột';
       case 'gallery': return 'Bộ sưu tập ảnh';
       case 'summary': return 'Tổng kết';
-      case 'practice': return 'Luyện tập & Vận dụng';
       default: return 'Khối nội dung';
     }
   }
@@ -414,10 +384,12 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
       imageUrls: type === 'imageScenario' ? [] : undefined,
       // Objectives + Summary (Phase 1/3: list items)
       items: (type === 'objectives' || type === 'summary') ? [''] : undefined,
-      // Quiz (multi-question)
-      quizQuestions: type === 'quiz' ? [
-        { id: Date.now().toString() + '_q0', question: '', options: ['', '', '', ''], correctIndex: 0, explanation: '', questionImage: '' }
-      ] : undefined,
+      // Quiz (Phase 1: mặc định 4 đáp án ABCD + explanation + questionImage)
+      question: type === 'quiz' ? '' : undefined,
+      options: type === 'quiz' ? ['', '', '', ''] : undefined,
+      correctIndex: type === 'quiz' ? 0 : undefined,
+      explanation: type === 'quiz' ? '' : undefined,
+      questionImage: type === 'quiz' ? '' : undefined,
       // MapAction (giữ nguyên)
       lat: type === 'mapAction' ? 16.0 : undefined,
       lng: type === 'mapAction' ? 106.0 : undefined,
@@ -500,18 +472,6 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
 
       // Phase 3: Gallery
       galleryImages: type === 'gallery' ? [] : undefined,
-
-      // Practice
-      practiceItems: type === 'practice' ? [
-        { text: '', icon: '📚' },
-        { text: '', icon: '🏃' },
-      ] : undefined,
-
-      // Summary sections (new structured format)
-      summarySections: type === 'summary' ? [
-        { title: '', body: '' },
-      ] : undefined,
-      summaryImage: type === 'summary' ? '' : undefined,
     };
     setBlocks([...blocks, newBlock]);
     setActiveBlockId(newBlock.id);
@@ -601,114 +561,32 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
           <>
 
             {/* HEADING BLOCK */}
-            {block.type === 'heading' && (() => {
-              const BG_PRESETS = [
-                { label: 'Mặc định', value: '' },
-                { label: 'Xanh biển', value: 'linear-gradient(135deg,#E0F2FE,#BAE6FD)' },
-                { label: 'Xanh lá', value: 'linear-gradient(135deg,#DCFCE7,#BBF7D0)' },
-                { label: 'Tím', value: 'linear-gradient(135deg,#EDE9FE,#DDD6FE)' },
-                { label: 'Cam', value: 'linear-gradient(135deg,#FEF3C7,#FDE68A)' },
-                { label: 'Hồng', value: 'linear-gradient(135deg,#FFE4E6,#FECDD3)' },
-                { label: 'Tối (Cyan)', value: 'linear-gradient(135deg,#082F49,#0E4D6E)' },
-                { label: 'Tối (Tím)', value: 'linear-gradient(135deg,#1E1B4B,#312E81)' },
-              ];
-              const COLOR_PRESETS = [
-                { label: 'Mặc định', value: '' },
-                { label: 'Xanh đại dương', value: '#082F49' },
-                { label: 'Cyan', value: '#06B6D4' },
-                { label: 'Trắng', value: '#FFFFFF' },
-                { label: 'Đen', value: '#0F172A' },
-                { label: 'Xanh lá', value: '#16A34A' },
-                { label: 'Tím', value: '#7C3AED' },
-                { label: 'Cam', value: '#D97706' },
-                { label: 'Hồng', value: '#DB2777' },
-              ];
-              return (
-                <ModuleShell
-                  icon={<Icon icon="ph:text-t" width={20} />}
-                  typeName={`Tiêu đề · H${block.level || 2}`}
-                  accent="cyan"
-                  headerRight={
-                    <div className="flex gap-1 bg-white/80 rounded-lg p-1 border border-cyan-100">
-                      {[1, 2, 3].map(lvl => (
-                        <button
-                          key={lvl}
-                          onClick={() => updateBlock(block.id, { level: lvl as any })}
-                          className={`px-2.5 py-1 text-[11px] font-black rounded-md transition-all ${block.level === lvl ? 'bg-cyan-500 text-white shadow-sm' : 'text-slate-400 hover:text-cyan-600'}`}
-                        >H{lvl}</button>
-                      ))}
-                    </div>
-                  }
-                >
-
-                  {/* Color pickers */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {/* Background */}
-                    <div>
-                      <label className={labelCls}>Màu nền</label>
-                      <div className="flex flex-wrap gap-1.5">
-                        {BG_PRESETS.map(p => (
-                          <button
-                            key={p.value}
-                            onClick={() => updateBlock(block.id, { headingBg: p.value })}
-                            title={p.label}
-                            className={`w-7 h-7 rounded-lg border-2 transition-all hover:scale-110 ${
-                              (block.headingBg || '') === p.value ? 'border-cyan-500 scale-110 shadow-md' : 'border-slate-200'
-                            }`}
-                            style={{ background: p.value || 'linear-gradient(135deg,#E0F2FE,transparent)' }}
-                          />
-                        ))}
-                        {/* Custom color input */}
-                        <label className="w-7 h-7 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center cursor-pointer hover:border-cyan-400 overflow-hidden" title="Màu tuùy chỉnh">
-                          <input type="color" className="w-10 h-10 opacity-0 absolute" onChange={e => updateBlock(block.id, { headingBg: e.target.value })} />
-                          <Icon icon="ph:eye-dropper" width={14} className="text-slate-400" />
-                        </label>
-                      </div>
-                    </div>
-
-                    {/* Text color */}
-                    <div>
-                      <label className={labelCls}>Màu chữ</label>
-                      <div className="flex flex-wrap gap-1.5">
-                        {COLOR_PRESETS.map(p => (
-                          <button
-                            key={p.value}
-                            onClick={() => updateBlock(block.id, { headingColor: p.value })}
-                            title={p.label}
-                            className={`w-7 h-7 rounded-lg border-2 transition-all hover:scale-110 ${
-                              (block.headingColor || '') === p.value ? 'border-cyan-500 scale-110 shadow-md' : 'border-slate-200'
-                            }`}
-                            style={{ background: p.value || '#082F49' }}
-                          />
-                        ))}
-                        <label className="w-7 h-7 rounded-lg border-2 border-dashed border-slate-300 flex items-center justify-center cursor-pointer hover:border-cyan-400 overflow-hidden" title="Màu tuùy chỉnh">
-                          <input type="color" value={block.headingColor || '#082F49'} className="w-10 h-10 opacity-0 absolute" onChange={e => updateBlock(block.id, { headingColor: e.target.value })} />
-                          <Icon icon="ph:eye-dropper" width={14} className="text-slate-400" />
-                        </label>
-                      </div>
-                    </div>
+            {block.type === 'heading' && (
+              <ModuleShell
+                icon={<Icon icon="ph:text-t" width={20} />}
+                typeName={`Tiêu đề · H${block.level || 2}`}
+                accent="cyan"
+                headerRight={
+                  <div className="flex gap-1 bg-white/80 rounded-lg p-1 border border-cyan-100">
+                    {[1, 2, 3].map(lvl => (
+                      <button
+                        key={lvl}
+                        onClick={() => updateBlock(block.id, { level: lvl as any })}
+                        className={`px-2.5 py-1 text-[11px] font-black rounded-md transition-all ${block.level === lvl ? 'bg-cyan-500 text-white shadow-sm' : 'text-slate-400 hover:text-cyan-600'}`}
+                      >H{lvl}</button>
+                    ))}
                   </div>
-
-                  {/* Preview */}
-                  <div
-                    className="w-full rounded-xl p-4 mb-1 transition-all"
-                    style={{
-                      background: block.headingBg || 'linear-gradient(135deg,#E0F2FE,transparent)',
-                      borderLeft: '4px solid #06B6D4',
-                    }}
-                  >
-                    <input
-                      type="text"
-                      value={block.content || ''}
-                      onChange={e => updateBlock(block.id, { content: e.target.value })}
-                      placeholder={`Tiêu đề H${block.level || 2}...`}
-                      className={`w-full bg-transparent outline-none font-black ${block.level === 1 ? 'text-3xl' : block.level === 2 ? 'text-xl' : 'text-base'} pb-1 transition-colors`}
-                      style={{ color: block.headingColor || '#082F49' }}
-                    />
-                  </div>
-                </ModuleShell>
-              );
-            })()}
+                }
+              >
+                <input
+                  type="text"
+                  value={block.content || ''}
+                  onChange={e => updateBlock(block.id, { content: e.target.value })}
+                  placeholder={`Tiêu đề H${block.level || 2}...`}
+                  className={`w-full bg-transparent outline-none font-black text-[#082F49] ${block.level === 1 ? 'text-3xl' : block.level === 2 ? 'text-xl' : 'text-base text-cyan-700'} border-b-2 border-cyan-100 focus:border-cyan-400 pb-2 transition-colors`}
+                />
+              </ModuleShell>
+            )}
 
             {/* TEXT BLOCK */}
             {block.type === 'text' && (
@@ -781,12 +659,9 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
 
             {/* IMAGE SCENARIO BLOCK */}
             {block.type === 'imageScenario' && (() => {
-              const urls: string[] = (block.imageUrls && block.imageUrls.length > 0)
+              const urls = (block.imageUrls && block.imageUrls.length > 0)
                 ? block.imageUrls
                 : (block.imageUrl ? [block.imageUrl] : []);
-
-              const setUrls = (next: string[]) => updateBlock(block.id, { imageUrls: next, imageUrl: undefined });
-
               return (
                 <ModuleShell
                   icon={<Icon icon="ph:image" width={20} />}
@@ -798,7 +673,6 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                     </span>
                   }
                 >
-                  {/* Scenario content */}
                   <div>
                     <label className={labelCls}>Nội dung tình huống</label>
                     <div className="bg-white border border-slate-200 rounded-xl overflow-hidden focus-within:border-emerald-400 focus-within:ring-2 focus-within:ring-emerald-100 transition-all">
@@ -809,57 +683,26 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                       />
                     </div>
                   </div>
-
-                  {/* Image list */}
                   <div>
-                    <label className={labelCls}>Hình ảnh minh họa ({urls.length > 1 ? 'slide' : 'ảnh đơn'})</label>
-                    <div className="space-y-2">
-                      {urls.map((url, i) => (
-                        <div key={i} className="flex items-center gap-2 bg-white border border-slate-200 rounded-xl p-2">
-                          {/* Thumbnail */}
-                          <div className="w-12 h-12 rounded-lg border border-slate-200 overflow-hidden bg-slate-50 shrink-0">
-                            {url && (
-                              <img
-                                src={url}
-                                alt={`thumb-${i}`}
-                                className="w-full h-full object-cover"
-                                onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
-                              />
-                            )}
+                    <label className={labelCls}>Link hình ảnh — mỗi link 1 dòng để tạo slide</label>
+                    <textarea
+                      value={urls.join('\n')}
+                      onChange={e => updateBlock(block.id, {
+                        imageUrls: e.target.value.split('\n').map(u => u.trim()).filter(Boolean),
+                        imageUrl: undefined,
+                      })}
+                      placeholder="https://example.com/anh1.jpg&#10;https://example.com/anh2.jpg"
+                      className={`${textareaCls} font-mono`}
+                    />
+                    {urls.length > 0 && (
+                      <div className="flex gap-2 mt-3 flex-wrap">
+                        {urls.map((url, i) => (
+                          <div key={i} className="w-14 h-14 rounded-lg border border-emerald-200 overflow-hidden bg-slate-50 shadow-sm">
+                            <img src={url} alt={`thumb-${i}`} className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
                           </div>
-                          {/* URL input */}
-                          <input
-                            type="text"
-                            value={url}
-                            onChange={e => {
-                              const next = [...urls];
-                              next[i] = e.target.value;
-                              setUrls(next);
-                            }}
-                            placeholder={`https://... (link ảnh ${i + 1})`}
-                            className={`${inputCls} flex-1`}
-                          />
-                          {/* Slide badge */}
-                          {urls.length > 1 && (
-                            <span className="text-[10px] font-black text-emerald-500 shrink-0 w-6 text-center">{i + 1}</span>
-                          )}
-                          {/* Remove */}
-                          <button
-                            onClick={() => setUrls(urls.filter((_, idx) => idx !== i))}
-                            className={removeBtnCls}
-                            title="Xoá ảnh này"
-                          >✕</button>
-                        </div>
-                      ))}
-                    </div>
-
-                    <button
-                      onClick={() => setUrls([...urls, ''])}
-                      className={`mt-2 w-full text-xs font-bold px-4 py-2 bg-white rounded-xl border-2 border-dashed transition-all ${ACCENT_MAP.emerald.dashBtn} flex items-center justify-center gap-2`}
-                    >
-                      <Icon icon="ph:plus" width={14} />
-                      {urls.length === 0 ? 'Thêm ảnh' : 'Thêm ảnh vào slide'}
-                    </button>
+                        ))}
+                      </div>
+                    )}
                   </div>
                 </ModuleShell>
               );
@@ -1191,139 +1034,101 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
               </ModuleShell>
             )}
 
-            {/* QUIZ BLOCK — MULTI-QUESTION */}
-            {block.type === 'quiz' && (() => {
-              // Support legacy single-question blocks
-              const questions: QuizQuestion[] = block.quizQuestions && block.quizQuestions.length > 0
-                ? block.quizQuestions
-                : [{
-                    id: block.id + '_q0',
-                    question: block.question || '',
-                    options: block.options?.length === 4 ? block.options : ['', '', '', ''],
-                    correctIndex: block.correctIndex ?? 0,
-                    explanation: block.explanation || '',
-                    questionImage: block.questionImage || '',
-                  }];
+            {/* QUIZ BLOCK */}
+            {block.type === 'quiz' && (
+              <ModuleShell
+                icon={<Icon icon="ph:question" width={20} />}
+                typeName="Câu hỏi trắc nghiệm"
+                accent="orange"
+                titleSlot={
+                  <input
+                    type="text"
+                    value={block.question || ''}
+                    onChange={e => updateBlock(block.id, { question: e.target.value })}
+                    className="w-full bg-transparent outline-none font-bold text-[#082F49] text-base placeholder:text-[#94A3B8]"
+                    placeholder="Nhập câu hỏi..."
+                  />
+                }
+              >
+                {/* Question image */}
+                <div>
+                  <label className={labelCls}>Hình ảnh kèm câu hỏi (tùy chọn)</label>
+                  <div className="flex gap-2 items-start">
+                    <input
+                      type="text"
+                      value={block.questionImage || ''}
+                      onChange={e => updateBlock(block.id, { questionImage: e.target.value })}
+                      placeholder="https://... (link ảnh minh họa)"
+                      className={`${inputCls} flex-1`}
+                    />
+                    {block.questionImage && (
+                      <div className="w-11 h-11 rounded-lg border border-slate-200 overflow-hidden bg-slate-50 shrink-0">
+                        <img src={block.questionImage} alt="preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-              const updateQuestion = (qIdx: number, patch: Partial<QuizQuestion>) => {
-                const next = questions.map((q, i) => i === qIdx ? { ...q, ...patch } : q);
-                updateBlock(block.id, { quizQuestions: next });
-              };
-
-              const addQuestion = () => {
-                const next = [...questions, {
-                  id: Date.now().toString(),
-                  question: '',
-                  options: ['', '', '', ''],
-                  correctIndex: 0,
-                  explanation: '',
-                  questionImage: '',
-                }];
-                updateBlock(block.id, { quizQuestions: next });
-              };
-
-              const removeQuestion = (qIdx: number) => {
-                const next = questions.filter((_, i) => i !== qIdx);
-                updateBlock(block.id, { quizQuestions: next });
-              };
-
-              return (
-                <ModuleShell
-                  icon={<Icon icon="ph:question" width={20} />}
-                  typeName="Câu hỏi trắc nghiệm"
-                  accent="orange"
-                  headerRight={
-                    <span className="px-2.5 py-1 rounded-full bg-orange-100 text-orange-700 text-[11px] font-black">
-                      {questions.length} câu hỏi
-                    </span>
-                  }
-                >
-                  <div className="space-y-4">
-                    {questions.map((q, qIdx) => (
-                      <div key={q.id} className="border-2 border-orange-100 rounded-2xl p-4 bg-orange-50/40 space-y-3">
-                        {/* Question header */}
-                        <div className="flex items-center justify-between gap-2">
-                          <span className="px-2.5 py-1 rounded-full bg-orange-500 text-white text-[11px] font-black shrink-0">Câu {qIdx + 1}</span>
-                          {questions.length > 1 && (
-                            <button onClick={() => removeQuestion(qIdx)} className={removeBtnCls} title="Xoá câu hỏi này">✕</button>
-                          )}
-                        </div>
-
-                        {/* Question text */}
-                        <input
-                          type="text"
-                          value={q.question}
-                          onChange={e => updateQuestion(qIdx, { question: e.target.value })}
-                          placeholder="Nhập câu hỏi..."
-                          className={`${inputCls} font-bold text-[#082F49]`}
-                        />
-
-                        {/* Question image */}
-                        <div className="flex gap-2 items-start">
+                {/* Options */}
+                <div>
+                  <label className={labelCls}>Đáp án — nhấn chữ cái để chọn đúng</label>
+                  <div className="space-y-2">
+                    {block.options?.map((opt, idx) => {
+                      const letter = String.fromCharCode(65 + idx);
+                      const isCorrect = block.correctIndex === idx;
+                      return (
+                        <div key={idx} className={`flex items-center gap-2 p-2 rounded-xl border-2 transition-all ${isCorrect ? 'bg-emerald-50 border-emerald-400 shadow-sm' : 'bg-white border-slate-200 hover:border-orange-300'}`}>
+                          <button
+                            type="button"
+                            onClick={() => updateBlock(block.id, { correctIndex: idx })}
+                            className={`w-9 h-9 rounded-lg flex items-center justify-center font-black text-sm shrink-0 transition-all ${isCorrect ? 'bg-emerald-500 text-white shadow-md' : 'bg-orange-100 text-orange-700 hover:bg-orange-200'}`}
+                            title={isCorrect ? 'Đáp án đúng' : 'Chọn làm đáp án đúng'}
+                          >{letter}</button>
                           <input
                             type="text"
-                            value={q.questionImage || ''}
-                            onChange={e => updateQuestion(qIdx, { questionImage: e.target.value })}
-                            placeholder="Hình ảnh kèm câu hỏi (URL, tùy chọn)"
-                            className={`${inputCls} flex-1`}
+                            value={opt}
+                            onChange={(e) => {
+                              const newOpts = [...(block.options || [])];
+                              newOpts[idx] = e.target.value;
+                              updateBlock(block.id, { options: newOpts });
+                            }}
+                            className="flex-1 bg-transparent outline-none font-medium text-[#082F49] placeholder:text-[#94A3B8]"
+                            placeholder={`Đáp án ${letter}`}
                           />
-                          {q.questionImage && (
-                            <div className="w-11 h-11 rounded-lg border border-slate-200 overflow-hidden bg-slate-50 shrink-0">
-                              <img src={q.questionImage} alt="preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
-                            </div>
+                          {(block.options?.length || 0) > 2 && (
+                            <button
+                              onClick={() => {
+                                const newOpts = block.options?.filter((_, i) => i !== idx) || [];
+                                const newCorrect = (block.correctIndex ?? 0) >= newOpts.length ? 0 : (block.correctIndex ?? 0);
+                                updateBlock(block.id, { options: newOpts, correctIndex: newCorrect });
+                              }}
+                              className={removeBtnCls}
+                            >✕</button>
                           )}
                         </div>
-
-                        {/* 4 fixed options A/B/C/D */}
-                        <div className="space-y-1.5">
-                          {q.options.map((opt, oIdx) => {
-                            const letter = String.fromCharCode(65 + oIdx);
-                            const isCorrect = q.correctIndex === oIdx;
-                            return (
-                              <div key={oIdx} className={`flex items-center gap-2 p-2 rounded-xl border-2 transition-all ${isCorrect ? 'bg-emerald-50 border-emerald-400' : 'bg-white border-slate-200 hover:border-orange-300'}`}>
-                                <button
-                                  type="button"
-                                  onClick={() => updateQuestion(qIdx, { correctIndex: oIdx })}
-                                  className={`w-8 h-8 rounded-lg flex items-center justify-center font-black text-sm shrink-0 transition-all ${isCorrect ? 'bg-emerald-500 text-white shadow-md' : 'bg-orange-100 text-orange-700 hover:bg-orange-200'}`}
-                                  title={isCorrect ? 'Đáp án đúng' : 'Chọn làm đáp án đúng'}
-                                >{letter}</button>
-                                <input
-                                  type="text"
-                                  value={opt}
-                                  onChange={e => {
-                                    const newOpts = [...q.options];
-                                    newOpts[oIdx] = e.target.value;
-                                    updateQuestion(qIdx, { options: newOpts });
-                                  }}
-                                  className="flex-1 bg-transparent outline-none font-medium text-[#082F49] placeholder:text-[#94A3B8] text-sm"
-                                  placeholder={`Đáp án ${letter}`}
-                                />
-                              </div>
-                            );
-                          })}
-                        </div>
-
-                        {/* Explanation */}
-                        <textarea
-                          value={q.explanation || ''}
-                          onChange={e => updateQuestion(qIdx, { explanation: e.target.value })}
-                          placeholder="💡 Giải thích đáp án đúng (hiện sau khi trả lời, tùy chọn)"
-                          rows={2}
-                          className={textareaCls}
-                        />
-                      </div>
-                    ))}
-
-                    <button
-                      onClick={addQuestion}
-                      className={`w-full text-sm font-bold px-4 py-2.5 bg-white rounded-xl border-2 border-dashed transition-all ${ACCENT_MAP.orange.dashBtn} flex items-center justify-center gap-2`}
-                    >
-                      <Icon icon="ph:plus" width={16} /> Thêm câu hỏi
-                    </button>
+                      );
+                    })}
                   </div>
-                </ModuleShell>
-              );
-            })()}
+                  {(block.options?.length || 0) < 6 && (
+                    <button
+                      onClick={() => updateBlock(block.id, { options: [...(block.options || []), ''] })}
+                      className={`mt-2 text-xs font-bold px-3 py-1.5 bg-white rounded-lg border border-dashed transition-all ${ACCENT_MAP.orange.dashBtn}`}
+                    >+ Thêm đáp án</button>
+                  )}
+                </div>
+
+                {/* Explanation */}
+                <div>
+                  <label className={labelCls}>💡 Giải thích đáp án đúng (hiện sau khi trả lời)</label>
+                  <textarea
+                    value={block.explanation || ''}
+                    onChange={e => updateBlock(block.id, { explanation: e.target.value })}
+                    placeholder="vd: Đáp án B đúng vì..."
+                    className={textareaCls}
+                  />
+                </div>
+              </ModuleShell>
+            )}
 
             {/* ════════ PHASE 2 MODULES ════════ */}
 
@@ -1576,160 +1381,120 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
             )}
 
             {/* COMPARE BLOCK */}
-            {block.type === 'compare' && (() => {
-              const COL_COLOR_PRESETS = [
-                { label: 'Xanh dương', bg: 'linear-gradient(135deg,#E0F2FE,#BAE6FD)', accent: '#0284C7', text: '#0C4A6E' },
-                { label: 'Xanh cyan', bg: 'linear-gradient(135deg,#CFFAFE,#A5F3FC)', accent: '#06B6D4', text: '#164E63' },
-                { label: 'Xanh lá', bg: 'linear-gradient(135deg,#DCFCE7,#BBF7D0)', accent: '#16A34A', text: '#14532D' },
-                { label: 'Vàng', bg: 'linear-gradient(135deg,#FEF9C3,#FDE68A)', accent: '#D97706', text: '#78350F' },
-                { label: 'Cam', bg: 'linear-gradient(135deg,#FEF3C7,#FDBA74)', accent: '#EA580C', text: '#7C2D12' },
-                { label: 'Hồng', bg: 'linear-gradient(135deg,#FFE4E6,#FECDD3)', accent: '#DB2777', text: '#831843' },
-                { label: 'Tím', bg: 'linear-gradient(135deg,#EDE9FE,#DDD6FE)', accent: '#7C3AED', text: '#3B0764' },
-                { label: 'Đen', bg: 'linear-gradient(135deg,#1E293B,#334155)', accent: '#94A3B8', text: '#F8FAFC' },
-              ];
-              return (
-                <ModuleShell
-                  icon={<Icon icon="ph:scales" width={20} />}
-                  typeName="So sánh"
-                  accent="slate"
-                  titleSlot={
-                    <input
-                      type="text"
-                      value={block.title || ''}
-                      onChange={e => updateBlock(block.id, { title: e.target.value })}
-                      placeholder="vd: Khí hậu nhiệt đới vs ôn đới..."
-                      className="w-full bg-transparent outline-none font-bold text-[#082F49] text-base placeholder:text-[#94A3B8]"
-                    />
-                  }
-                >
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {(block.compareColumns || []).map((col, ci) => {
-                      const chosenPreset = COL_COLOR_PRESETS.find(p => p.label === (col.color || 'Xanh dương')) || COL_COLOR_PRESETS[0];
-                      return (
-                        <div key={ci} className="rounded-2xl overflow-hidden border border-white shadow-[0_4px_16px_rgba(14,165,233,0.1)]">
-                          {/* Decorative color strip with column index */}
-                          <div
-                            className="px-4 py-2 flex items-center justify-between"
-                            style={{ background: chosenPreset.bg, borderBottom: `2px solid ${chosenPreset.accent}` }}
-                          >
-                            <span className="text-[11px] font-black uppercase tracking-widest opacity-60" style={{ color: chosenPreset.text }}>
-                              Bảng {ci + 1}
-                            </span>
-                            {(block.compareColumns?.length || 0) > 1 && (
+            {block.type === 'compare' && (
+              <ModuleShell
+                icon={<Icon icon="ph:scales" width={20} />}
+                typeName="So sánh"
+                accent="slate"
+                titleSlot={
+                  <input
+                    type="text"
+                    value={block.title || ''}
+                    onChange={e => updateBlock(block.id, { title: e.target.value })}
+                    placeholder="vd: Khí hậu nhiệt đới vs ôn đới..."
+                    className="w-full bg-transparent outline-none font-bold text-[#082F49] text-base placeholder:text-[#94A3B8]"
+                  />
+                }
+              >
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {(block.compareColumns || []).map((col, ci) => (
+                    <div key={ci} className={sectionCls}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <input
+                          type="text"
+                          value={col.icon || ''}
+                          onChange={e => {
+                            const next = [...(block.compareColumns || [])];
+                            next[ci] = { ...next[ci], icon: e.target.value };
+                            updateBlock(block.id, { compareColumns: next });
+                          }}
+                          placeholder="🎯"
+                          className="w-10 h-10 text-center text-xl bg-white border border-slate-200 rounded-lg outline-none focus:border-cyan-400"
+                        />
+                        <input
+                          type="text"
+                          value={col.title}
+                          onChange={e => {
+                            const next = [...(block.compareColumns || [])];
+                            next[ci] = { ...next[ci], title: e.target.value };
+                            updateBlock(block.id, { compareColumns: next });
+                          }}
+                          placeholder="Tên cột"
+                          className="flex-1 bg-white border border-slate-200 rounded-lg px-2 py-1.5 outline-none font-bold text-[#082F49] focus:border-cyan-400 placeholder:text-[#94A3B8]"
+                        />
+                        {(block.compareColumns?.length || 0) > 1 && (
+                          <button
+                            onClick={() => updateBlock(block.id, { compareColumns: (block.compareColumns || []).filter((_, i) => i !== ci) })}
+                            className={removeBtnCls}
+                          >✕</button>
+                        )}
+                      </div>
+                      <select
+                        value={col.color || 'blue'}
+                        onChange={e => {
+                          const next = [...(block.compareColumns || [])];
+                          next[ci] = { ...next[ci], color: e.target.value };
+                          updateBlock(block.id, { compareColumns: next });
+                        }}
+                        className={`${inputCls} cursor-pointer mb-2`}
+                      >
+                        <option value="blue">🔵 Xanh dương</option>
+                        <option value="green">🟢 Xanh lá</option>
+                        <option value="orange">🟠 Cam</option>
+                        <option value="rose">🌸 Hồng</option>
+                        <option value="violet">🟣 Tím</option>
+                        <option value="amber">🟡 Vàng</option>
+                      </select>
+                      <div className="space-y-1.5">
+                        {col.items.map((it, ii) => (
+                          <div key={ii} className="flex items-center gap-1.5">
+                            <span className="text-slate-400 text-xs font-bold w-3">•</span>
+                            <input
+                              type="text"
+                              value={it}
+                              onChange={e => {
+                                const next = [...(block.compareColumns || [])];
+                                const nextItems = [...next[ci].items];
+                                nextItems[ii] = e.target.value;
+                                next[ci] = { ...next[ci], items: nextItems };
+                                updateBlock(block.id, { compareColumns: next });
+                              }}
+                              placeholder="Đặc điểm..."
+                              className={`${subInputCls} flex-1`}
+                            />
+                            {col.items.length > 1 && (
                               <button
-                                onClick={() => updateBlock(block.id, { compareColumns: (block.compareColumns || []).filter((_, i) => i !== ci) })}
-                                className="w-5 h-5 flex items-center justify-center rounded-full bg-white/60 hover:bg-red-100 text-red-400 text-[10px] font-black transition-all"
+                                onClick={() => {
+                                  const next = [...(block.compareColumns || [])];
+                                  next[ci] = { ...next[ci], items: next[ci].items.filter((_, i) => i !== ii) };
+                                  updateBlock(block.id, { compareColumns: next });
+                                }}
+                                className={removeBtnCls}
                               >✕</button>
                             )}
                           </div>
+                        ))}
+                        <button
+                          onClick={() => {
+                            const next = [...(block.compareColumns || [])];
+                            next[ci] = { ...next[ci], items: [...next[ci].items, ''] };
+                            updateBlock(block.id, { compareColumns: next });
+                          }}
+                          className={`text-[10px] font-bold px-2 py-1 bg-white rounded-md border border-dashed transition-all ${ACCENT_MAP.slate.dashBtn}`}
+                        >+ Thêm dòng</button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
 
-                          <div className="bg-white/80 px-4 pt-3 pb-3 space-y-3">
-                            {/* Title input */}
-                            <div>
-                              <label className={labelCls}>Tiêu đề</label>
-                              <input
-                                type="text"
-                                value={col.title}
-                                onChange={e => {
-                                  const next = [...(block.compareColumns || [])];
-                                  next[ci] = { ...next[ci], title: e.target.value };
-                                  updateBlock(block.id, { compareColumns: next });
-                                }}
-                                placeholder="vd: Khí hậu nhiệt đới..."
-                                className={inputCls}
-                                style={{ borderColor: chosenPreset.accent + '80' }}
-                              />
-                            </div>
-
-                            {/* Color swatches */}
-                            <div>
-                              <label className={labelCls}>Màu cột</label>
-                              <div className="flex flex-wrap gap-1.5">
-                                {COL_COLOR_PRESETS.map(p => (
-                                  <button
-                                    key={p.label}
-                                    onClick={() => {
-                                      const next = [...(block.compareColumns || [])];
-                                      next[ci] = { ...next[ci], color: p.label };
-                                      updateBlock(block.id, { compareColumns: next });
-                                    }}
-                                    title={p.label}
-                                    className={`w-6 h-6 rounded-lg border-2 transition-all hover:scale-110 ${
-                                      (col.color || 'Xanh dương') === p.label ? 'border-cyan-500 scale-110 shadow-md' : 'border-slate-200'
-                                    }`}
-                                    style={{ background: p.bg }}
-                                  />
-                                ))}
-                              </div>
-                            </div>
-
-                            {/* Items */}
-                            <div>
-                              <label className={labelCls}>Đặc điểm</label>
-                              <div className="space-y-1.5">
-                                {col.items.map((it, ii) => (
-                                  <div key={ii} className="flex items-center gap-1.5">
-                                    <span className="text-xs font-bold w-3" style={{ color: chosenPreset.accent }}>•</span>
-                                    <input
-                                      type="text"
-                                      value={it}
-                                      onChange={e => {
-                                        const next = [...(block.compareColumns || [])];
-                                        const nextItems = [...next[ci].items];
-                                        nextItems[ii] = e.target.value;
-                                        next[ci] = { ...next[ci], items: nextItems };
-                                        updateBlock(block.id, { compareColumns: next });
-                                      }}
-                                      placeholder="Đặc điểm..."
-                                      className={`${subInputCls} flex-1`}
-                                    />
-                                    {col.items.length > 1 && (
-                                      <button
-                                        onClick={() => {
-                                          const next = [...(block.compareColumns || [])];
-                                          next[ci] = { ...next[ci], items: next[ci].items.filter((_, i) => i !== ii) };
-                                          updateBlock(block.id, { compareColumns: next });
-                                        }}
-                                        className={removeBtnCls}
-                                      >✕</button>
-                                    )}
-                                  </div>
-                                ))}
-                                <button
-                                  onClick={() => {
-                                    const next = [...(block.compareColumns || [])];
-                                    next[ci] = { ...next[ci], items: [...next[ci].items, ''] };
-                                    updateBlock(block.id, { compareColumns: next });
-                                  }}
-                                  className="text-[10px] font-bold px-2 py-1 rounded-md border border-dashed transition-all"
-                                  style={{ color: chosenPreset.accent, borderColor: chosenPreset.accent + '60', background: 'transparent' }}
-                                >+ Thêm dòng</button>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-
+                {(block.compareColumns?.length || 0) < 4 && (
                   <button
-                    onClick={() => {
-                      const cols = block.compareColumns || [];
-                      const nextColorIndex = cols.length % COL_COLOR_PRESETS.length;
-                      const nextColorIndex2 = (cols.length + 1) % COL_COLOR_PRESETS.length;
-                      updateBlock(block.id, {
-                        compareColumns: [
-                          ...cols,
-                          { title: '', icon: '', color: COL_COLOR_PRESETS[nextColorIndex].label, items: [''] },
-                          { title: '', icon: '', color: COL_COLOR_PRESETS[nextColorIndex2].label, items: [''] },
-                        ]
-                      });
-                    }}
+                    onClick={() => updateBlock(block.id, { compareColumns: [...(block.compareColumns || []), { title: 'Cột mới', icon: '🆕', color: 'green', items: [''] }] })}
                     className={`text-xs font-bold px-3 py-1.5 bg-white rounded-lg border border-dashed transition-all ${ACCENT_MAP.slate.dashBtn}`}
-                  >+ Thêm 2 bảng so sánh</button>
-                </ModuleShell>
-              );
-            })()}
+                  >+ Thêm cột so sánh</button>
+                )}
+              </ModuleShell>
+            )}
 
             {/* ════════ PHASE 3 MODULES ════════ */}
 
@@ -1909,6 +1674,15 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                 icon={<Icon icon="ph:pencil-line" width={20} />}
                 typeName="Câu hỏi tự luận"
                 accent="cyan"
+                titleSlot={
+                  <input
+                    type="text"
+                    value={block.question || ''}
+                    onChange={e => updateBlock(block.id, { question: e.target.value })}
+                    placeholder="Câu hỏi tự luận..."
+                    className="w-full bg-transparent outline-none font-bold text-[#082F49] text-base placeholder:text-[#94A3B8]"
+                  />
+                }
                 headerRight={
                   <div className="flex gap-1 bg-white/80 rounded-lg p-1 border border-cyan-100">
                     {(['short', 'long'] as const).map(t => (
@@ -1923,44 +1697,22 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                   </div>
                 }
               >
-                {/* Question text */}
                 <div>
-                  <label className={labelCls}>Nội dung câu hỏi</label>
+                  <label className={labelCls}>Từ khóa mong đợi (gợi ý chấm điểm)</label>
                   <input
                     type="text"
-                    value={block.question || ''}
-                    onChange={e => updateBlock(block.id, { question: e.target.value })}
-                    placeholder="Nhập câu hỏi tự luận..."
-                    className={`${inputCls} font-bold text-[#082F49]`}
+                    value={(block.expectedKeywords || []).join(', ')}
+                    onChange={e => updateBlock(block.id, { expectedKeywords: e.target.value.split(',').map(s => s.trim()).filter(Boolean) })}
+                    placeholder="vd: nhiệt đới, gió mùa, mưa nhiều"
+                    className={inputCls}
                   />
-                </div>
-
-                {/* Question image */}
-                <div className="flex gap-2 items-start">
-                  <input
-                    type="text"
-                    value={block.questionImage || ''}
-                    onChange={e => updateBlock(block.id, { questionImage: e.target.value })}
-                    placeholder="Hình ảnh kèm câu hỏi (URL, tùy chọn)"
-                    className={`${inputCls} flex-1`}
-                  />
-                  {block.questionImage && (
-                    <div className="w-11 h-11 rounded-lg border border-slate-200 overflow-hidden bg-slate-50 shrink-0">
-                      <img src={block.questionImage} alt="preview" className="w-full h-full object-cover" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                  {(block.expectedKeywords?.length || 0) > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-2">
+                      {block.expectedKeywords!.map((kw, i) => (
+                        <span key={i} className="px-2 py-0.5 rounded-md bg-cyan-100 text-cyan-700 text-xs font-bold">{kw}</span>
+                      ))}
                     </div>
                   )}
-                </div>
-
-                {/* Answer */}
-                <div>
-                  <label className={labelCls}>💬 Đáp án (hiện khi giáo viên mở, tùy chọn)</label>
-                  <textarea
-                    value={block.openAnswer || ''}
-                    onChange={e => updateBlock(block.id, { openAnswer: e.target.value })}
-                    placeholder="Nhập gợi ý đáp án hoặc lời giải mẫu..."
-                    rows={3}
-                    className={textareaCls}
-                  />
                 </div>
               </ModuleShell>
             )}
@@ -2262,140 +2014,45 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
                   />
                 }
               >
-                {/* Intro */}
                 <div>
                   <label className={labelCls}>Lời mở (tùy chọn)</label>
                   <textarea
                     value={block.content || ''}
                     onChange={e => updateBlock(block.id, { content: e.target.value })}
-                    placeholder="Dưới đây là các ý chính được đúc kết từ bài học:"
+                    placeholder="Đoạn giới thiệu ngắn..."
                     className={`${textareaCls} italic`}
-                    rows={2}
                   />
                 </div>
-
-                {/* Image URL */}
                 <div>
-                  <label className={labelCls}>Ảnh minh họa (URL)</label>
-                  <input
-                    type="text"
-                    value={block.summaryImage || ''}
-                    onChange={e => updateBlock(block.id, { summaryImage: e.target.value })}
-                    placeholder="https://..."
-                    className={inputCls}
-                  />
-                  {block.summaryImage && (
-                    <div className="mt-2 rounded-xl overflow-hidden border border-sky-100 bg-slate-50 h-28 flex items-center justify-center">
-                      <img src={block.summaryImage} alt="Preview" className="max-h-28 max-w-full object-contain" />
-                    </div>
-                  )}
-                </div>
-
-                {/* Sections */}
-                <div>
-                  <label className={labelCls}>Các phần tổng kết</label>
-                  <div className="space-y-3">
-                    {(block.summarySections || []).map((sec: SummarySection, idx: number) => (
-                      <div key={idx} className="rounded-2xl bg-white/70 border border-sky-100 p-3 space-y-2">
-                        <div className="flex items-center gap-2">
-                          <span className="w-6 h-6 rounded-md bg-sky-500 text-white text-xs font-black flex items-center justify-center shrink-0">{idx + 1}</span>
-                          <input
-                            type="text"
-                            value={sec.title}
-                            onChange={e => {
-                              const next = [...(block.summarySections || [])];
-                              next[idx] = { ...next[idx], title: e.target.value };
-                              updateBlock(block.id, { summarySections: next });
-                            }}
-                            placeholder="Tiêu đề phần... (vd: Hệ thống kinh, vĩ tuyến)"
-                            className={`${inputCls} flex-1 font-bold`}
-                          />
-                          {(block.summarySections?.length || 0) > 1 && (
-                            <button
-                              onClick={() => updateBlock(block.id, { summarySections: block.summarySections?.filter((_, i) => i !== idx) })}
-                              className={removeBtnCls}
-                            >✕</button>
-                          )}
-                        </div>
-                        <div className="bg-white border border-sky-100 rounded-xl overflow-hidden focus-within:border-sky-400 focus-within:ring-2 focus-within:ring-sky-100 transition-all">
-                          <RichTextEditor
-                            value={sec.body}
-                            onChange={html => {
-                              const next = [...(block.summarySections || [])];
-                              next[idx] = { ...next[idx], body: html };
-                              updateBlock(block.id, { summarySections: next });
-                            }}
-                            placeholder="Nội dung phần tổng kết..."
-                          />
-                        </div>
+                  <label className={labelCls}>Các ý tổng kết</label>
+                  <div className="space-y-1.5">
+                    {(block.items || []).map((item, idx) => (
+                      <div key={idx} className="flex items-center gap-2">
+                        <span className="w-6 h-6 rounded-md bg-sky-500 text-white text-xs font-black flex items-center justify-center shrink-0">{idx + 1}</span>
+                        <input
+                          type="text"
+                          value={item}
+                          onChange={e => {
+                            const next = [...(block.items || [])];
+                            next[idx] = e.target.value;
+                            updateBlock(block.id, { items: next });
+                          }}
+                          placeholder="Ý tổng kết..."
+                          className={`${inputCls} flex-1`}
+                        />
+                        {(block.items?.length || 0) > 1 && (
+                          <button
+                            onClick={() => updateBlock(block.id, { items: block.items?.filter((_, i) => i !== idx) })}
+                            className={removeBtnCls}
+                          >✕</button>
+                        )}
                       </div>
                     ))}
                     <button
-                      onClick={() => updateBlock(block.id, { summarySections: [...(block.summarySections || []), { title: '', body: '' }] })}
+                      onClick={() => updateBlock(block.id, { items: [...(block.items || []), ''] })}
                       className={`text-xs font-bold px-3 py-1.5 bg-white rounded-lg border border-dashed transition-all ${ACCENT_MAP.sky.dashBtn}`}
-                    >+ Thêm phần</button>
+                    >+ Thêm ý</button>
                   </div>
-                </div>
-              </ModuleShell>
-            )}
-
-            {/* PRACTICE BLOCK — Luyện tập & Vận dụng */}
-            {block.type === 'practice' && (
-              <ModuleShell
-                icon={<Icon icon="ph:pencil-ruler" width={20} />}
-                typeName="Luyện tập & Vận dụng"
-                accent="amber"
-                titleSlot={
-                  <input
-                    type="text"
-                    value={block.title || ''}
-                    onChange={e => updateBlock(block.id, { title: e.target.value })}
-                    placeholder="Luyện tập và Vận dụng"
-                    className="w-full bg-transparent outline-none font-bold text-[#082F49] text-base placeholder:text-[#94A3B8]"
-                  />
-                }
-              >
-                <div className="space-y-2">
-                  {(block.practiceItems || []).map((item: PracticeItem, idx: number) => (
-                    <div key={idx} className="flex items-start gap-2 bg-white/70 rounded-2xl p-3 border border-amber-100">
-                      {/* Number badge */}
-                      <div className="w-7 h-7 rounded-full bg-amber-500 text-white text-xs font-black flex items-center justify-center shrink-0 mt-1">{idx + 1}</div>
-                      {/* Emoji picker */}
-                      <input
-                        type="text"
-                        value={item.icon || ''}
-                        onChange={e => {
-                          const next = [...(block.practiceItems || [])];
-                          next[idx] = { ...next[idx], icon: e.target.value };
-                          updateBlock(block.id, { practiceItems: next });
-                        }}
-                        placeholder="📚"
-                        className="w-10 h-10 text-center text-xl bg-amber-50 border border-amber-200 rounded-xl outline-none focus:border-amber-400 shrink-0"
-                      />
-                      {/* Text */}
-                      <textarea
-                        value={item.text}
-                        onChange={e => {
-                          const next = [...(block.practiceItems || [])];
-                          next[idx] = { ...next[idx], text: e.target.value };
-                          updateBlock(block.id, { practiceItems: next });
-                        }}
-                        placeholder="Nội dung bài tập / yêu cầu vận dụng..."
-                        rows={2}
-                        className={`${textareaCls} flex-1 resize-none !py-2`}
-                      />
-                      {(block.practiceItems?.length || 0) > 1 && (
-                        <button
-                          onClick={() => updateBlock(block.id, { practiceItems: block.practiceItems?.filter((_, i) => i !== idx) })}
-                          className={removeBtnCls}
-                        >✕</button>
-                      )}
-                    </div>
-                  ))}
-                  <button
-                    onClick={() => updateBlock(block.id, { practiceItems: [...(block.practiceItems || []), { text: '', icon: '🏃' }] })}
-                    className={`text-xs font-bold px-3 py-1.5 bg-white rounded-lg border border-dashed transition-all ${ACCENT_MAP.amber.dashBtn}`}
-                  >+ Thêm bài tập</button>
                 </div>
               </ModuleShell>
             )}
@@ -2470,7 +2127,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
     <div className="fixed inset-0 z-[9999] flex flex-col lg:flex-row lg:gap-6 lg:p-6 bg-gradient-to-br from-[#E0F2FE] via-white to-[#DCFCE7] animate-in zoom-in-95 duration-500 overflow-hidden">
 
       {/* ── LEFT: ARTICLE BUILDER (Notion-style) ── */}
-      <div className={`flex-1 flex flex-col ${glassPanel} overflow-hidden relative`}>
+      <div className={`flex-1 lg:w-[60%] flex flex-col ${glassPanel} overflow-hidden relative`}>
         {/* Header */}
         <div className="px-4 lg:px-8 py-3 lg:py-5 border-b border-white/60 bg-white/40 flex flex-col lg:flex-row lg:items-center justify-between z-10 relative gap-3">
           <div className="flex items-center gap-3 w-full lg:w-auto">
@@ -2520,53 +2177,35 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
 
             {/* ADD BLOCK TOOLBAR */}
             <div className="mt-8 pt-8 border-t-2 border-dashed border-slate-200">
-              {/* Header row with toggle */}
-              <div className="flex items-center justify-between mb-4 px-1">
-                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Thêm nội dung mới</p>
-                <div className="flex items-center gap-1 bg-slate-100 rounded-xl p-1">
-                  <button
-                    onClick={() => setBlockViewMode('simple')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all ${blockViewMode === 'simple' ? 'bg-white shadow-sm text-[#082F49]' : 'text-slate-400 hover:text-slate-600'}`}
-                    title="Chế độ icon"
-                  >
-                    <Icon icon="ph:squares-four" width={14} /> Đơn giản
-                  </button>
-                  <button
-                    onClick={() => setBlockViewMode('detailed')}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-black transition-all ${blockViewMode === 'detailed' ? 'bg-white shadow-sm text-[#082F49]' : 'text-slate-400 hover:text-slate-600'}`}
-                    title="Chế độ chi tiết"
-                  >
-                    <Icon icon="ph:list" width={14} /> Chi tiết
-                  </button>
-                </div>
-              </div>
+              <p className="text-center text-xs font-bold text-slate-400 mb-4 uppercase tracking-widest">Thêm nội dung mới</p>
+              <div className="flex flex-wrap justify-center gap-3">
+                <button onClick={() => addBlock('heading')} className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-sm border border-slate-200 text-[#082F49] font-bold text-sm hover:border-cyan-400 hover:text-cyan-600 transition-all"><Icon icon="material-symbols:title-rounded" width={16} /> Tiêu đề</button>
+                <button onClick={() => addBlock('text')} className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-sm border border-slate-200 text-[#082F49] font-bold text-sm hover:border-cyan-400 hover:text-cyan-600 transition-all"><Icon icon="ph:article" width={16} /> Văn bản</button>
+                <button onClick={() => addBlock('imageScenario')} className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-xl shadow-sm border border-emerald-200 text-emerald-700 font-bold text-sm hover:border-emerald-400 hover:bg-emerald-100 transition-all"><Icon icon="ph:image" width={16} /> Tình huống có Ảnh</button>
+                <button onClick={() => addBlock('objectives')} className="flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-xl shadow-sm border border-amber-200 text-amber-700 font-bold text-sm hover:border-amber-400 hover:bg-amber-100 transition-all"><Icon icon="ph:target" width={16} /> Mục tiêu bài học</button>
+                <button onClick={() => addBlock('funFact')} className="flex items-center gap-2 px-4 py-2 bg-white rounded-xl shadow-sm border border-slate-200 text-[#082F49] font-bold text-sm hover:border-blue-400 hover:text-blue-600 transition-all"><Icon icon="ph:lightbulb-filament" width={16} /> Có thể em chưa biết</button>
+                <button onClick={() => addBlock('mapAction')} className="flex items-center gap-2 px-4 py-2 bg-emerald-50 rounded-xl shadow-sm border border-emerald-200 text-emerald-700 font-bold text-sm hover:border-emerald-400 hover:bg-emerald-100 transition-all"><Icon icon="ph:globe-hemisphere-east" width={16} /> Hành động Bản đồ</button>
+                <button onClick={() => addBlock('quiz')} className="flex items-center gap-2 px-4 py-2 bg-orange-50 rounded-xl shadow-sm border border-orange-200 text-orange-700 font-bold text-sm hover:border-orange-400 hover:bg-orange-100 transition-all"><Icon icon="ph:question" width={16} /> Câu hỏi đan xen</button>
+                <button onClick={() => addBlock('dataTable')} className="flex items-center gap-2 px-4 py-2 bg-violet-50 rounded-xl shadow-sm border border-violet-200 text-violet-700 font-bold text-sm hover:border-violet-400 hover:bg-violet-100 transition-all"><Icon icon="ph:table" width={16} /> Bảng số liệu</button>
 
-              {blockViewMode === 'detailed' ? (
-                <div className="flex flex-wrap justify-center gap-2">
-                  {BLOCK_PALETTE.map(p => (
-                    <button
-                      key={p.type}
-                      onClick={() => addBlock(p.type)}
-                      className={`flex items-center gap-2 px-4 py-2 ${p.bg} rounded-xl shadow-sm border ${p.border} ${p.text} font-bold text-sm ${p.hoverBorder} ${p.hoverBg} transition-all`}
-                    >
-                      <Icon icon={p.icon} width={16} /> {p.label}
-                    </button>
-                  ))}
-                </div>
-              ) : (
-                <div className="flex flex-wrap justify-center gap-2">
-                  {BLOCK_PALETTE.map(p => (
-                    <button
-                      key={p.type}
-                      onClick={() => addBlock(p.type)}
-                      title={p.label}
-                      className={`w-12 h-12 flex items-center justify-center ${p.bg} rounded-2xl border-2 ${p.border} ${p.text} ${p.hoverBorder} ${p.hoverBg} transition-all hover:scale-110 shadow-sm`}
-                    >
-                      <Icon icon={p.icon} width={22} />
-                    </button>
-                  ))}
-                </div>
-              )}
+                {/* Phase 2 modules */}
+                <button onClick={() => addBlock('video')} className="flex items-center gap-2 px-4 py-2 bg-red-50 rounded-xl shadow-sm border border-red-200 text-red-700 font-bold text-sm hover:border-red-400 hover:bg-red-100 transition-all"><Icon icon="ph:video-camera" width={16} /> Video</button>
+                <button onClick={() => addBlock('chart')} className="flex items-center gap-2 px-4 py-2 bg-indigo-50 rounded-xl shadow-sm border border-indigo-200 text-indigo-700 font-bold text-sm hover:border-indigo-400 hover:bg-indigo-100 transition-all"><Icon icon="ph:chart-bar" width={16} /> Biểu đồ</button>
+                <button onClick={() => addBlock('diagram')} className="flex items-center gap-2 px-4 py-2 bg-teal-50 rounded-xl shadow-sm border border-teal-200 text-teal-700 font-bold text-sm hover:border-teal-400 hover:bg-teal-100 transition-all"><Icon icon="ph:puzzle-piece" width={16} /> Sơ đồ</button>
+                <button onClick={() => addBlock('compare')} className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl shadow-sm border border-slate-200 text-[#082F49] font-bold text-sm hover:border-slate-400 hover:bg-slate-100 transition-all"><Icon icon="ph:scales" width={16} /> So sánh</button>
+                <button onClick={() => addBlock('callout')} className="flex items-center gap-2 px-4 py-2 bg-sky-50 rounded-xl shadow-sm border border-sky-200 text-sky-700 font-bold text-sm hover:border-sky-400 hover:bg-sky-100 transition-all"><Icon icon="ph:warning" width={16} /> Ghi chú</button>
+
+                {/* Phase 3 modules */}
+                <button onClick={() => addBlock('timeline')} className="flex items-center gap-2 px-4 py-2 bg-purple-50 rounded-xl shadow-sm border border-purple-200 text-purple-700 font-bold text-sm hover:border-purple-400 hover:bg-purple-100 transition-all"><Icon icon="ph:clock-counter-clockwise" width={16} /> Đường thời gian</button>
+                <button onClick={() => addBlock('groupActivity')} className="flex items-center gap-2 px-4 py-2 bg-lime-50 rounded-xl shadow-sm border border-lime-200 text-lime-700 font-bold text-sm hover:border-lime-400 hover:bg-lime-100 transition-all"><Icon icon="ph:users-three" width={16} /> Hoạt động nhóm</button>
+                <button onClick={() => addBlock('openQuestion')} className="flex items-center gap-2 px-4 py-2 bg-cyan-50 rounded-xl shadow-sm border border-cyan-200 text-cyan-700 font-bold text-sm hover:border-cyan-400 hover:bg-cyan-100 transition-all"><Icon icon="ph:pencil-line" width={16} /> Câu hỏi tự luận</button>
+                <button onClick={() => addBlock('fillBlank')} className="flex items-center gap-2 px-4 py-2 bg-amber-50 rounded-xl shadow-sm border border-amber-200 text-amber-700 font-bold text-sm hover:border-amber-400 hover:bg-amber-100 transition-all"><Icon icon="ph:text-underline" width={16} /> Điền khuyết</button>
+                <button onClick={() => addBlock('quote')} className="flex items-center gap-2 px-4 py-2 bg-stone-50 rounded-xl shadow-sm border border-stone-200 text-stone-700 font-bold text-sm hover:border-stone-400 hover:bg-stone-100 transition-all"><Icon icon="ph:quotes" width={16} /> Trích dẫn</button>
+                <button onClick={() => addBlock('glossary')} className="flex items-center gap-2 px-4 py-2 bg-fuchsia-50 rounded-xl shadow-sm border border-fuchsia-200 text-fuchsia-700 font-bold text-sm hover:border-fuchsia-400 hover:bg-fuchsia-100 transition-all"><Icon icon="ph:book-open-text" width={16} /> Từ vựng</button>
+                <button onClick={() => addBlock('twoColumn')} className="flex items-center gap-2 px-4 py-2 bg-slate-50 rounded-xl shadow-sm border border-slate-200 text-slate-700 font-bold text-sm hover:border-slate-400 hover:bg-slate-100 transition-all"><Icon icon="ph:columns" width={16} /> 2 cột</button>
+                <button onClick={() => addBlock('gallery')} className="flex items-center gap-2 px-4 py-2 bg-rose-50 rounded-xl shadow-sm border border-rose-200 text-rose-700 font-bold text-sm hover:border-rose-400 hover:bg-rose-100 transition-all"><Icon icon="ph:images-square" width={16} /> Bộ ảnh</button>
+                <button onClick={() => addBlock('summary')} className="flex items-center gap-2 px-4 py-2 bg-sky-50 rounded-xl shadow-sm border border-sky-200 text-sky-700 font-bold text-sm hover:border-sky-400 hover:bg-sky-100 transition-all"><Icon icon="ph:clipboard-text" width={16} /> Tổng kết</button>
+              </div>
             </div>
           </div>
         </div>
@@ -2610,16 +2249,8 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
             </div>
 
             {/* LỚP 2: HÌNH ẢNH */}
-            <div className={`absolute inset-0 transition-opacity duration-700 bg-transparent ${(
-              (activeBlock?.type === 'imageScenario' && (activeBlock.imageUrls?.length || activeBlock.imageUrl)) ||
-              (activeBlock?.type === 'openQuestion' && activeBlock.questionImage) ||
-              activeBlock?.imageUrl
-            ) ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
-              <ImageSlider urls={
-                activeBlock?.type === 'openQuestion'
-                  ? (activeBlock.questionImage ? [activeBlock.questionImage] : [])
-                  : (activeBlock?.imageUrls || (activeBlock?.imageUrl ? [activeBlock.imageUrl] : []))
-              } />
+            <div className={`absolute inset-0 transition-opacity duration-700 bg-transparent ${((activeBlock?.type === 'imageScenario' && (activeBlock.imageUrls?.length || activeBlock.imageUrl)) || activeBlock?.imageUrl) ? 'opacity-100 z-20 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'}`}>
+              <ImageSlider urls={activeBlock?.imageUrls || (activeBlock?.imageUrl ? [activeBlock.imageUrl] : [])} />
             </div>
 
           </div>
@@ -2643,10 +2274,6 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
             <p className="text-xs text-slate-400 leading-relaxed">
               Khung bên phải đang hiển thị <b>Hình ảnh minh họa</b> thay vì Quả cầu 3D. Hiệu ứng làm mờ chéo (cross-fade) sẽ tự động kích hoạt khi học sinh cuộn trang.
             </p>
-          ) : activeBlock?.type === 'openQuestion' && activeBlock.questionImage ? (
-            <p className="text-xs text-slate-400 leading-relaxed">
-              Khung bên phải đang hiển thị <b>Hình ảnh câu hỏi</b>. Ảnh sẽ hiển thị khi học sinh cuộn đến câu hỏi này.
-            </p>
           ) : (
             <p className="text-xs text-slate-400 leading-relaxed">
               Trạng thái chờ. Khi học sinh cuộn đến các Khối "Hành động Bản đồ" hoặc "Tình huống có Ảnh", khung bên phải sẽ mượt mà chuyển đổi hiển thị tương ứng.
@@ -2661,7 +2288,7 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
         }
         @media (min-width: 1024px) {
           .right-panel-preview {
-            width: 450px !important;
+            width: 40% !important;
             height: auto !important;
           }
         }
