@@ -311,6 +311,13 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
   const [isPublishing, setIsPublishing] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [presentationTitle, setPresentationTitle] = useState('Đang tải...');
+  const [toastMessage, setToastMessage] = useState<{ type: 'success' | 'error', message: string } | null>(null);
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToastMessage({ message, type });
+    setTimeout(() => setToastMessage(null), 3000);
+  };
+
 
   // Auto scroll to bottom when adding new block
   const endOfListRef = useRef<HTMLDivElement>(null);
@@ -393,12 +400,12 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
       });
       const data = await res.json();
       if (res.ok) {
-        alert('🎉 Đã xuất bản Bài giảng thành công vào Cơ sở dữ liệu!');
+        showToast('🎉 Đã xuất bản Bài giảng thành công vào Cơ sở dữ liệu!', 'success');
       } else {
-        alert('❌ Lỗi xuất bản: ' + data.error);
+        showToast('❌ Lỗi xuất bản: ' + data.error, 'error');
       }
     } catch (err) {
-      alert('❌ Lỗi kết nối Server!');
+      showToast('❌ Lỗi kết nối Server!', 'error');
     } finally {
       setIsPublishing(false);
     }
@@ -618,14 +625,13 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
               ];
               const COLOR_PRESETS = [
                 { label: 'Mặc định', value: '' },
-                { label: 'Xanh đại dương', value: '#082F49' },
-                { label: 'Cyan', value: '#06B6D4' },
-                { label: 'Trắng', value: '#FFFFFF' },
-                { label: 'Đen', value: '#0F172A' },
-                { label: 'Xanh lá', value: '#16A34A' },
-                { label: 'Tím', value: '#7C3AED' },
-                { label: 'Cam', value: '#D97706' },
-                { label: 'Hồng', value: '#DB2777' },
+                { label: 'Xanh biển (Chữ)', value: '#0284C7' },
+                { label: 'Xanh lá (Chữ)', value: '#16A34A' },
+                { label: 'Tím (Chữ)', value: '#7C3AED' },
+                { label: 'Cam (Chữ)', value: '#D97706' },
+                { label: 'Hồng (Chữ)', value: '#DB2777' },
+                { label: 'Sáng (Cyan)', value: '#22D3EE' },
+                { label: 'Sáng (Tím)', value: '#A78BFA' },
               ];
               return (
                 <ModuleShell
@@ -2807,6 +2813,20 @@ export function PresentationBuilderClient({ user, presentationId, onBack }: Prop
       `}} />
 
       {showPreview && <PresentationPreview blocks={blocks} onClose={() => setShowPreview(false)} />}
+      
+      {/* Toast Notification */}
+      {toastMessage && (
+        <div className="fixed bottom-6 right-6 z-[9999] animate-in slide-in-from-bottom-5 fade-in duration-300">
+          <div className={`
+            flex items-center gap-3 px-5 py-3.5 rounded-[16px] shadow-[0_20px_40px_rgba(0,0,0,0.1)] border backdrop-blur-[20px] font-bold text-sm
+            ${toastMessage.type === 'success' 
+              ? 'bg-[rgba(187,247,208,0.8)] border-[rgba(34,197,94,0.5)] text-[#16A34A]' 
+              : 'bg-[rgba(254,226,226,0.8)] border-[rgba(239,68,68,0.5)] text-[#DC2626]'}
+          `}>
+            {toastMessage.message}
+          </div>
+        </div>
+      )}
     </div>,
     document.body
   );

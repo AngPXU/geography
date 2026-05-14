@@ -19,8 +19,8 @@ import { Icon } from "@iconify/react";
 const DashboardOverview = dynamic(() => import('@/components/ui/DashboardOverview').then(m => ({ default: m.DashboardOverview })), {
   loading: () => <div className="w-full h-64 rounded-3xl bg-white/40 animate-pulse" />,
 });
-const EarthRecords = dynamic(() => import('@/components/ui/EarthRecords').then(m => ({ default: m.EarthRecords })), {
-  loading: () => <div className="w-full h-48 rounded-3xl bg-white/40 animate-pulse" />,
+const LeaderboardSummary = dynamic(() => import('@/components/ui/LeaderboardSummary').then(m => ({ default: m.LeaderboardSummary })), {
+  loading: () => <div className="w-full h-96 rounded-3xl bg-white/40 animate-pulse" />,
 });
 const GeoQuestions = dynamic(() => import('@/components/ui/GeoQuestions').then(m => ({ default: m.GeoQuestions })), {
   loading: () => <div className="w-full h-48 rounded-3xl bg-white/40 animate-pulse" />,
@@ -42,6 +42,7 @@ export default async function HomePage() {
     role?: number; exp?: number; streak?: number;
     studyTimeToday?: number; studyTimeDate?: string;
     petExp?: number; coins?: number;
+    avatar?: string; fullName?: string;
   } | null;
   const userRole: number = dbUser?.role ?? 3;
   const userExp: number = dbUser?.exp ?? 0;
@@ -52,15 +53,36 @@ export default async function HomePage() {
   const userStudySeconds: number =
     dbUser?.studyTimeDate === today ? (dbUser.studyTimeToday ?? 0) : 0;
 
+  // Lấy dữ liệu cho Bảng Vàng Đấu Trường
+  const { getPetInfo } = await import('@/utils/petSystem');
+  
+  const topExpRaw = await User.find({ role: 3 }).sort({ exp: -1 }).limit(3).select('username fullName avatar exp').lean();
+  const topExpUsers = topExpRaw.map(u => ({
+    _id: u._id.toString(),
+    username: u.username,
+    fullName: u.fullName as string | undefined,
+    avatar: u.avatar as string | undefined,
+    score: (u as any).exp || 0
+  }));
+
+  const topPetRaw = await User.find({ role: 3 }).sort({ petExp: -1 }).limit(3).select('username fullName avatar petExp').lean();
+  const topPetUsers = topPetRaw.map(u => ({
+    _id: u._id.toString(),
+    username: u.username,
+    fullName: u.fullName as string | undefined,
+    avatar: u.avatar as string | undefined,
+    score: getPetInfo((u as any).petExp || 0).currentLevel.level
+  }));
+
   return (
     <div className="bg-gradient-to-b from-[#E0F2FE] via-[#FFFFFF] to-[#DCFCE7] relative overflow-x-hidden font-sans">
-      <Navbar user={session.user} />
+      <Navbar user={{ ...session.user, image: dbUser?.avatar || session.user.image, fullName: dbUser?.fullName || session.user.fullName }} />
 
       {/* Liquid Mesh Gradient Nền (Apple iOS 26 Style) */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#06B6D4]/20 rounded-full blur-[120px] animate-[liquid-blob_15s_infinite]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#22C55E]/20 rounded-full blur-[120px] animate-[liquid-blob_20s_infinite_reverse]"></div>
-        <div className="absolute top-[40%] left-[30%] w-[40%] h-[40%] bg-violet-300/20 rounded-full blur-[100px] animate-[liquid-blob_18s_infinite_2s]"></div>
+      <div className="absolute top-0 left-0 w-full h-[100vh] overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#06B6D4]/20 rounded-full blur-[80px] md:blur-[120px] animate-[liquid-blob_15s_infinite]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#22C55E]/20 rounded-full blur-[80px] md:blur-[120px] animate-[liquid-blob_20s_infinite_reverse]"></div>
+        <div className="absolute top-[40%] left-[30%] w-[40%] h-[40%] bg-violet-300/20 rounded-full blur-[60px] md:blur-[100px] animate-[liquid-blob_18s_infinite_2s]"></div>
       </div>
 
       <main className="w-[95%] md:w-[90%] max-w-[1300px] mx-auto pt-32 pb-24 min-h-[90vh] flex flex-col items-center justify-center relative z-10">
@@ -131,8 +153,8 @@ export default async function HomePage() {
       {/* Bảng điều khiển tổng quan */}
       <DashboardOverview username={session.user.name ?? 'Bạn'} avatar={session.user.image ?? undefined} initialExp={userExp} initialStreak={userStreak} initialStudySeconds={userStudySeconds} initialPetExp={petExp} initialCoins={coins} />
 
-      {/* Kỷ Lục Trái Đất */}
-      <EarthRecords />
+      {/* Bảng Vàng Đấu Trường */}
+      <LeaderboardSummary topExpUsers={topExpUsers} topPetUsers={topPetUsers} />
 
       {/* 10 Vạn Câu Hỏi Vì Sao */}
       <GeoQuestions />

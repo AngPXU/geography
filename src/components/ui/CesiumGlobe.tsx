@@ -119,7 +119,16 @@ const CesiumGlobe = forwardRef<CesiumGlobeHandle, CesiumGlobeProps>(({
         baseLayerPicker: showLayerPicker,
         infoBox: false,
         selectionIndicator: false,
+        requestRenderMode: true,
+        maximumRenderTimeChange: Infinity,
+        msaaSamples: 1,
       });
+
+      // Disable anti-aliasing and lower resolution scale to boost FPS
+      if (viewer.scene.postProcessStages?.fxaa) {
+        viewer.scene.postProcessStages.fxaa.enabled = false;
+      }
+      viewer.resolutionScale = window.devicePixelRatio < 2 ? 0.8 : 0.5;
 
       // Hide Cesium credit watermark
       if (viewer.cesiumWidget?.creditContainer) {

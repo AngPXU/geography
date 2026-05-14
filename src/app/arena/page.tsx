@@ -31,10 +31,10 @@ export default async function ArenaLobby() {
       </div>
       
       {/* Liquid Mesh Gradient Nền (Apple iOS 26 Style) */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#06B6D4]/20 rounded-full blur-[120px] animate-[liquid-blob_15s_infinite]"></div>
-        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#22C55E]/20 rounded-full blur-[120px] animate-[liquid-blob_20s_infinite_reverse]"></div>
-        <div className="absolute top-[40%] left-[30%] w-[40%] h-[40%] bg-violet-300/20 rounded-full blur-[100px] animate-[liquid-blob_18s_infinite_2s]"></div>
+      <div className="absolute top-0 left-0 w-full h-[100vh] overflow-hidden pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-[#06B6D4]/20 rounded-full blur-[80px] md:blur-[120px] animate-[liquid-blob_15s_infinite]"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[50%] h-[50%] bg-[#22C55E]/20 rounded-full blur-[80px] md:blur-[120px] animate-[liquid-blob_20s_infinite_reverse]"></div>
+        <div className="absolute top-[40%] left-[30%] w-[40%] h-[40%] bg-violet-300/20 rounded-full blur-[60px] md:blur-[100px] animate-[liquid-blob_18s_infinite_2s]"></div>
       </div>
 
       <div className="flex-1 max-w-6xl mx-auto px-4 py-8 w-full z-10">

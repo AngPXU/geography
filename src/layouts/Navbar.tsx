@@ -45,7 +45,7 @@ export function Navbar({ user }: { user?: { name?: string | null; fullName?: str
           const data = await res.json();
           setUnreadCount(data.unreadCount || 0);
         }
-      } catch (e) {}
+      } catch (e) { }
     };
     poll();
     // Tăng từ 5s → 30s — giảm 6x số network request mỗi phút
@@ -63,7 +63,7 @@ export function Navbar({ user }: { user?: { name?: string | null; fullName?: str
         const data = await res.json();
         setNotifications(data.notifications || []);
         setUnreadCount(data.unreadCount || 0);
-      } catch (e) {}
+      } catch (e) { }
       setLoadingNotifs(false);
     }
   };
@@ -130,9 +130,9 @@ export function Navbar({ user }: { user?: { name?: string | null; fullName?: str
         ) : (
           notifications.map(n => (
             <div key={n._id} onClick={() => handleNotifClick(n)} className={`p-3 rounded-xl cursor-pointer transition-colors ${n.isRead ? 'opacity-80 hover:bg-slate-50' : 'bg-cyan-50/50 hover:bg-cyan-50'}`}>
-               <p className={`text-sm ${n.isRead ? 'font-semibold text-[#334155]' : 'font-extrabold text-[#082F49]'}`}>{n.title}</p>
-               <p className="text-xs text-slate-500 mt-1 leading-relaxed">{n.message}</p>
-               <p className="text-[10px] text-slate-400 mt-1.5">{new Date(n.createdAt).toLocaleString('vi-VN')}</p>
+              <p className={`text-sm ${n.isRead ? 'font-semibold text-[#334155]' : 'font-extrabold text-[#082F49]'}`}>{n.title}</p>
+              <p className="text-xs text-slate-500 mt-1 leading-relaxed">{n.message}</p>
+              <p className="text-[10px] text-slate-400 mt-1.5">{new Date(n.createdAt).toLocaleString('vi-VN')}</p>
             </div>
           ))
         )}

@@ -15,6 +15,8 @@ export default function ThreeWarningSuppress() {
     const SUPPRESSED = [
       'THREE.Clock: This module has been deprecated',
       'PCFSoftShadowMap has been deprecated',
+      'LaTeX-incompatible input and strict mode is set to',
+      'No character metrics for',
     ];
     console.warn = (...args: any[]) => {
       const msg = args[0];

@@ -106,7 +106,8 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
 
   const fetchMissions = useCallback(async () => {
     try {
-      const res = await fetch('/api/missions/daily');
+      // Thêm tham số thời gian và cache: 'no-store' để đảm bảo luôn lấy dữ liệu mới nhất, tránh bị dính cache khi quay lại trang
+      const res = await fetch('/api/missions/daily?t=' + Date.now(), { cache: 'no-store' });
       if (res.ok) {
         const data = await res.json();
         setMissionSlots(data.missions ?? []);
@@ -122,14 +123,21 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
 
   const handleClaim = async (missionId: MissionId) => {
     setClaimingId(missionId);
-    const result = await claimMissionWithExp(missionId);
-    if (result.exp > 0) {
-      setClaimedExp(prev => ({ ...prev, [missionId]: result.exp }));
-      setTotalExp(result.totalExp);
-      if (result.streak > 0) setStreak(result.streak);
-      await fetchMissions();
+    try {
+      const result = await claimMissionWithExp(missionId);
+      if (result) {
+        setClaimedExp(prev => ({ ...prev, [missionId]: result.exp || 0 }));
+        if (result.totalExp !== undefined) setTotalExp(result.totalExp);
+        if (result.streak > 0) setStreak(result.streak);
+        
+        // Cập nhật trạng thái ngay lập tức trên UI (Optimistic Update)
+        setMissionSlots(prev => prev.map(m => m.missionId === missionId ? { ...m, claimed: true } : m));
+        
+        await fetchMissions();
+      }
+    } finally {
+      setClaimingId(null);
     }
-    setClaimingId(null);
   };
 
   const scrollModules = (dir: number) => {

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "cross-env NODE_OPTIONS=--max-http-header-size=65536 next dev",
     "prebuild": "node scripts/copy-cesium.js && node scripts/copy-public-assets.js",
     "build": "next build",
     "start": "next start",

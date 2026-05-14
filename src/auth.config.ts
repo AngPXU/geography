@@ -17,11 +17,15 @@ export const authConfig = {
       }
       return true;
     },
-    jwt({ token, user }) {
+    jwt({ token, user, trigger, session }) {
       if (user) {
         if ('role' in user) token.role = user.role;
         if (user.id) token.id = user.id;
         if ('fullName' in user) token.fullName = user.fullName;
+      }
+      if (trigger === "update" && session) {
+        if (session.image !== undefined) token.picture = session.image; // NextAuth uses 'picture' internally for 'image'
+        if (session.fullName !== undefined) token.fullName = session.fullName;
       }
       return token;
     },
@@ -30,6 +34,7 @@ export const authConfig = {
         if (token.role !== undefined) session.user.role = token.role as number;
         if (token.id) session.user.id = token.id as string;
         if (token.fullName !== undefined) session.user.fullName = token.fullName as string | null;
+        if (token.picture !== undefined) session.user.image = token.picture as string | null;
       }
       return session;
     },
