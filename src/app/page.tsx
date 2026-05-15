@@ -38,12 +38,22 @@ export default async function HomePage() {
   }
 
   await dbConnect();
-  const dbUser = await User.findOne({ username: session.user.name }).lean() as {
+  const { getCachedTopExp, getCachedTopPet } = await import('@/utils/leaderboardCache');
+
+  // Chạy song song các query để giảm latency SSR
+  const [dbUserRaw, topExpUsers, topPetUsers] = await Promise.all([
+    User.findOne({ username: session.user.name }).lean(),
+    getCachedTopExp(3),
+    getCachedTopPet(3)
+  ]);
+
+  const dbUser = dbUserRaw as {
     role?: number; exp?: number; streak?: number;
     studyTimeToday?: number; studyTimeDate?: string;
     petExp?: number; coins?: number;
     avatar?: string; fullName?: string;
   } | null;
+
   const userRole: number = dbUser?.role ?? 3;
   const userExp: number = dbUser?.exp ?? 0;
   const userStreak: number = dbUser?.streak ?? 0;
@@ -53,26 +63,7 @@ export default async function HomePage() {
   const userStudySeconds: number =
     dbUser?.studyTimeDate === today ? (dbUser.studyTimeToday ?? 0) : 0;
 
-  // Lấy dữ liệu cho Bảng Vàng Đấu Trường
-  const { getPetInfo } = await import('@/utils/petSystem');
-  
-  const topExpRaw = await User.find({ role: 3 }).sort({ exp: -1 }).limit(3).select('username fullName avatar exp').lean();
-  const topExpUsers = topExpRaw.map(u => ({
-    _id: u._id.toString(),
-    username: u.username,
-    fullName: u.fullName as string | undefined,
-    avatar: u.avatar as string | undefined,
-    score: (u as any).exp || 0
-  }));
-
-  const topPetRaw = await User.find({ role: 3 }).sort({ petExp: -1 }).limit(3).select('username fullName avatar petExp').lean();
-  const topPetUsers = topPetRaw.map(u => ({
-    _id: u._id.toString(),
-    username: u.username,
-    fullName: u.fullName as string | undefined,
-    avatar: u.avatar as string | undefined,
-    score: getPetInfo((u as any).petExp || 0).currentLevel.level
-  }));
+  // Đã lấy dữ liệu Bảng Vàng từ Cache
 
   return (
     <div className="bg-gradient-to-b from-[#E0F2FE] via-[#FFFFFF] to-[#DCFCE7] relative overflow-x-hidden font-sans">

@@ -77,6 +77,10 @@ const UserSchema: Schema<IUser> = new mongoose.Schema(
   }
 );
 
+// Create indexes for efficient leaderboard sorting
+UserSchema.index({ role: 1, exp: -1 });
+UserSchema.index({ role: 1, petExp: -1 });
+
 // Prevent re-compilation of model in dev environments
 const User: Model<IUser> = mongoose.models.User || mongoose.model<IUser>("User", UserSchema);
 

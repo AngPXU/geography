@@ -20,31 +20,16 @@ export default async function LeaderboardPage() {
   }
 
   await dbConnect();
-  const { getPetInfo } = await import('@/utils/petSystem');
+  const { getCachedTopExp, getCachedTopPet } = await import('@/utils/leaderboardCache');
 
-  // Lấy Top 50 EXP
-  const topExpRaw = await User.find({ role: 3 }).sort({ exp: -1 }).limit(50).select('username fullName avatar exp').lean();
-  const topExpUsers = topExpRaw.map(u => ({
-    _id: u._id.toString(),
-    username: u.username,
-    fullName: u.fullName as string | undefined,
-    avatar: u.avatar as string | undefined,
-    score: (u as any).exp || 0
-  }));
+  // Chạy song song các DB queries để tránh block SSR
+  const [topExpUsers, topPetUsers, currentUser] = await Promise.all([
+    getCachedTopExp(50),
+    getCachedTopPet(50),
+    User.findOne({ username: session.user.name }).select('avatar fullName').lean()
+  ]);
 
-  // Lấy Top 50 Pet
-  const topPetRaw = await User.find({ role: 3 }).sort({ petExp: -1 }).limit(50).select('username fullName avatar petExp').lean();
-  const topPetUsers = topPetRaw.map(u => ({
-    _id: u._id.toString(),
-    username: u.username,
-    fullName: u.fullName as string | undefined,
-    avatar: u.avatar as string | undefined,
-    score: getPetInfo((u as any).petExp || 0).currentLevel.level
-  }));
-
-  // Lấy thông tin user hiện tại để hiển thị avatar mới nhất
-  const currentUser = await User.findOne({ username: session.user.name }).select('avatar fullName').lean();
-
+  // Đã lấy dữ liệu từ cache
   return (
     <div className="bg-gradient-to-b from-[#E0F2FE] via-[#FFFFFF] to-[#DCFCE7] relative overflow-x-hidden font-sans min-h-screen flex flex-col">
       <Navbar user={{ ...session.user, image: (currentUser as any)?.avatar || session.user.image, fullName: (currentUser as any)?.fullName || session.user.fullName }} />

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef, useCallback, JSX } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { ALL_MISSIONS } from '@/utils/missions';
 import { STREAK_MILESTONES } from '@/utils/streakSystem';
 import { claimMission, claimMissionWithExp } from '@/utils/missionTracker';
@@ -229,7 +230,7 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
               <div className="relative shrink-0">
                 {avatar ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={avatar} alt={username} className="w-14 h-14 rounded-full object-cover ring-4 ring-cyan-100" />
+                  <Image src={avatar} alt={username} width={56} height={56} className="w-14 h-14 rounded-full object-cover ring-4 ring-cyan-100" />
                 ) : (
                   <div className="w-14 h-14 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-black text-xl ring-4 ring-cyan-100">
                     {displayName.charAt(0)}

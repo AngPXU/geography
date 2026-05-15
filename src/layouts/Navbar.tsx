@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState, useRef } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { logout } from '@/app/actions/auth';
 
@@ -146,7 +147,7 @@ export function Navbar({ user }: { user?: { name?: string | null; fullName?: str
       <div className="px-4 py-3 bg-gradient-to-br from-cyan-50 to-blue-50 border-b border-slate-100">
         <div className="flex items-center gap-3">
           {user?.image ? (
-            <img src={user.image} alt="Avatar" className="w-10 h-10 rounded-[12px] object-cover shadow-sm border-[2px] border-white" />
+            <Image src={user.image} alt="Avatar" width={40} height={40} className="w-10 h-10 rounded-[12px] object-cover shadow-sm border-[2px] border-white" />
           ) : (
             <div className="w-10 h-10 rounded-[12px] bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-black text-base shadow-sm border-[2px] border-white">
               {((user?.fullName ?? user?.name)?.charAt(0) || 'K').toUpperCase()}
@@ -321,7 +322,7 @@ export function Navbar({ user }: { user?: { name?: string | null; fullName?: str
             {/* Logo */}
             <Link href="/" className="flex items-center gap-2.5 group shrink-0 min-w-0">
               <div className="w-9 h-9 sm:w-10 sm:h-10 rounded-[14px] overflow-hidden shadow-md group-hover:scale-105 group-hover:shadow-cyan-300/40 transition-all duration-300 flex-shrink-0 border-2 border-white">
-                <img src="/icon-192x192.png" alt="Logo" className="w-full h-full object-cover" />
+                <Image src="/icon-192x192.png" alt="Logo" width={40} height={40} className="w-full h-full object-cover" />
               </div>
               <div className="min-w-0">
                 <p className="font-black text-[#082F49] text-sm sm:text-lg leading-none tracking-tight truncate">Vui học Địa Lý</p>
@@ -376,7 +377,7 @@ export function Navbar({ user }: { user?: { name?: string | null; fullName?: str
                   className="flex items-center gap-2.5 h-10 pl-1.5 pr-4 rounded-[14px] bg-gradient-to-r from-slate-50 to-blue-50 border border-slate-100 cursor-pointer hover:border-cyan-200 hover:shadow-md hover:shadow-cyan-100/50 transition-all duration-200 group"
                 >
                   {user?.image ? (
-                    <img src={user.image} alt="Avatar" className="w-7 h-7 rounded-[10px] object-cover shadow-sm group-hover:scale-105 transition-transform" />
+                    <Image src={user.image} alt="Avatar" width={28} height={28} className="w-7 h-7 rounded-[10px] object-cover shadow-sm group-hover:scale-105 transition-transform" />
                   ) : (
                     <div className="w-7 h-7 rounded-[10px] bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white text-[10px] font-black shadow-sm group-hover:scale-105 transition-transform">
                       {((user?.fullName ?? user?.name)?.charAt(0) || 'K').toUpperCase()}
@@ -404,7 +405,7 @@ export function Navbar({ user }: { user?: { name?: string | null; fullName?: str
         <div className="island-inner">
           {/* Logo dot */}
           <Link href="/" className="island-icon" title="Trang chủ">
-            <img src="/icon-192x192.png" alt="Logo" style={{ width: 22, height: 22, borderRadius: 6, objectFit: 'cover' }} />
+            <Image src="/icon-192x192.png" alt="Logo" width={22} height={22} style={{ borderRadius: 6, objectFit: 'cover' }} />
           </Link>
 
           <div className="island-divider" />
@@ -450,7 +451,7 @@ export function Navbar({ user }: { user?: { name?: string | null; fullName?: str
               title={user?.fullName ?? user?.name ?? 'Khách'}
             >
               {user?.image ? (
-                <img src={user.image} alt="Avatar" className="w-full h-full object-cover" />
+                <Image src={user.image} alt="Avatar" width={28} height={28} className="w-full h-full object-cover" />
               ) : (
                 <span>{((user?.fullName ?? user?.name)?.charAt(0) || 'K').toUpperCase()}</span>
               )}

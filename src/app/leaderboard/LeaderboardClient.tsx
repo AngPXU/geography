@@ -1,5 +1,6 @@
 'use client';
 import React, { useState } from 'react';
+import Image from 'next/image';
 import { Icon } from '@iconify/react';
 
 export interface LeaderboardUser {
@@ -53,7 +54,7 @@ export function LeaderboardClient({ topExpUsers, topPetUsers }: LeaderboardClien
           <div className={`${avatarSize} rounded-full overflow-hidden border-4 ${borderColor} bg-white shadow-xl mb-3 relative z-10`}>
             {user.avatar ? (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={user.avatar} alt={displayName} className="w-full h-full object-cover" />
+              <Image src={user.avatar} alt={displayName} width={96} height={96} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-black text-3xl">
                 {displayName.charAt(0).toUpperCase()}
@@ -146,7 +147,7 @@ export function LeaderboardClient({ topExpUsers, topPetUsers }: LeaderboardClien
                     
                     {user.avatar ? (
                       // eslint-disable-next-line @next/next/no-img-element
-                      <img src={user.avatar} alt={displayName} className="w-10 h-10 rounded-full object-cover ring-2 ring-white" />
+                      <Image src={user.avatar} alt={displayName} width={40} height={40} className="w-10 h-10 rounded-full object-cover ring-2 ring-white" />
                     ) : (
                       <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500 flex items-center justify-center text-white font-bold text-sm ring-2 ring-white">
                         {displayName.charAt(0).toUpperCase()}
