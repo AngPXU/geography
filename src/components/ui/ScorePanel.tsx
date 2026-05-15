@@ -2,6 +2,7 @@
 
 import { useState, useCallback } from 'react';
 import { FaTrophy, FaCheck, FaTimes, FaClock, FaRedo, FaUserTimes, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { Icon } from '@iconify/react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -85,7 +86,7 @@ export function ScorePanel({ roomId, currentUserId, isTeacher, scores: rawScores
         style={{ background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)' }}
       >
         <div className="flex items-center gap-2">
-          <FaTrophy size={14} className="text-amber-400" />
+          <Icon icon="solar:cup-bold" width={14} />
           <p className="font-bold text-[#082F49] text-sm">Tính điểm</p>
           <span className="px-2 py-0.5 rounded-full bg-[#E0F2FE] text-[#06B6D4] text-[9px] font-bold">
             {scores.length} HS
@@ -142,9 +143,8 @@ export function ScorePanel({ roomId, currentUserId, isTeacher, scores: rawScores
                 <div key={entry.studentId}>
                   {/* Main row */}
                   <div
-                    className={`items-center gap-1 px-3 py-2.5 transition-all duration-200 ${
-                      isMine ? 'bg-[#E0F2FE]/60' : 'hover:bg-white/50'
-                    }`}
+                    className={`items-center gap-1 px-3 py-2.5 transition-all duration-200 ${isMine ? 'bg-[#E0F2FE]/60' : 'hover:bg-white/50'
+                      }`}
                     style={{ display: 'grid', gridTemplateColumns: '1.5rem 1fr 2rem 2rem 2rem 2.5rem' }}
                   >
                     {/* Rank */}
@@ -162,12 +162,10 @@ export function ScorePanel({ roomId, currentUserId, isTeacher, scores: rawScores
                       onClick={() => isTeacher && setExpandedId(isExpanded ? null : entry.studentId)}
                       title={isTeacher ? (isExpanded ? 'Thu gọn' : 'Xem đầy đủ tên') : undefined}
                     >
-                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
-                        isOnline ? 'bg-[#22C55E]' : 'bg-[#CBD5E1]'
-                      }`} />
-                      <p className={`text-xs font-semibold truncate leading-tight flex-1 ${
-                        isMine ? 'text-[#06B6D4]' : 'text-[#082F49]'
-                      }`}>
+                      <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isOnline ? 'bg-[#22C55E]' : 'bg-[#CBD5E1]'
+                        }`} />
+                      <p className={`text-xs font-semibold truncate leading-tight flex-1 ${isMine ? 'text-[#06B6D4]' : 'text-[#082F49]'
+                        }`}>
                         {entry.studentName}
                         {isMine && <span className="ml-1 text-[8px] text-[#06B6D4]/70">(bạn)</span>}
                       </p>
@@ -195,9 +193,8 @@ export function ScorePanel({ roomId, currentUserId, isTeacher, scores: rawScores
 
                     {/* Total score */}
                     <div className="text-center">
-                      <span className={`text-sm font-extrabold ${
-                        rank === 1 ? 'text-amber-500' : rank === 2 ? 'text-slate-400' : rank === 3 ? 'text-amber-700' : 'text-[#082F49]'
-                      }`}>
+                      <span className={`text-sm font-extrabold ${rank === 1 ? 'text-amber-500' : rank === 2 ? 'text-slate-400' : rank === 3 ? 'text-amber-700' : 'text-[#082F49]'
+                        }`}>
                         {entry.totalScore}
                       </span>
                     </div>
@@ -213,9 +210,8 @@ export function ScorePanel({ roomId, currentUserId, isTeacher, scores: rawScores
                       }}
                     >
                       <div className="flex items-center gap-2 min-w-0">
-                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                          isOnline ? 'bg-[#22C55E]' : 'bg-[#CBD5E1]'
-                        }`} />
+                        <span className={`w-2 h-2 rounded-full flex-shrink-0 ${isOnline ? 'bg-[#22C55E]' : 'bg-[#CBD5E1]'
+                          }`} />
                         <p className="text-xs font-bold text-[#082F49] break-all leading-snug">
                           {entry.studentName}
                         </p>

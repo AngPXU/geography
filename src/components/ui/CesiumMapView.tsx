@@ -31,11 +31,11 @@ function loadStyle(href: string) {
 
 // ─── Màu chấm theo châu lục ────────────────────────────────────────────────────
 const REGION_COLOR: Record<string, string> = {
-  'Asia':      '#06B6D4',
-  'Europe':    '#8B5CF6',
-  'Americas':  '#F97316',
-  'Africa':    '#F59E0B',
-  'Oceania':   '#10B981',
+  'Asia': '#06B6D4',
+  'Europe': '#8B5CF6',
+  'Americas': '#F97316',
+  'Africa': '#F59E0B',
+  'Oceania': '#10B981',
   'Antarctic': '#94A3B8',
 };
 const DEFAULT_COLOR = '#64748B';
@@ -79,19 +79,19 @@ interface CesiumMapViewProps {
 
 export default function CesiumMapView({ initialScene = '3d', className = '' }: CesiumMapViewProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const viewerRef    = useRef<any>(null);
-  const initRef      = useRef(false);
-  const [sceneMode, setSceneMode]   = useState<SceneMode>(initialScene);
-  const [ready, setReady]           = useState(false);
-  const [infoPanel, setInfoPanel]   = useState<InfoPanel | null>(null);
-  const [countries, setCountries]   = useState<Country[]>([]);
+  const viewerRef = useRef<any>(null);
+  const initRef = useRef(false);
+  const [sceneMode, setSceneMode] = useState<SceneMode>(initialScene);
+  const [ready, setReady] = useState(false);
+  const [infoPanel, setInfoPanel] = useState<InfoPanel | null>(null);
+  const [countries, setCountries] = useState<Country[]>([]);
 
   // ── Fetch countries ─────────────────────────────────────────────────────────
   useEffect(() => {
     fetch('/api/map/countries')
       .then(r => r.json())
       .then(d => { if (d.seeded && d.countries) setCountries(d.countries); })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   // ── Init Viewer ─────────────────────────────────────────────────────────────
@@ -107,8 +107,8 @@ export default function CesiumMapView({ initialScene = '3d', className = '' }: C
     if (!Cesium) return;
 
     const SCENE_MAP: Record<SceneMode, any> = {
-      '3d':       Cesium.SceneMode.SCENE3D,
-      '2d':       Cesium.SceneMode.SCENE2D,
+      '3d': Cesium.SceneMode.SCENE3D,
+      '2d': Cesium.SceneMode.SCENE2D,
       'columbus': Cesium.SceneMode.COLUMBUS_VIEW,
     };
 
@@ -236,7 +236,7 @@ export default function CesiumMapView({ initialScene = '3d', className = '' }: C
       viewer.scene.requestRender();
     }, Cesium.ScreenSpaceEventType.LEFT_CLICK);
 
-    return () => { try { handler.destroy(); } catch (_) {} };
+    return () => { try { handler.destroy(); } catch (_) { } };
   }, [ready, countries]);
 
   // ── Chuyển cảnh ─────────────────────────────────────────────────────────────
@@ -245,8 +245,8 @@ export default function CesiumMapView({ initialScene = '3d', className = '' }: C
     setSceneMode(mode);
     setInfoPanel(null);
     switch (mode) {
-      case '3d':       viewerRef.current.scene.morphTo3D(1.5); break;
-      case '2d':       viewerRef.current.scene.morphTo2D(1.5); break;
+      case '3d': viewerRef.current.scene.morphTo3D(1.5); break;
+      case '2d': viewerRef.current.scene.morphTo2D(1.5); break;
       case 'columbus': viewerRef.current.scene.morphToColumbusView(1.5); break;
     }
     // Kích hoạt render sau khi đổi cảnh
@@ -270,18 +270,17 @@ export default function CesiumMapView({ initialScene = '3d', className = '' }: C
       {/* ── Nút chuyển chế độ (top-left) ── */}
       <div className="absolute top-4 left-4 z-[999] flex gap-1 p-1 bg-white/80 backdrop-blur-xl border border-white/60 rounded-[18px] shadow-lg">
         {([
-          ['3d',       <Icon key="3d" icon="material-symbols:3d-rounded" width={30} />],
-          ['2d',       <Icon key="2d" icon="material-symbols:2d-rounded" width={30} />],
+          ['3d', <Icon key="3d" icon="material-symbols:3d-rounded" width={30} />],
+          ['2d', <Icon key="2d" icon="material-symbols:2d-rounded" width={30} />],
           ['columbus', <Icon key="col" icon="material-symbols:map-sharp" width={30} />],
         ] as [SceneMode, React.ReactNode][]).map(([id, icon]) => (
           <button
             key={id}
             onClick={() => switchScene(id)}
-            className={`flex flex-col items-center justify-center px-3 py-1.5 rounded-[12px] text-[10px] font-bold transition-all ${
-              sceneMode === id
-                ? 'bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-md'
-                : 'text-slate-500 hover:bg-cyan-50 hover:text-cyan-600'
-            }`}
+            className={`flex flex-col items-center justify-center px-3 py-1.5 rounded-[12px] text-[10px] font-bold transition-all ${sceneMode === id
+              ? 'bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-md'
+              : 'text-slate-500 hover:bg-cyan-50 hover:text-cyan-600'
+              }`}
           >
             <span className="text-base">{icon}</span>
           </button>
@@ -456,7 +455,7 @@ export default function CesiumMapView({ initialScene = '3d', className = '' }: C
       {/* Loading overlay */}
       {!ready && (
         <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#082F49]/90 backdrop-blur-sm z-50">
-          <span className="text-6xl mb-4 animate-[spin_3s_linear_infinite]">🌍</span>
+          <span className="text-6xl mb-4 animate-[spin_3s_linear_infinite]"><Icon icon="gis:map-book" width={80} color="#fff" /></span>
           <p className="text-xl font-black text-white">Đang khởi tạo Bản đồ Cesium...</p>
           <p className="text-sm text-slate-300 mt-2">Vui lòng chờ trong giây lát</p>
         </div>

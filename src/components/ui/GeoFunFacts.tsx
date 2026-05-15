@@ -41,8 +41,8 @@ function useCountdown(nextUpdateAt: string | null) {
 function pad(n: number) { return String(n).padStart(2, '0'); }
 
 export function GeoFunFacts() {
-  const [fact, setFact]               = useState<FunFact | null>(null);
-  const [loading, setLoading]         = useState(true);
+  const [fact, setFact] = useState<FunFact | null>(null);
+  const [loading, setLoading] = useState(true);
   const [nextUpdateAt, setNextUpdate] = useState<string | null>(null);
   const [justGenerated, setJustGenerated] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
@@ -108,11 +108,9 @@ export function GeoFunFacts() {
         {/* Tiêu đề */}
         <div className="text-center mb-12 relative z-10">
           <div className="inline-flex items-center gap-2 bg-gradient-to-r from-white/90 to-white/70 backdrop-blur-xl px-6 py-2.5 rounded-full border-[2px] border-white/80 shadow-[0_8px_30px_rgba(251,113,133,0.15)] mb-5 transform hover:scale-105 hover:-translate-y-1 transition-all duration-300 cursor-default">
-            <span className="text-2xl animate-bounce" style={{ animationDuration: '2s' }}>✨</span>
             <span className="text-sm font-black text-transparent bg-clip-text bg-gradient-to-r from-rose-500 to-orange-400 uppercase tracking-[0.2em] ml-1">Góc Bất Ngờ</span>
-            <span className="text-2xl animate-bounce" style={{ animationDelay: '0.5s', animationDuration: '2s' }}>🤩</span>
           </div>
-          <h2 className="text-4xl md:text-6xl font-black text-[#082F49] tracking-tight" style={{ textShadow: '0 4px 20px rgba(0,0,0,0.05)'}}>
+          <h2 className="text-4xl md:text-6xl font-black text-[#082F49] tracking-tight" style={{ textShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
             Bạn Có Biết Không?
           </h2>
 
@@ -133,7 +131,7 @@ export function GeoFunFacts() {
                 <span className="text-[#94A3B8] font-bold text-sm tracking-widest uppercase">Giây</span>
               </div>
               {justGenerated && (
-                <div className="mt-3 inline-flex items-center gap-2 bg-gradient-to-r from-emerald-50 to-teal-50 border-[2px] border-emerald-100 rounded-full px-4 py-1.5 shadow-sm transform animate-bounce" style={{ animationIterationCount: 3, animationDuration: '0.8s'}}>
+                <div className="mt-3 inline-flex items-center gap-2 bg-gradient-to-r from-emerald-50 to-teal-50 border-[2px] border-emerald-100 rounded-full px-4 py-1.5 shadow-sm transform animate-bounce" style={{ animationIterationCount: 3, animationDuration: '0.8s' }}>
                   <span className="text-lg">🤖</span>
                   <span className="text-xs font-bold text-emerald-600 uppercase tracking-widest">AI vừa khám phá xong!</span>
                 </div>
@@ -146,7 +144,7 @@ export function GeoFunFacts() {
         <div className="relative w-full mx-auto z-10">
 
           {loading ? (
-            <div 
+            <div
               className="w-full h-96 flex flex-col items-center justify-center animate-pulse rounded-[32px]"
               style={{
                 background: 'rgba(255, 255, 255, 0.65)',
@@ -156,13 +154,13 @@ export function GeoFunFacts() {
                 boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)'
               }}
             >
-              <div className="w-24 h-24 bg-gradient-to-tr from-[#06B6D4] to-blue-400 rounded-full flex items-center justify-center shadow-inner mb-6 animate-bounce" style={{ animationDuration: '2s'}}>
+              <div className="w-24 h-24 bg-gradient-to-tr from-[#06B6D4] to-blue-400 rounded-full flex items-center justify-center shadow-inner mb-6 animate-bounce" style={{ animationDuration: '2s' }}>
                 <span className="text-5xl">🌍</span>
               </div>
               <p className="text-lg font-bold text-[#94A3B8] tracking-widest uppercase">Trí tuệ nhân tạo đang làm việc...</p>
             </div>
           ) : !fact ? (
-            <div 
+            <div
               className="w-full h-96 flex flex-col items-center justify-center rounded-[32px]"
               style={{
                 background: 'rgba(255, 255, 255, 0.65)',
@@ -172,11 +170,11 @@ export function GeoFunFacts() {
                 boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)'
               }}
             >
-               <span className="text-6xl mb-6 opacity-80">🔍</span>
-               <p className="text-lg font-bold text-[#94A3B8] tracking-widest uppercase">Chưa có thông tin thú vị nào.</p>
+              <span className="text-6xl mb-6 opacity-80">🔍</span>
+              <p className="text-lg font-bold text-[#94A3B8] tracking-widest uppercase">Chưa có thông tin thú vị nào.</p>
             </div>
           ) : (
-            <div 
+            <div
               className="big-card relative w-full flex flex-col p-8 md:p-14 overflow-hidden group hover:-translate-y-1 transition-all duration-700 rounded-[32px]"
               style={{
                 background: 'rgba(255, 255, 255, 0.65)',
@@ -205,7 +203,7 @@ export function GeoFunFacts() {
                     <span className="uppercase tracking-widest">{fact.region}</span>
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2 bg-gradient-to-r from-slate-100/80 to-white/80 backdrop-blur-md border-[2px] border-white/90 rounded-full px-4 py-2 shadow-sm">
                   <div className="w-2.5 h-2.5 rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.8)] animate-pulse" />
                   <span className="text-xs font-bold text-slate-500 uppercase tracking-widest">
@@ -225,7 +223,7 @@ export function GeoFunFacts() {
                 <div className="flex-1">
                   {/* Headline */}
                   <h3 className="text-3xl md:text-5xl font-black text-[#082F49] leading-tight mb-8 tracking-tight"
-                      style={{ textShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
+                    style={{ textShadow: '0 4px 20px rgba(0,0,0,0.05)' }}>
                     {fact.headline}
                   </h3>
 
@@ -265,20 +263,20 @@ export function GeoFunFacts() {
 
           {/* Floating cute emojis mostly behind the big card */}
           {!loading && fact && FLOAT_EMOJIS.map((emoji, i) => (
-             <div
-               key={i}
-               className="float-cute absolute hidden md:flex items-center justify-center select-none pointer-events-none"
-               style={{
-                 fontSize: `${Math.random() * 20 + 20}px`,
-                 top: `${Math.random() * 90 + 5}%`,
-                 left: `${Math.random() * 90 + 5}%`,
-                 animationDelay: `${Math.random() * 5}s`,
-                 opacity: 0.6,
-                 zIndex: -1
-               }}
-             >
-               {emoji}
-             </div>
+            <div
+              key={i}
+              className="float-cute absolute hidden md:flex items-center justify-center select-none pointer-events-none"
+              style={{
+                fontSize: `${Math.random() * 20 + 20}px`,
+                top: `${Math.random() * 90 + 5}%`,
+                left: `${Math.random() * 90 + 5}%`,
+                animationDelay: `${Math.random() * 5}s`,
+                opacity: 0.6,
+                zIndex: -1
+              }}
+            >
+              {emoji}
+            </div>
           ))}
 
         </div>

@@ -41,7 +41,7 @@ export function StreakModal({ streak, onClose }: StreakModalProps) {
         <div className="px-6 pt-5 pb-4 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-400 to-rose-500 flex items-center justify-center text-2xl shadow-[0_4px_16px_rgba(249,115,22,0.35)]">
-              🔥
+              <Icon icon="material-symbols:local-fire-department" width={40} color="#ffffffff" />
             </div>
             <div>
               <h3 className="font-black text-[#082F49] text-xl leading-tight">Chuỗi ngày học</h3>
@@ -84,22 +84,20 @@ export function StreakModal({ streak, onClose }: StreakModalProps) {
             return (
               <div
                 key={m.days}
-                className={`rounded-[16px] p-4 flex items-center gap-4 transition-all duration-300 ${
-                  reached
-                    ? 'bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200'
-                    : isCurrent
+                className={`rounded-[16px] p-4 flex items-center gap-4 transition-all duration-300 ${reached
+                  ? 'bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200'
+                  : isCurrent
                     ? 'bg-gradient-to-r from-sky-50 to-cyan-50 border-2 border-cyan-300 shadow-md'
                     : 'bg-white/60 border border-slate-100 opacity-60'
-                }`}
+                  }`}
               >
                 {/* Left: Icon circle */}
-                <div className={`w-11 h-11 rounded-full flex items-center justify-center text-xl shrink-0 border-2 ${
-                  reached
-                    ? 'bg-gradient-to-br from-orange-400 to-rose-500 border-orange-200 shadow-md'
-                    : isCurrent
+                <div className={`w-11 h-11 rounded-full flex items-center justify-center text-xl shrink-0 border-2 ${reached
+                  ? 'bg-gradient-to-br from-orange-400 to-rose-500 border-orange-200 shadow-md'
+                  : isCurrent
                     ? 'bg-gradient-to-br from-cyan-400 to-blue-500 border-cyan-200 shadow-md'
                     : 'bg-slate-100 border-slate-200'
-                }`}>
+                  }`}>
                   {reached ? '✅' : m.icon}
                 </div>
 
@@ -110,9 +108,8 @@ export function StreakModal({ streak, onClose }: StreakModalProps) {
                       <span className={`font-black text-sm ${reached ? 'text-orange-600' : isCurrent ? 'text-cyan-600' : 'text-slate-400'}`}>
                         {m.days} ngày
                       </span>
-                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                        reached ? 'bg-orange-100 text-orange-600' : isCurrent ? 'bg-cyan-100 text-cyan-600' : 'bg-slate-100 text-slate-400'
-                      }`}>
+                      <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${reached ? 'bg-orange-100 text-orange-600' : isCurrent ? 'bg-cyan-100 text-cyan-600' : 'bg-slate-100 text-slate-400'
+                        }`}>
                         {m.label}
                       </span>
                       {isCurrent && <span className="text-[10px] font-black text-cyan-500 bg-cyan-100 px-2 py-0.5 rounded-full animate-pulse">SẮP ĐẾN</span>}
@@ -151,7 +148,8 @@ export function StreakModal({ streak, onClose }: StreakModalProps) {
         </div>
       </div>
 
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style dangerouslySetInnerHTML={{
+        __html: `
         @keyframes slide-up {
           from { opacity: 0; transform: translateY(24px) scale(0.95); }
           to { opacity: 1; transform: translateY(0) scale(1); }

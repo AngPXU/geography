@@ -11,7 +11,7 @@ const CesiumMapView = dynamic(
     ssr: false,
     loading: () => (
       <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#082F49]/90 rounded-[28px]">
-        <span className="text-6xl mb-4 animate-[spin_3s_linear_infinite]">🌍</span>
+        <span className="text-6xl mb-4 animate-[spin_3s_linear_infinite]"><Icon icon="gis:map-book" width={80} color="#fff" /></span>
         <p className="text-xl font-black text-white">Đang khởi tạo Bản đồ Cesium...</p>
         <p className="text-sm text-slate-300 mt-2">Vui lòng chờ trong giây lát</p>
       </div>
@@ -26,7 +26,7 @@ const CesiumOceanView = dynamic(
     ssr: false,
     loading: () => (
       <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#0a1f3c]/92 rounded-[28px]">
-        <span className="text-6xl mb-4 animate-[spin_3s_linear_infinite]">🌊</span>
+        <span className="text-6xl mb-4 animate-[spin_3s_linear_infinite]"><Icon icon="mdi:ocean" width={80} color="#fff" /></span>
         <p className="text-xl font-black text-white">Đang tải Bản đồ Đại dương...</p>
         <p className="text-sm text-slate-300 mt-2">Vui lòng chờ trong giây lát</p>
       </div>
@@ -41,7 +41,7 @@ const CesiumEconomicView = dynamic(
     ssr: false,
     loading: () => (
       <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#082F49]/90 rounded-[28px]">
-        <span className="text-6xl mb-4 animate-[spin_3s_linear_infinite]">🏭</span>
+        <span className="text-6xl mb-4 animate-[spin_3s_linear_infinite]"><Icon icon="streamline-plump:factory-plant-solid" width={80} color="#fff" /></span>
         <p className="text-xl font-black text-white">Đang khởi tạo Bản đồ Kinh tế...</p>
         <p className="text-sm text-slate-300 mt-2">Vui lòng chờ trong giây lát</p>
       </div>
@@ -56,7 +56,7 @@ const InteractiveMap = dynamic(
     ssr: false,
     loading: () => (
       <div className="absolute inset-0 flex flex-col items-center justify-center animate-pulse">
-        <span className="text-6xl mb-4 animate-[spin_3s_linear_infinite]">🗺️</span>
+        <span className="text-6xl mb-4 animate-[spin_3s_linear_infinite]"><Icon icon="gis:map-book" width={80} color="#fff" /></span>
         <p className="text-xl font-bold text-[#082F49]">Đang tải Bản đồ...</p>
       </div>
     ),
@@ -67,11 +67,11 @@ type MapMode = 'political' | 'physical' | 'climate' | 'ocean' | 'economic' | 'vi
 
 const MODES: { id: MapMode; icon: JSX.Element; label: string }[] = [
   { id: 'political', icon: <Icon icon="mingcute:map-line" width={22} />, label: 'Chính trị' },
-  { id: 'physical',  icon: <Icon icon="mingcute:mountain-2-fill" width={22} />, label: 'Địa hình' },
-  { id: 'climate',   icon: <Icon icon="material-symbols:thermostat" width={22} />, label: 'Khí hậu' },
-  { id: 'ocean',     icon: <Icon icon="material-symbols:water" width={22} />, label: 'Đại dương' },
-  { id: 'economic',  icon: <Icon icon="material-symbols:factory" width={22} />, label: 'Kinh tế' },
-  { id: 'vietnam',   icon: <Icon icon="material-symbols:star-rate" width={22} />, label: 'Việt Nam' },
+  { id: 'physical', icon: <Icon icon="mingcute:mountain-2-fill" width={22} />, label: 'Địa hình' },
+  { id: 'climate', icon: <Icon icon="material-symbols:thermostat" width={22} />, label: 'Khí hậu' },
+  { id: 'ocean', icon: <Icon icon="material-symbols:water" width={22} />, label: 'Đại dương' },
+  { id: 'economic', icon: <Icon icon="material-symbols:factory" width={22} />, label: 'Kinh tế' },
+  { id: 'vietnam', icon: <Icon icon="material-symbols:star-rate" width={22} />, label: 'Việt Nam' },
 ];
 
 export function MapWrapper() {
@@ -87,11 +87,10 @@ export function MapWrapper() {
           <button
             key={m.id}
             onClick={() => setMode(m.id)}
-            className={`flex items-center gap-1.5 px-4 py-2 rounded-[14px] text-xs font-bold transition-all ${
-              mode === m.id
-                ? 'bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-md'
-                : 'text-slate-500 hover:bg-cyan-50 hover:text-cyan-600'
-            }`}
+            className={`flex items-center gap-1.5 px-4 py-2 rounded-[14px] text-xs font-bold transition-all ${mode === m.id
+              ? 'bg-gradient-to-br from-cyan-400 to-blue-500 text-white shadow-md'
+              : 'text-slate-500 hover:bg-cyan-50 hover:text-cyan-600'
+              }`}
           >
             <span className="text-sm">{m.icon}</span>
             {m.label}
@@ -107,7 +106,7 @@ export function MapWrapper() {
         {mode === 'vietnam' && (
           <InteractiveMap
             is3D={false}
-            onToggle3D={() => {}}
+            onToggle3D={() => { }}
             mode="vietnam"
             onModeChange={setMode}
           />

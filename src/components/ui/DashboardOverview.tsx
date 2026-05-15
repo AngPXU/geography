@@ -81,7 +81,7 @@ function useResetCountdown() {
     const t = setInterval(() => setCountdown(calc()), 1000);
     return () => clearInterval(t);
   }, [calc]);
-  
+
   return countdown;
 }
 
@@ -129,10 +129,10 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
         setClaimedExp(prev => ({ ...prev, [missionId]: result.exp || 0 }));
         if (result.totalExp !== undefined) setTotalExp(result.totalExp);
         if (result.streak > 0) setStreak(result.streak);
-        
+
         // Cập nhật trạng thái ngay lập tức trên UI (Optimistic Update)
         setMissionSlots(prev => prev.map(m => m.missionId === missionId ? { ...m, claimed: true } : m));
-        
+
         await fetchMissions();
       }
     } finally {
@@ -183,8 +183,8 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
             {MODULES.map((mod) => {
               const isActive = mod.isTab ? activeTab === mod.id : false;
               const cls = `shrink-0 snap-start w-[140px] md:w-[160px] rounded-[24px] p-5 flex flex-col items-center gap-2 transition-all duration-300 border ${isActive
-                  ? 'bg-gradient-to-br from-cyan-400 to-blue-500 text-white border-transparent shadow-[0_8px_24px_rgba(6,182,212,0.35)] hover:shadow-[0_12px_32px_rgba(6,182,212,0.45)] hover:-translate-y-1'
-                  : 'bg-white/75 backdrop-blur-xl border-white text-[#082F49] shadow-[0_4px_16px_rgba(14,165,233,0.06)] hover:shadow-[0_8px_24px_rgba(14,165,233,0.12)] hover:-translate-y-1 hover:border-cyan-100'
+                ? 'bg-gradient-to-br from-cyan-400 to-blue-500 text-white border-transparent shadow-[0_8px_24px_rgba(6,182,212,0.35)] hover:shadow-[0_12px_32px_rgba(6,182,212,0.45)] hover:-translate-y-1'
+                : 'bg-white/75 backdrop-blur-xl border-white text-[#082F49] shadow-[0_4px_16px_rgba(14,165,233,0.06)] hover:shadow-[0_8px_24px_rgba(14,165,233,0.12)] hover:-translate-y-1 hover:border-cyan-100'
                 }`;
               const inner = (
                 <>
@@ -360,10 +360,10 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
                     <div
                       key={slot.missionId}
                       className={`rounded-[20px] p-5 flex flex-col gap-3 transition-all duration-300 ${isClaimed
-                          ? 'opacity-60'
-                          : isComplete
-                            ? 'ring-2 ring-emerald-400 ring-offset-2 hover:-translate-y-0.5'
-                            : 'hover:-translate-y-0.5'
+                        ? 'opacity-60'
+                        : isComplete
+                          ? 'ring-2 ring-emerald-400 ring-offset-2 hover:-translate-y-0.5'
+                          : 'hover:-translate-y-0.5'
                         }`}
                       style={{
                         background: isClaimed
@@ -406,8 +406,8 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
                         <div className="w-full h-2.5 rounded-full bg-slate-100 overflow-hidden">
                           <div
                             className={`h-full rounded-full transition-all duration-700 ${isClaimed
-                                ? 'bg-gradient-to-r from-emerald-300 to-green-400'
-                                : 'bg-gradient-to-r from-cyan-400 to-blue-500'
+                              ? 'bg-gradient-to-r from-emerald-300 to-green-400'
+                              : 'bg-gradient-to-r from-cyan-400 to-blue-500'
                               }`}
                             style={{ width: `${pct}%` }}
                           />
@@ -417,16 +417,16 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
                       {/* Status / Claim button */}
                       {isClaimed ? (
                         <div className="flex items-center gap-2 text-emerald-600 font-bold text-sm">
-                          <span>✅</span>
+                          <span><Icon icon="lets-icons:check-fill" width={22} /></span>
                           <span>Đã nhận {justClaimed ? `+${justClaimed} EXP` : 'thưởng'}!</span>
                         </div>
                       ) : isComplete ? (
                         <button
                           onClick={() => handleClaim(slot.missionId as MissionId)}
                           disabled={isClaiming}
-                          className="w-full py-2.5 rounded-[14px] bg-gradient-to-r from-emerald-400 to-green-500 text-white font-black text-sm shadow-[0_4px_12px_rgba(34,197,94,0.35)] hover:shadow-[0_6px_18px_rgba(34,197,94,0.45)] hover:-translate-y-0.5 active:scale-95 transition-all duration-300 disabled:opacity-60"
+                          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-[14px] bg-gradient-to-r from-emerald-400 to-green-500 text-white font-black text-sm shadow-[0_4px_12px_rgba(34,197,94,0.35)] hover:shadow-[0_6px_18px_rgba(34,197,94,0.45)] hover:-translate-y-0.5 active:scale-95 transition-all duration-300 disabled:opacity-60"
                         >
-                          {isClaiming ? '⏳ Đang nhận...' : '🎁 Nhận thưởng'}
+                          {isClaiming ? <> <Icon icon="material-symbols-light:hourglass-rounded" width={22} />Đang nhận</> : <> <Icon icon="material-symbols:box" width={22} />Nhận thưởng</>}
                         </button>
                       ) : (
                         <p className="text-xs font-bold text-slate-400">
@@ -468,7 +468,7 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
             >
               {/* Header */}
               <div className="flex items-center justify-between mb-5">
-                <p className="text-[#082F49] font-black text-base flex items-center gap-2">🔥 Chuỗi ngày học
+                <p className="text-[#082F49] font-black text-base flex items-center gap-2"><Icon icon="material-symbols:local-fire-department" width={30} color="#f97316" /> Chuỗi ngày học
                   <span className="text-[10px] font-bold text-slate-400 bg-slate-100 group-hover:bg-orange-100 group-hover:text-orange-500 px-2 py-0.5 rounded-full transition-colors">Nhấn để xem mốc thưởng →</span>
                 </p>
                 {last7Days[0]?.active ? (
@@ -481,7 +481,7 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
               {/* Big flame + count */}
               <div className="flex items-center gap-5 mb-5">
                 <div className="relative shrink-0">
-                  <span className="text-[72px] leading-none drop-shadow-lg">🔥</span>
+                  <span className="flex justify-center text-[72px] leading-none drop-shadow-lg"><Icon icon="material-symbols:local-fire-department" width={90} color="#f97316" /></span>
                   {streak >= 7 && (
                     <span className="absolute -top-1 -right-2 w-6 h-6 rounded-full bg-yellow-400 text-xs font-black flex items-center justify-center text-white shadow-md">★</span>
                   )}
@@ -559,13 +559,13 @@ export function DashboardOverview({ username, avatar, initialExp = 0, initialStr
                 boxShadow: '0 20px 40px rgba(14, 165, 233, 0.1), inset 0 1px 0 rgba(255, 255, 255, 1)',
               }}
             >
-              <p className="text-[#082F49] font-black text-base mb-5 flex items-center gap-2">⚡ Truy cập nhanh</p>
+              <p className="text-[#082F49] font-black text-base mb-5 flex items-center gap-2"><Icon icon="mingcute:lightning-fill" width={26} /> Truy cập nhanh</p>
               <div className="grid grid-cols-2 gap-3">
                 {[
-                  { href: '/map', icon: '🗺️', label: 'Bản đồ thế giới', color: 'from-cyan-50 to-blue-50 border-cyan-100 hover:border-cyan-300' },
-                  { href: '/arena/map-guessing', icon: '🎯', label: 'Đoán vị trí', color: 'from-rose-50 to-orange-50 border-rose-100 hover:border-rose-300' },
-                  { href: '/lessons', icon: '📚', label: 'Bài học hôm nay', color: 'from-emerald-50 to-green-50 border-emerald-100 hover:border-emerald-300' },
-                  { href: '/books', icon: '📖', label: 'Thư viện sách', color: 'from-purple-50 to-indigo-50 border-purple-100 hover:border-purple-300' },
+                  { href: '/map', icon: <Icon icon="material-symbols:map-search-rounded" width={22} />, label: 'Bản đồ thế giới', color: 'from-cyan-50 to-blue-50 border-cyan-100 hover:border-cyan-300' },
+                  { href: '/arena/map-guessing', icon: <Icon icon="material-symbols:toys-and-games" width={22} />, label: 'Đoán vị trí', color: 'from-rose-50 to-orange-50 border-rose-100 hover:border-rose-300' },
+                  { href: '/lessons', icon: <Icon icon="material-symbols:home-work-rounded" width={22} />, label: 'Bài học hôm nay', color: 'from-emerald-50 to-green-50 border-emerald-100 hover:border-emerald-300' },
+                  { href: '/books', icon: <Icon icon="material-symbols:book-4-rounded" width={22} />, label: 'Thư viện sách', color: 'from-purple-50 to-indigo-50 border-purple-100 hover:border-purple-300' },
                 ].map((item) => (
                   <Link
                     key={item.href}

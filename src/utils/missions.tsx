@@ -1,10 +1,12 @@
 import type { MissionId } from "@/models/DailyMission";
+import type { ReactNode } from "react";
+import { Icon } from "@iconify/react";
 
 export interface MissionDef {
   id: MissionId;
   label: string;
   sub: string;
-  icon: string;
+  icon: ReactNode;
   exp: number;
   coins: number;
   target: number;
@@ -16,7 +18,7 @@ export const ALL_MISSIONS: MissionDef[] = [
     id: "online-20",
     label: "Chiến thần online",
     sub: "Online trên trang web 20 phút",
-    icon: "⏱️",
+    icon: <Icon icon="mingcute:time-duration-fill" width={30} />,
     exp: 60,
     coins: 10,
     target: 20,
@@ -26,7 +28,7 @@ export const ALL_MISSIONS: MissionDef[] = [
     id: "explore-map",
     label: "Nhà thám hiểm",
     sub: "Khám phá 1 địa danh trên bản đồ",
-    icon: "🗺️",
+    icon: <Icon icon="mingcute:map-pin-fill" width={30} />,
     exp: 80,
     coins: 15,
     target: 1,
@@ -36,7 +38,7 @@ export const ALL_MISSIONS: MissionDef[] = [
     id: "play-arena",
     label: "Đấu trường vinh quang",
     sub: "Chơi 1 trò chơi trong Đấu trường",
-    icon: "⚔️",
+    icon: <Icon icon="mingcute:game-1-fill" width={30} />,
     exp: 100,
     coins: 20,
     target: 1,
@@ -46,7 +48,7 @@ export const ALL_MISSIONS: MissionDef[] = [
     id: "join-classroom",
     label: "Học trò chăm chỉ",
     sub: "Tham gia 1 lớp học",
-    icon: "🏫",
+    icon: <Icon icon="mdi:google-classroom" width={30} />,
     exp: 90,
     coins: 15,
     target: 1,
@@ -56,7 +58,7 @@ export const ALL_MISSIONS: MissionDef[] = [
     id: "read-book",
     label: "Học giả địa lý",
     sub: "Đọc ít nhất 1 trang sách",
-    icon: "📖",
+    icon: <Icon icon="material-symbols:book-rounded" width={30} />,
     exp: 70,
     coins: 10,
     target: 1,
@@ -66,7 +68,7 @@ export const ALL_MISSIONS: MissionDef[] = [
     id: "feed-pet",
     label: "Người Nuôi Thú",
     sub: "Cho thú cưng ăn 1 lần",
-    icon: "🍖",
+    icon: <Icon icon="streamline-plump:pet-paw-solid" width={30} />,
     exp: 50,
     coins: 10,
     target: 1,

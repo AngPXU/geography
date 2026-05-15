@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import {
   FaPaperPlane, FaHeart, FaReply, FaTimes,
 } from 'react-icons/fa';
+import { Icon } from '@iconify/react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -100,13 +101,12 @@ function Bubble({
           )}
 
           <div
-            className={`px-3 py-2 rounded-2xl text-sm leading-snug transition-all duration-200 ${
-              isStaff && !isMine
-                ? 'shadow-[0_0_0_2px_rgba(6,182,212,0.25),0_4px_16px_rgba(6,182,212,0.15)] bg-gradient-to-br from-[#E0F2FE] to-[#F0FDFF] text-[#082F49] font-medium'
-                : isMine
+            className={`px-3 py-2 rounded-2xl text-sm leading-snug transition-all duration-200 ${isStaff && !isMine
+              ? 'shadow-[0_0_0_2px_rgba(6,182,212,0.25),0_4px_16px_rgba(6,182,212,0.15)] bg-gradient-to-br from-[#E0F2FE] to-[#F0FDFF] text-[#082F49] font-medium'
+              : isMine
                 ? 'bg-[#06B6D4] text-white rounded-br-sm'
                 : 'bg-white text-[#334155] rounded-bl-sm shadow-sm border border-gray-100'
-            }`}
+              }`}
           >
             {msg.text}
           </div>
@@ -127,9 +127,8 @@ function Bubble({
       <div className={`flex gap-1 mt-0.5 transition-all duration-200 ${actionsVisible ? 'opacity-100' : 'opacity-0 pointer-events-none'} ${isMine ? 'flex-row-reverse mr-0' : 'ml-9'}`}>
         <button
           onClick={() => onLike(msg._id)}
-          className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold transition-all duration-200 ${
-            likedByMe ? 'bg-red-100 text-red-500' : 'bg-white/80 text-[#94A3B8] hover:text-red-400 hover:bg-red-50'
-          } border border-gray-100 shadow-sm`}
+          className={`flex items-center gap-1 px-2 py-1 rounded-full text-[10px] font-semibold transition-all duration-200 ${likedByMe ? 'bg-red-100 text-red-500' : 'bg-white/80 text-[#94A3B8] hover:text-red-400 hover:bg-red-50'
+            } border border-gray-100 shadow-sm`}
         >
           <FaHeart size={9} /> {likedByMe ? 'Bỏ thích' : 'Thích'}
         </button>
@@ -233,8 +232,8 @@ export function ChatPanel({ roomId, currentUserId, currentUserName, isTeacher, i
     >
       {/* Panel header */}
       <div className="flex items-center gap-2 px-4 py-3 flex-shrink-0 border-b border-white/60"
-           style={{ background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)' }}>
-        <span className="text-base">💬</span>
+        style={{ background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(12px)' }}>
+        <span className="text-base"><Icon icon="ant-design:message-outlined" width={18} /></span>
         <p className="font-bold text-[#082F49] text-sm">Nhắn tin</p>
         {messages.length > 0 && (
           <span className="w-5 h-5 rounded-full bg-[#06B6D4] text-white text-[9px] font-bold flex items-center justify-center">
@@ -245,10 +244,10 @@ export function ChatPanel({ roomId, currentUserId, currentUserName, isTeacher, i
 
       {/* Messages list */}
       <div ref={msgListRef} className="flex-1 overflow-y-auto px-3 py-3 space-y-3"
-           style={{ background: 'rgba(248,250,252,0.8)' }}>
+        style={{ background: 'rgba(248,250,252,0.8)' }}>
         {messages.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-2 text-center py-12">
-            <span className="text-4xl">💬</span>
+            <span className="text-4xl"><Icon icon="ant-design:message-outlined" width={50} /></span>
             <p className="text-xs text-[#94A3B8] font-medium">Chưa có tin nhắn nào</p>
             <p className="text-[10px] text-[#CBD5E1]">Hãy là người đầu tiên nhắn tin!</p>
           </div>
@@ -269,7 +268,7 @@ export function ChatPanel({ roomId, currentUserId, currentUserName, isTeacher, i
       {/* Reply preview bar */}
       {replyingTo && (
         <div className="flex items-center justify-between gap-2 px-3 py-2 border-t border-[#E0F2FE] flex-shrink-0"
-             style={{ background: 'rgba(224,242,254,0.7)' }}>
+          style={{ background: 'rgba(224,242,254,0.7)' }}>
           <div className="flex items-center gap-2 min-w-0">
             <FaReply size={10} className="text-[#06B6D4] flex-shrink-0" />
             <div className="min-w-0">
@@ -285,7 +284,7 @@ export function ChatPanel({ roomId, currentUserId, currentUserName, isTeacher, i
 
       {/* Input bar */}
       <div className="flex items-end gap-2 px-3 py-3 flex-shrink-0 border-t border-white/60"
-           style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)' }}>
+        style={{ background: 'rgba(255,255,255,0.85)', backdropFilter: 'blur(12px)' }}>
         <textarea
           ref={textareaRef}
           rows={1}
@@ -304,7 +303,7 @@ export function ChatPanel({ roomId, currentUserId, currentUserName, isTeacher, i
           disabled={!text.trim() || sending}
           className="flex-shrink-0 w-10 h-10 rounded-2xl bg-[#06B6D4] text-white flex items-center justify-center hover:bg-[#22D3EE] disabled:opacity-50 transition-all duration-300 shadow-md"
         >
-          <FaPaperPlane size={13} />
+          <Icon icon="mynaui:send-solid" width={18} />
         </button>
       </div>
     </div>

@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
@@ -3986,9 +3986,349 @@ function OverviewTab() {
 }
 
 
+/* ══════════════════════ CONTACT TAB ══════════════════════════ */
+
+interface ContactMsg {
+  _id: string;
+  username: string;
+  image?: string;
+  content: string;
+  isRead: boolean;
+  createdAt: string;
+}
+
+function ContactTab() {
+  const [messages, setMessages]     = useState<ContactMsg[]>([]);
+  const [total, setTotal]           = useState(0);
+  const [page, setPage]             = useState(1);
+  const [loading, setLoading]       = useState(true);
+  const [statusFilter, setStatusFilter] = useState<'all' | 'read' | 'unread'>('all');
+  const [search, setSearch]         = useState('');
+  const [selected, setSelected]     = useState<ContactMsg | null>(null);
+  const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [toast, setToast]           = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
+
+  const PER_PAGE = 15;
+
+  const showToast = (msg: string, type: 'success' | 'error' = 'success') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 2500);
+  };
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const params = new URLSearchParams({
+        page: String(page),
+        limit: String(PER_PAGE),
+        ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
+        ...(search.trim() ? { search: search.trim() } : {}),
+      });
+      const res  = await fetch(`/api/admin/contact?${params}`);
+      const data = await res.json() as { messages: ContactMsg[]; total: number };
+      setMessages(data.messages ?? []);
+      setTotal(data.total ?? 0);
+    } catch { /* ignore */ }
+    finally { setLoading(false); }
+  }, [page, statusFilter, search]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  const toggleRead = async (msg: ContactMsg) => {
+    setActionLoading(msg._id);
+    try {
+      const res = await fetch('/api/admin/contact', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: msg._id, isRead: !msg.isRead }),
+      });
+      if (res.ok) {
+        setMessages(prev => prev.map(m => m._id === msg._id ? { ...m, isRead: !m.isRead } : m));
+        if (selected?._id === msg._id) setSelected(prev => prev ? { ...prev, isRead: !prev.isRead } : null);
+        showToast(msg.isRead ? 'Đánh dấu chưa xử lý' : 'Đánh dấu đã xử lý');
+      }
+    } catch { showToast('Lỗi thao tác', 'error'); }
+    finally { setActionLoading(null); }
+  };
+
+  const deleteMsg = async (id: string) => {
+    if (!confirm('Xóa tin nhắn này?')) return;
+    setActionLoading(id);
+    try {
+      const res = await fetch(`/api/admin/contact?id=${id}`, { method: 'DELETE' });
+      if (res.ok) {
+        setMessages(prev => prev.filter(m => m._id !== id));
+        setTotal(t => t - 1);
+        if (selected?._id === id) setSelected(null);
+        showToast('Đã xóa tin nhắn');
+      }
+    } catch { showToast('Lỗi khi xóa', 'error'); }
+    finally { setActionLoading(null); }
+  };
+
+  const totalPages = Math.max(1, Math.ceil(total / PER_PAGE));
+  const unreadCount = messages.filter(m => !m.isRead).length;
+
+  return (
+    <div className="space-y-5">
+      {toast && (
+        <div className={`fixed top-5 right-5 z-[99999] px-5 py-3 rounded-[20px] text-sm font-bold
+          shadow-[0_8px_24px_rgba(0,0,0,0.12)] border transition-all
+          ${toast.type === 'success'
+            ? 'bg-[rgba(187,247,208,0.95)] border-emerald-200 text-[#16A34A]'
+            : 'bg-[rgba(254,226,226,0.95)] border-red-200 text-[#DC2626]'
+          }`}>
+          {toast.msg}
+        </div>
+      )}
+
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+        <div>
+          <h2 className="text-2xl font-black text-[#082F49]">💬 Liên hệ</h2>
+          <p className="text-[#94A3B8] text-sm font-semibold mt-0.5">
+            {loading ? '...' : `${total} tin nhắn`}
+            {unreadCount > 0 && <span className="ml-2 px-2 py-0.5 rounded-full bg-rose-100 text-rose-600 text-xs font-bold border border-rose-200">{unreadCount} chưa xử lý</span>}
+          </p>
+        </div>
+        <button onClick={() => { setPage(1); void load(); }}
+          className="sm:ml-auto flex items-center gap-2 px-4 py-2 rounded-full
+            bg-white/80 border border-slate-200 text-[#334155] text-sm font-bold
+            hover:bg-slate-50 transition-all">
+          <Icon icon="material-symbols:refresh-rounded" width={18} />
+          Làm mới
+        </button>
+      </div>
+
+      {/* Filter + search */}
+      <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px]
+        p-4 shadow-[0_10px_30px_rgba(14,165,233,0.08)] flex flex-col sm:flex-row gap-3">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-[#94A3B8]">Trạng thái:</span>
+          {(['all', 'unread', 'read'] as const).map(s => (
+            <button key={s} onClick={() => { setStatusFilter(s); setPage(1); }}
+              className={`px-3 py-1.5 rounded-full text-xs font-bold border transition-all
+                ${statusFilter === s
+                  ? s === 'unread'
+                    ? 'bg-rose-500 text-white border-transparent shadow-sm'
+                    : s === 'read'
+                      ? 'bg-emerald-500 text-white border-transparent shadow-sm'
+                      : 'bg-gradient-to-r from-cyan-500 to-blue-500 text-white border-transparent shadow-sm'
+                  : 'bg-slate-50 text-[#334155] border-slate-200 hover:border-cyan-300'
+                }`}>
+              {s === 'all' ? 'Tất cả' : s === 'unread' ? 'Chưa xử lý' : 'Đã xử lý'}
+            </button>
+          ))}
+        </div>
+        <div className="sm:ml-auto flex items-center gap-2 bg-slate-50 border border-slate-200
+          rounded-full px-3 py-2 focus-within:border-cyan-400 focus-within:ring-2
+          focus-within:ring-cyan-100 transition-all">
+          <FaSearch className="text-[#94A3B8] text-xs shrink-0" />
+          <input value={search} onChange={e => { setSearch(e.target.value); setPage(1); }}
+            placeholder="Tìm tên người dùng..."
+            className="bg-transparent text-sm font-semibold text-[#082F49]
+              placeholder:text-[#94A3B8] outline-none w-36 sm:w-44" />
+          {search && <button onClick={() => setSearch('')} className="text-[#94A3B8] hover:text-slate-600"><FaTimes className="text-xs" /></button>}
+        </div>
+      </div>
+
+      {/* Table */}
+      {loading ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <FaSpinner className="text-4xl text-cyan-400 animate-spin" />
+          <p className="text-[#94A3B8] font-semibold text-sm">Đang tải...</p>
+        </div>
+      ) : messages.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <div className="w-20 h-20 rounded-[32px] bg-slate-100 flex items-center justify-center text-4xl">💬</div>
+          <p className="text-[#082F49] font-bold text-base">Chưa có tin nhắn nào</p>
+        </div>
+      ) : (
+        <div className="bg-white/65 backdrop-blur-[24px] border border-white/80 rounded-[32px]
+          shadow-[0_10px_30px_rgba(14,165,233,0.08)] overflow-hidden">
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b border-slate-100 bg-white/40 backdrop-blur-md">
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs">#</th>
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs">Người gửi</th>
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden md:table-cell">Nội dung</th>
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs hidden sm:table-cell">Ngày gửi</th>
+                  <th className="text-left px-5 py-3.5 text-[#94A3B8] font-bold text-xs">Trạng thái</th>
+                  <th className="px-5 py-3.5" />
+                </tr>
+              </thead>
+              <tbody>
+                {messages.map((msg, idx) => (
+                  <tr key={msg._id}
+                    className={`border-b border-slate-50 hover:bg-white/60 transition-colors cursor-pointer
+                      ${!msg.isRead ? 'bg-rose-50/40' : ''}`}
+                    onClick={() => setSelected(msg)}>
+                    <td className="px-5 py-3.5 text-[#94A3B8] font-semibold text-xs">
+                      {(page - 1) * PER_PAGE + idx + 1}
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500
+                          flex items-center justify-center text-white text-xs font-black shrink-0">
+                          {msg.username?.charAt(0).toUpperCase()}
+                        </div>
+                        <span className="font-bold text-[#082F49] text-sm">{msg.username}</span>
+                        {msg.image && <Icon icon="material-symbols:image" width={14} className="text-slate-400" />}
+                      </div>
+                    </td>
+                    <td className="px-5 py-3.5 hidden md:table-cell">
+                      <p className="text-[#334155] text-xs max-w-xs truncate font-medium">{msg.content}</p>
+                    </td>
+                    <td className="px-5 py-3.5 hidden sm:table-cell">
+                      <span className="text-[#94A3B8] text-xs font-semibold">
+                        {new Date(msg.createdAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5">
+                      <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border
+                        ${msg.isRead
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : 'bg-rose-50 text-rose-700 border-rose-200'
+                        }`}>
+                        <span className={`w-1.5 h-1.5 rounded-full ${msg.isRead ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+                        {msg.isRead ? 'Đã xử lý' : 'Chưa xử lý'}
+                      </span>
+                    </td>
+                    <td className="px-5 py-3.5" onClick={e => e.stopPropagation()}>
+                      <div className="flex items-center gap-1.5 justify-end">
+                        <button onClick={() => toggleRead(msg)}
+                          disabled={actionLoading === msg._id}
+                          title={msg.isRead ? 'Đánh dấu chưa xử lý' : 'Đánh dấu đã xử lý'}
+                          className={`w-7 h-7 rounded-full flex items-center justify-center transition-all
+                            ${msg.isRead
+                              ? 'bg-slate-100 text-slate-500 hover:bg-rose-100 hover:text-rose-600'
+                              : 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200'
+                            }`}>
+                          {actionLoading === msg._id
+                            ? <FaSpinner className="animate-spin text-xs" />
+                            : <Icon icon={msg.isRead ? 'material-symbols:undo' : 'material-symbols:check-circle-rounded'} width={14} />}
+                        </button>
+                        <button onClick={() => deleteMsg(msg._id)}
+                          disabled={actionLoading === msg._id}
+                          className="w-7 h-7 rounded-full bg-slate-100 text-slate-400
+                            hover:bg-red-100 hover:text-red-600 flex items-center justify-center transition-all">
+                          <FaTrash className="text-[10px]" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="flex items-center justify-between px-5 py-3 border-t border-slate-100 bg-white/30">
+              <p className="text-[#94A3B8] text-xs font-semibold">
+                Trang {page}/{totalPages} · {total} tin nhắn
+              </p>
+              <div className="flex gap-2">
+                <button disabled={page <= 1} onClick={() => setPage(p => p - 1)}
+                  className="px-3 py-1.5 rounded-full text-xs font-bold border border-slate-200
+                    bg-slate-50 text-[#334155] disabled:opacity-40 hover:border-cyan-300 transition-all">
+                  ← Trước
+                </button>
+                <button disabled={page >= totalPages} onClick={() => setPage(p => p + 1)}
+                  className="px-3 py-1.5 rounded-full text-xs font-bold border border-slate-200
+                    bg-slate-50 text-[#334155] disabled:opacity-40 hover:border-cyan-300 transition-all">
+                  Sau →
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Detail modal */}
+      {selected && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
+          onClick={() => setSelected(null)}>
+          <div className="absolute inset-0 bg-[#082F49]/30 backdrop-blur-sm" />
+          <div className="relative w-full max-w-lg bg-[rgba(255,255,255,0.85)] backdrop-blur-[24px]
+            border border-white/80 rounded-[32px] shadow-[0_20px_60px_rgba(8,47,73,0.2)] overflow-hidden"
+            onClick={e => e.stopPropagation()}>
+            {/* Modal header */}
+            <div className="flex items-center justify-between px-6 py-4 border-b border-slate-100
+              bg-gradient-to-r from-cyan-50 to-blue-50">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-400 to-blue-500
+                  flex items-center justify-center text-white font-black shrink-0">
+                  {selected.username.charAt(0).toUpperCase()}
+                </div>
+                <div>
+                  <p className="font-black text-[#082F49] text-sm">{selected.username}</p>
+                  <p className="text-[#94A3B8] text-xs font-semibold">
+                    {new Date(selected.createdAt).toLocaleDateString('vi-VN', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                  </p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[10px] font-bold border
+                  ${selected.isRead ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-rose-50 text-rose-700 border-rose-200'}`}>
+                  <span className={`w-1.5 h-1.5 rounded-full ${selected.isRead ? 'bg-emerald-400' : 'bg-rose-400'}`} />
+                  {selected.isRead ? 'Đã xử lý' : 'Chưa xử lý'}
+                </span>
+                <button onClick={() => setSelected(null)}
+                  className="w-8 h-8 rounded-full bg-slate-100 hover:bg-slate-200
+                    flex items-center justify-center text-slate-500 transition-colors">
+                  <FaTimes className="text-xs" />
+                </button>
+              </div>
+            </div>
+            {/* Modal body */}
+            <div className="p-6 space-y-4">
+              {/* Ảnh đính kèm */}
+              {selected.image && (
+                <div>
+                  <p className="text-xs font-bold text-[#94A3B8] mb-2">📎 Ảnh đính kèm</p>
+                  <img src={selected.image} alt="attachment"
+                    className="w-full max-h-64 object-contain rounded-[20px] border border-slate-200 bg-slate-50" />
+                </div>
+              )}
+              {/* Nội dung */}
+              <div>
+                <p className="text-xs font-bold text-[#94A3B8] mb-2">💬 Nội dung</p>
+                <div className="bg-slate-50 border border-slate-200 rounded-[20px] px-5 py-4">
+                  <p className="text-[#334155] text-sm font-medium leading-relaxed whitespace-pre-wrap">{selected.content}</p>
+                </div>
+              </div>
+              {/* Actions */}
+              <div className="flex gap-3 pt-2">
+                <button onClick={() => toggleRead(selected)}
+                  disabled={actionLoading === selected._id}
+                  className={`flex-1 py-2.5 rounded-full text-sm font-bold transition-all flex items-center justify-center gap-2
+                    ${selected.isRead
+                      ? 'bg-slate-100 text-slate-600 hover:bg-rose-100 hover:text-rose-600 border border-slate-200'
+                      : 'bg-gradient-to-r from-emerald-500 to-cyan-500 text-white shadow-sm'
+                    }`}>
+                  {actionLoading === selected._id ? <FaSpinner className="animate-spin text-xs" /> : null}
+                  {selected.isRead ? '↩ Đánh dấu chưa xử lý' : '✅ Đánh dấu đã xử lý'}
+                </button>
+                <button onClick={() => deleteMsg(selected._id)}
+                  disabled={actionLoading === selected._id}
+                  className="px-4 py-2.5 rounded-full bg-red-50 text-red-600 border border-red-200
+                    hover:bg-red-100 text-sm font-bold transition-all">
+                  <FaTrash className="text-xs" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 /* ═══════════════════════ MAIN ADMIN CLIENT ════════════════════════ */
 
-type SidebarTab = 'overview' | 'users' | 'classrooms' | 'data' | 'map';
+type SidebarTab = 'overview' | 'users' | 'classrooms' | 'data' | 'map' | 'contact';
 
 const SIDEBAR_ITEMS: { id: SidebarTab; label: string; icon: React.ReactNode; badge?: string }[] = [
   { id: 'overview',    label: 'Tổng quan',   icon: <FaChartBar /> },
@@ -3996,6 +4336,7 @@ const SIDEBAR_ITEMS: { id: SidebarTab; label: string; icon: React.ReactNode; bad
   { id: 'classrooms',  label: 'Lớp học',     icon: <FaSchool /> },
   { id: 'data',        label: 'Dữ liệu',     icon: <FaDatabase /> },
   { id: 'map',         label: 'Bản đồ',      icon: <FaGlobeAsia /> },
+  { id: 'contact',     label: 'Liên hệ',     icon: <Icon icon="mingcute:message-1-ai-fill" width={16} /> },
 ];
 
 export function AdminClient({ currentUser }: {
@@ -4126,6 +4467,7 @@ export function AdminClient({ currentUser }: {
             {activeTab === 'classrooms' && <ClassroomsTab />}
             {activeTab === 'data'       && <DataTab />}
             {activeTab === 'map'        && <MapTab />}
+            {activeTab === 'contact'    && <ContactTab />}
           </main>
         </div>
       </div>

@@ -14,13 +14,14 @@ import {
   FaVolumeMute, FaVolumeUp, FaPhoneAlt, FaPhoneSlash,
   FaUserGraduate, FaChalkboardTeacher, FaTimes,
 } from 'react-icons/fa';
+import { Icon } from '@iconify/react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type DataMsg =
-  | { type: 'raise-hand';   identity: string; displayName: string }
-  | { type: 'lower-hand';   identity: string }
-  | { type: 'allow-speak';  identity: string }
+  | { type: 'raise-hand'; identity: string; displayName: string }
+  | { type: 'lower-hand'; identity: string }
+  | { type: 'allow-speak'; identity: string }
   | { type: 'mute-all' };
 
 interface ParticipantInfo {
@@ -44,17 +45,17 @@ interface Props {
 // ─── LiveKitPanel ─────────────────────────────────────────────────────────────
 
 export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, teacherOnline, onRoomChange, preConnectedRoom }: Props) {
-  const roomRef        = useRef<Room | null>(null);
+  const roomRef = useRef<Room | null>(null);
   const screenVideoRef = useRef<HTMLVideoElement>(null);
   const [remoteScreenTrack, setRemoteScreenTrack] = useState<RemoteTrack | null>(null);
-  const [screenSharerName, setScreenSharerName]   = useState<string | null>(null);
+  const [screenSharerName, setScreenSharerName] = useState<string | null>(null);
 
-  const [connState, setConnState]           = useState<'idle' | 'connecting' | 'connected'>('idle');
-  const [error, setError]                   = useState('');
-  const [isMicOn, setIsMicOn]               = useState(false);
+  const [connState, setConnState] = useState<'idle' | 'connecting' | 'connected'>('idle');
+  const [error, setError] = useState('');
+  const [isMicOn, setIsMicOn] = useState(false);
   const [isSharingScreen, setIsSharingScreen] = useState(false);
-  const [hasRaisedHand, setHasRaisedHand]   = useState(false);
-  const [canSpeak, setCanSpeak]             = useState(isTeacher);
+  const [hasRaisedHand, setHasRaisedHand] = useState(false);
+  const [canSpeak, setCanSpeak] = useState(isTeacher);
 
   // Danh sách người giơ tay: identity → displayName
   const [raisedHands, setRaisedHands] = useState<Map<string, string>>(new Map());
@@ -109,7 +110,7 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
     };
     const onLocalUnpub = (pub: LocalTrackPublication) => {
       if (pub.source === Track.Source.ScreenShare) setIsSharingScreen(false);
-      if (pub.source === Track.Source.Microphone)  setIsMicOn(false);
+      if (pub.source === Track.Source.Microphone) setIsMicOn(false);
     };
     const onPartConn = () => refreshParticipants();
     const onPartDisconn = (p: RemoteParticipant) => {
@@ -119,11 +120,11 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
     const onData = (payload: Uint8Array) => {
       try {
         const msg = JSON.parse(new TextDecoder().decode(payload)) as DataMsg;
-        if (msg.type === 'raise-hand')  setRaisedHands((prev) => new Map(prev).set(msg.identity, msg.displayName));
+        if (msg.type === 'raise-hand') setRaisedHands((prev) => new Map(prev).set(msg.identity, msg.displayName));
         else if (msg.type === 'lower-hand') setRaisedHands((prev) => { const m = new Map(prev); m.delete(msg.identity); return m; });
         else if (msg.type === 'allow-speak') { if (msg.identity === currentUserId) { setCanSpeak(true); setHasRaisedHand(false); } }
         else if (msg.type === 'mute-all') {
-          if (!isTeacher) { setCanSpeak(false); setHasRaisedHand(false); r.localParticipant.setMicrophoneEnabled(false).catch(() => {}); setIsMicOn(false); }
+          if (!isTeacher) { setCanSpeak(false); setHasRaisedHand(false); r.localParticipant.setMicrophoneEnabled(false).catch(() => { }); setIsMicOn(false); }
         }
       } catch { /* ignore */ }
     };
@@ -189,7 +190,7 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
   const muteAll = useCallback(async () => {
     await sendData({ type: 'mute-all' });
     // Thu hồi quyền publish của tất cả học sinh qua LiveKit server API
-    await fetch(`/api/classroom/${classroomId}/livekit-permission`, { method: 'DELETE' }).catch(() => {});
+    await fetch(`/api/classroom/${classroomId}/livekit-permission`, { method: 'DELETE' }).catch(() => { });
     setRaisedHands(new Map());
   }, [classroomId, sendData]);
 
@@ -213,7 +214,7 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
 
       // ── Sự kiện kết nối ─────────────────────────────────────────────────
       room.on(RoomEvent.ConnectionStateChanged, (state) => {
-        if (state === ConnectionState.Connected)    setConnState('connected');
+        if (state === ConnectionState.Connected) setConnState('connected');
         if (state === ConnectionState.Disconnected) {
           setConnState('idle');
           setIsMicOn(false);
@@ -254,7 +255,7 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
       // ── Local track unpublish (ví dụ user ngắt screen share) ─────────────
       room.on(RoomEvent.LocalTrackUnpublished, (pub) => {
         if (pub.source === Track.Source.ScreenShare) setIsSharingScreen(false);
-        if (pub.source === Track.Source.Microphone)  setIsMicOn(false);
+        if (pub.source === Track.Source.Microphone) setIsMicOn(false);
       });
 
       // ── Participants ─────────────────────────────────────────────────────
@@ -282,7 +283,7 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
             if (!isTeacher) {
               setCanSpeak(false);
               setHasRaisedHand(false);
-              room.localParticipant.setMicrophoneEnabled(false).catch(() => {});
+              room.localParticipant.setMicrophoneEnabled(false).catch(() => { });
               setIsMicOn(false);
             }
           }
@@ -294,14 +295,14 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
 
       // Giáo viên tự động bật mic khi vào
       if (isTeacher) {
-        await room.localParticipant.setMicrophoneEnabled(true).catch(() => {});
+        await room.localParticipant.setMicrophoneEnabled(true).catch(() => { });
         setIsMicOn(true);
         // Đánh dấu live session đang active → học sinh mới được phép join
         fetch(`/api/classroom/${classroomId}/live-session-status`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ active: true }),
-        }).catch(() => {});
+        }).catch(() => { });
       }
 
       refreshParticipants();
@@ -322,7 +323,7 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ active: false }),
-      }).catch(() => {});
+      }).catch(() => { });
     }
     await roomRef.current?.disconnect();
     roomRef.current = null;
@@ -374,7 +375,7 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
 
   // ── Cleanup khi unmount ──────────────────────────────────────────────────
   useEffect(() => {
-    return () => { roomRef.current?.disconnect().catch(() => {}); };
+    return () => { roomRef.current?.disconnect().catch(() => { }); };
   }, []);
 
   // ─── Render ───────────────────────────────────────────────────────────────
@@ -391,14 +392,13 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
       <div className="flex items-center justify-between px-5 py-3.5 border-b border-slate-100/80">
         <div className="flex items-center gap-2.5">
           <div
-            className={`w-2.5 h-2.5 rounded-full shrink-0 transition-colors ${
-              connState === 'connected' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'
-            }`}
+            className={`w-2.5 h-2.5 rounded-full shrink-0 transition-colors ${connState === 'connected' ? 'bg-emerald-500 animate-pulse' : 'bg-slate-300'
+              }`}
           />
-          <span className="font-black text-sm text-[#082F49]">
-            {connState === 'idle'       && '🎙️ Phòng học trực tiếp'}
-            {connState === 'connecting' && '⏳ Đang kết nối...'}
-            {connState === 'connected'  && '🟢 Đang kết nối trực tiếp'}
+          <span className="flex items-center gap-2 font-black text-sm text-[#082F49]">
+            {connState === 'idle' && <><Icon icon="ix:live-feed" width={20} /> Phòng học trực tiếp</>}
+            {connState === 'connecting' && <><Icon icon="wpf:online" width={20} /> Đang kết nối...</>}
+            {connState === 'connected' && <><Icon icon="material-symbols:live-tv-rounded" width={20} /> Đang kết nối trực tiếp</>}
           </span>
         </div>
 
@@ -410,19 +410,19 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
               className="flex items-center gap-2 px-4 py-2 rounded-[14px] text-white font-bold text-xs shadow-md hover:-translate-y-0.5 active:scale-95 transition-all"
               style={{ background: 'linear-gradient(to right, #06B6D4, #0284C7)', boxShadow: '0 4px 12px rgba(6,182,212,0.35)' }}
             >
-              <FaPhoneAlt size={10} /> Tham gia
+              <Icon icon="solar:phone-bold" width={16} /> Tham gia
             </button>
           ) : (
             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold text-[#94A3B8]"
-                 style={{ background: 'rgba(241,245,249,0.8)' }}>
-              ⏳ Giáo viên chưa bắt đầu
+              style={{ background: 'rgba(241,245,249,0.8)' }}>
+              <Icon icon="material-symbols:hourglass-rounded" width={22} /> Giáo viên chưa bắt đầu
             </div>
           )
         )}
         {/* Student đã auto-connect: hiển thị badge, không cần nút Tham gia/Rời */}
         {preConnectedRoom && connState === 'connected' && !isTeacher && (
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-2xl text-xs font-semibold text-[#16A34A]"
-               style={{ background: 'rgba(187,247,208,0.5)' }}>
+            style={{ background: 'rgba(187,247,208,0.5)' }}>
             <span className="w-1.5 h-1.5 rounded-full bg-[#22C55E]" /> Đã kết nối
           </div>
         )}
@@ -440,7 +440,7 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
       {/* ── Error banner ───────────────────────────────────────────────── */}
       {error && (
         <div className="mx-4 mt-3 px-4 py-2.5 rounded-2xl flex items-center justify-between gap-2 text-xs font-semibold text-[#DC2626]"
-             style={{ background: 'rgba(254,226,226,0.8)' }}>
+          style={{ background: 'rgba(254,226,226,0.8)' }}>
           <span>⚠️ {error}</span>
           <button onClick={() => setError('')}><FaTimes size={10} /></button>
         </div>
@@ -479,7 +479,7 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
           {/* ── Chờ giáo viên (student pre-connected, teacher chưa vào) ─ */}
           {!isTeacher && !teacherOnline && (
             <div className="flex items-center gap-3 px-5 py-4"
-                 style={{ background: 'rgba(254,240,138,0.25)', borderBottom: '1px solid rgba(253,230,138,0.4)' }}>
+              style={{ background: 'rgba(254,240,138,0.25)', borderBottom: '1px solid rgba(253,230,138,0.4)' }}>
               <div className="w-2 h-2 rounded-full bg-amber-400 animate-pulse flex-shrink-0" />
               <p className="text-xs text-amber-700 font-semibold">
                 Đã kết nối phòng — Chờ giáo viên bắt đầu buổi học...
@@ -524,11 +524,10 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
             {(isTeacher || canSpeak) && (
               <button
                 onClick={toggleMic}
-                className={`flex items-center gap-2 px-3 py-2 rounded-2xl text-xs font-bold transition-all duration-200 ${
-                  isMicOn
-                    ? 'bg-[#06B6D4] text-white shadow-md shadow-cyan-200'
-                    : 'bg-slate-100 text-[#94A3B8] hover:bg-slate-200'
-                }`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-2xl text-xs font-bold transition-all duration-200 ${isMicOn
+                  ? 'bg-[#06B6D4] text-white shadow-md shadow-cyan-200'
+                  : 'bg-slate-100 text-[#94A3B8] hover:bg-slate-200'
+                  }`}
                 title={isMicOn ? 'Tắt mic' : 'Bật mic'}
               >
                 {isMicOn ? <FaMicrophone size={11} /> : <FaMicrophoneSlash size={11} />}
@@ -539,11 +538,10 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
             {/* Screen share button */}
             <button
               onClick={toggleScreenShare}
-              className={`flex items-center gap-2 px-3 py-2 rounded-2xl text-xs font-bold transition-all duration-200 ${
-                isSharingScreen
-                  ? 'bg-rose-500 text-white'
-                  : 'bg-slate-100 text-[#334155] hover:bg-slate-200'
-              }`}
+              className={`flex items-center gap-2 px-3 py-2 rounded-2xl text-xs font-bold transition-all duration-200 ${isSharingScreen
+                ? 'bg-rose-500 text-white'
+                : 'bg-slate-100 text-[#334155] hover:bg-slate-200'
+                }`}
             >
               <FaDesktop size={11} />
               {isSharingScreen ? 'Dừng chia sẻ' : 'Chia sẻ màn hình'}
@@ -553,11 +551,10 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
             {!isTeacher && !canSpeak && (
               <button
                 onClick={toggleRaiseHand}
-                className={`flex items-center gap-2 px-3 py-2 rounded-2xl text-xs font-bold transition-all duration-200 ${
-                  hasRaisedHand
-                    ? 'bg-amber-400 text-white shadow-md shadow-amber-200 animate-bounce'
-                    : 'bg-slate-100 text-[#334155] hover:bg-amber-50 hover:text-amber-600'
-                }`}
+                className={`flex items-center gap-2 px-3 py-2 rounded-2xl text-xs font-bold transition-all duration-200 ${hasRaisedHand
+                  ? 'bg-amber-400 text-white shadow-md shadow-amber-200 animate-bounce'
+                  : 'bg-slate-100 text-[#334155] hover:bg-amber-50 hover:text-amber-600'
+                  }`}
                 style={{ animationDuration: '1.5s' }}
               >
                 <FaHandPaper size={11} />
@@ -579,14 +576,14 @@ export function LiveKitPanel({ classroomId, username, isTeacher, currentUserId, 
           {/* ── Raised hands panel (giáo viên) ────────────────────────── */}
           {isTeacher && raisedHands.size > 0 && (
             <div className="px-4 py-3 border-b border-amber-100/60"
-                 style={{ background: 'rgba(254,240,138,0.25)' }}>
+              style={{ background: 'rgba(254,240,138,0.25)' }}>
               <p className="text-[10px] text-amber-700 font-extrabold uppercase tracking-wider mb-2">
                 ✋ {raisedHands.size} học sinh giơ tay
               </p>
               <div className="flex flex-col gap-1.5">
                 {Array.from(raisedHands.entries()).map(([identity, displayName]) => (
                   <div key={identity} className="flex items-center justify-between gap-3 px-3 py-2 rounded-2xl"
-                       style={{ background: 'rgba(255,255,255,0.7)' }}>
+                    style={{ background: 'rgba(255,255,255,0.7)' }}>
                     <div className="flex items-center gap-2">
                       <FaHandPaper size={10} className="text-amber-500" />
                       <span className="text-xs font-semibold text-[#082F49]">{displayName}</span>
@@ -656,11 +653,10 @@ function ParticipantBadge({
 }) {
   return (
     <div
-      className={`relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl border text-[11px] font-semibold transition-all duration-300 ${
-        isSpeaking
-          ? 'border-[#22C55E] text-[#15803D] shadow-[0_0_10px_rgba(34,197,94,0.3)]'
-          : 'border-white/80 text-[#334155]'
-      }`}
+      className={`relative flex items-center gap-1.5 px-2.5 py-1.5 rounded-2xl border text-[11px] font-semibold transition-all duration-300 ${isSpeaking
+        ? 'border-[#22C55E] text-[#15803D] shadow-[0_0_10px_rgba(34,197,94,0.3)]'
+        : 'border-white/80 text-[#334155]'
+        }`}
       style={{ background: isSpeaking ? 'rgba(220,252,231,0.85)' : 'rgba(255,255,255,0.65)' }}
     >
       {isTeacher ? (
